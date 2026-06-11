@@ -1,0 +1,14 @@
+# Local OS junk
+.DS_Store
+Thumbs.db
+*.swp
+
+# Build artifacts / release zips
+*.zip
+releases/
+
+# Fallow / experimental
+.fallow/
+
+# Local dev notes not for the public repo
+_scratch/
