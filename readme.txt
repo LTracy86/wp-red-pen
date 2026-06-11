@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,7 @@ Built for editorial review, client hand-offs, content audits, and team to-do lis
 = What it does =
 
 * **Floating note button** on the front end for logged-in editors and admins (Dev Mode toggle in the admin bar, per user)
+* **Snip a screenshot** - click Screenshot, drag a box around the area, done. The region is captured client-side and saved as a small WebP attached to the note (shown on the note, the edit-screen panel, and the repository)
 * **Typed notes** - plain note, suggested edit, bug/problem, or question
 * **Per-post panel** - see and resolve a page's notes from its edit screen
 * **Shared repository** - one admin page listing every note across the site, filterable by Open / Resolved / All
@@ -60,6 +61,10 @@ No. The floating button and its code only load for logged-in editors/admins with
 Deleting (not just deactivating) removes every note and the per-user Dev Mode preference. Nothing else on your site is touched.
 
 == Changelog ==
+
+= 0.2.0 =
+* Screenshots: click Screenshot, drag a box around any area, and the region is captured client-side (html2canvas) and saved as a small WebP attached to the note. Shown on the note, the edit-screen panel, and the repository; cleaned up on note delete and uninstall.
+* Red accent: the chrome now uses the editorial red-pen colour.
 
 = 0.1.0 =
 * Initial release: floating note button, typed notes, per-post meta box, shared repository page with status filtering, admin-bar Dev Mode toggle and open-note badge, clean uninstall.

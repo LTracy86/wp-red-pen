@@ -4,7 +4,7 @@ A logged-in review layer for WordPress. Editors and admins flip on **Dev Mode** 
 
 Part of the [Tracy Digital Media](https://tracydigitalmedia.com/) free dev-plugin family. Free, with an optional [tip jar](https://buymeacoffee.com/lincolntracy) - no license keys, no premium tier, no third-party services.
 
-> "Red Pen" is the editorial metaphor only. The UI follows the locked TDM palette (deep blue / cyan), not red.
+> WP Red Pen is the one deliberate exception to the TDM "no warm/red" palette rule: the editorial red-pen branding gets a red accent (#D32F2F) on otherwise TDM-neutral (near-black / gray / white) chrome.
 
 ## Why
 
@@ -15,6 +15,7 @@ Good for editorial review, client hand-offs, content audits, QA passes, and shar
 ## What it does
 
 - **Floating note button** on the front end, shown only to logged-in users who can edit posts. Per-user **Dev Mode** toggle in the admin bar.
+- **Snip a screenshot** - click Screenshot, drag a box around the area, done. The region is captured client-side (vendored html2canvas) and stored as a small WebP in `uploads/wp-red-pen/`, attached to the note.
 - **Typed notes** - note, suggested edit, bug/problem, or question - attached to the current post/page.
 - **Per-post meta box** on the edit screen listing that page's notes.
 - **Shared repository** admin page: every note across the site, filterable by Open / Resolved / All, with one-click resolve/reopen.

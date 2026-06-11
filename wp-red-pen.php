@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -15,15 +15,16 @@
  *
  * DEPLOY:  Copy this folder to wp-content/plugins/ on any WordPress install and activate.
  *
- * Note: "Red Pen" is the editorial metaphor only. The UI follows the locked TDM
- * palette (deep blue / cyan, no warm/red).
+ * Note: WP Red Pen is the one deliberate exception to the TDM "no warm/red"
+ * palette rule - the editorial red-pen branding gets a red accent (#D32F2F) on
+ * an otherwise TDM-neutral (near-black / gray / white) chrome.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.1.0' );
+define( 'WPRP_VERSION',     '0.2.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -34,6 +35,8 @@ define( 'WPRP_USERMETA',    'wprp_devmode' );   // per-user Dev Mode toggle
 define( 'WPRP_META_TARGET', '_wprp_target' );   // attached post/page id
 define( 'WPRP_META_TYPE',   '_wprp_type' );     // note | suggestion | bug | question
 define( 'WPRP_META_URL',    '_wprp_url' );      // context url where it was added
+define( 'WPRP_META_SHOT',   '_wprp_shot' );     // attached screenshot filename (in uploads/wp-red-pen)
+define( 'WPRP_SHOT_DIR',    'wp-red-pen' );     // uploads subfolder for screenshots
 define( 'WPRP_REST_NS',     'wprp/v1' );
 
 /** Note types -> human labels. The single source of truth for the dropdowns. */
@@ -55,6 +58,84 @@ function wprp_user_can() {
 function wprp_devmode_on() {
 	return wprp_user_can() && (bool) get_user_meta( get_current_user_id(), WPRP_USERMETA, true );
 }
+
+/** Absolute path to the screenshots folder (uploads/wp-red-pen), created on demand. */
+function wprp_shot_dir( $create = false ) {
+	$up  = wp_upload_dir();
+	$dir = trailingslashit( $up['basedir'] ) . WPRP_SHOT_DIR;
+	if ( $create ) {
+		wp_mkdir_p( $dir );
+	}
+	return $dir;
+}
+
+/** Public URL for a stored screenshot filename. */
+function wprp_shot_url( $file ) {
+	if ( ! $file ) {
+		return '';
+	}
+	$up = wp_upload_dir();
+	return trailingslashit( $up['baseurl'] ) . WPRP_SHOT_DIR . '/' . rawurlencode( basename( $file ) );
+}
+
+/**
+ * Decode a base64 image data URL from the browser (a WebP region grab, with
+ * PNG/JPEG fallbacks) and write it into the screenshots folder. Returns the
+ * stored filename, or '' on any problem. Validates the declared type, the magic
+ * bytes (getimagesizefromstring), and a 6 MB ceiling.
+ *
+ * @param int    $note_id  Owning note id (used in the filename).
+ * @param string $data_url data:image/webp;base64,... payload.
+ * @return string Stored filename or ''.
+ */
+function wprp_save_shot( $note_id, $data_url ) {
+	if ( ! is_string( $data_url ) || '' === $data_url ) {
+		return '';
+	}
+	if ( ! preg_match( '#^data:image/(webp|png|jpeg);base64,#', $data_url, $m ) ) {
+		return '';
+	}
+	$ext   = ( 'webp' === $m[1] ) ? 'webp' : ( ( 'jpeg' === $m[1] ) ? 'jpg' : 'png' );
+	$bytes = base64_decode( substr( $data_url, strpos( $data_url, ',' ) + 1 ), true );
+	if ( false === $bytes || strlen( $bytes ) < 64 || strlen( $bytes ) > 6 * MB_IN_BYTES ) {
+		return '';
+	}
+	if ( ! @getimagesizefromstring( $bytes ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		return '';
+	}
+	$dir = wprp_shot_dir( true );
+	if ( ! is_dir( $dir ) || ! wp_is_writable( $dir ) ) {
+		return '';
+	}
+	$file = 'note-' . (int) $note_id . '-' . wp_generate_password( 8, false ) . '.' . $ext;
+	// Direct write: the bytes are already a validated image, extension is forced.
+	if ( false === file_put_contents( $dir . '/' . $file, $bytes ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		return '';
+	}
+	return $file;
+}
+
+/** Delete a stored screenshot file by filename (basename-guarded). */
+function wprp_delete_shot( $file ) {
+	if ( ! $file ) {
+		return;
+	}
+	$path = wprp_shot_dir() . '/' . basename( $file );
+	if ( is_file( $path ) ) {
+		wp_delete_file( $path );
+	}
+}
+
+/** When a note is permanently deleted, remove its screenshot file too. */
+add_action(
+	'before_delete_post',
+	function ( $post_id ) {
+		if ( WPRP_CPT !== get_post_type( $post_id ) ) {
+			return;
+		}
+		wprp_delete_shot( (string) get_post_meta( $post_id, WPRP_META_SHOT, true ) );
+	}
+);
 
 // ---------------------------------------------------------------------------
 // i18n
@@ -121,8 +202,9 @@ add_action(
  * @param string $body      The note text.
  * @param string $type      One of wprp_note_types() keys.
  * @param string $url       Context URL (where the note was dropped).
+ * @param string $shot      Optional base64 image data URL to attach.
  */
-function wprp_create_note( $target_id, $body, $type = 'note', $url = '' ) {
+function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '' ) {
 	if ( ! wprp_user_can() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
@@ -149,6 +231,13 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '' ) {
 	update_post_meta( $id, WPRP_META_TARGET, (int) $target_id );
 	update_post_meta( $id, WPRP_META_TYPE, $type );
 	update_post_meta( $id, WPRP_META_URL, esc_url_raw( $url ) );
+
+	if ( '' !== (string) $shot ) {
+		$file = wprp_save_shot( $id, (string) $shot );
+		if ( '' !== $file ) {
+			update_post_meta( $id, WPRP_META_SHOT, $file );
+		}
+	}
 	return $id;
 }
 
@@ -232,6 +321,7 @@ function wprp_note_to_array( $note ) {
 		'author'     => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
 		'date'       => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
 		'target'     => (int) get_post_meta( $note->ID, WPRP_META_TARGET, true ),
+		'shot'       => wprp_shot_url( (string) get_post_meta( $note->ID, WPRP_META_SHOT, true ) ),
 	);
 }
 
@@ -267,7 +357,8 @@ add_action(
 							(int) $req->get_param( 'target' ),
 							(string) $req->get_param( 'body' ),
 							(string) $req->get_param( 'type' ),
-							(string) $req->get_param( 'url' )
+							(string) $req->get_param( 'url' ),
+							(string) $req->get_param( 'shot' )
 						);
 						if ( is_wp_error( $id ) ) {
 							return $id;
@@ -399,6 +490,13 @@ add_action(
 				<form id="wprp-form" class="wprp-form">
 					<select id="wprp-type" aria-label="<?php esc_attr_e( 'Note type', 'wp-red-pen' ); ?>"><?php echo $opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
 					<textarea id="wprp-body" rows="3" placeholder="<?php esc_attr_e( 'Add a note, flag, or suggested edit...', 'wp-red-pen' ); ?>" required></textarea>
+					<div class="wprp-shotrow">
+						<button type="button" id="wprp-shot-btn" class="wprp-shotbtn"><span class="dashicons dashicons-camera"></span> <?php esc_html_e( 'Screenshot', 'wp-red-pen' ); ?></button>
+						<div id="wprp-shot-preview" class="wprp-shot-preview" hidden>
+							<img id="wprp-shot-thumb" alt="<?php esc_attr_e( 'Screenshot preview', 'wp-red-pen' ); ?>">
+							<button type="button" id="wprp-shot-clear" class="wprp-shot-clear" aria-label="<?php esc_attr_e( 'Remove screenshot', 'wp-red-pen' ); ?>">&times;</button>
+						</div>
+					</div>
 					<button type="submit" class="wprp-submit"><?php esc_html_e( 'Add note', 'wp-red-pen' ); ?></button>
 				</form>
 			</section>
@@ -412,30 +510,45 @@ add_action(
 function wprp_print_frontend_assets() {
 	?>
 	<style id="wprp-css">
-		#wprp-root{--wprp-blue:#14569B;--wprp-cyan:#00AEEE;--wprp-ink:#1E2225;--wprp-gray:#3A3A3C;position:fixed;right:20px;bottom:20px;z-index:99990;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-		#wprp-fab{width:52px;height:52px;border-radius:50%;border:none;background:var(--wprp-blue);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(20,86,155,.4);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .12s,background .12s}
-		#wprp-fab:hover{transform:translateY(-2px);background:#0f4279}
+		#wprp-root{--wprp-red:#D32F2F;--wprp-red-dark:#B71C1C;--wprp-accent:#FF5252;--wprp-ink:#1E2225;--wprp-gray:#3A3A3C;position:fixed;right:20px;bottom:20px;z-index:99990;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+		#wprp-fab{width:52px;height:52px;border-radius:50%;border:none;background:var(--wprp-red);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(211,47,47,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .12s,background .12s}
+		#wprp-fab:hover{transform:translateY(-2px);background:var(--wprp-red-dark)}
 		#wprp-fab .dashicons{width:26px;height:26px;font-size:26px}
-		.wprp-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--wprp-cyan);color:var(--wprp-ink);font-size:11px;font-weight:700;line-height:18px;text-align:center}
+		.wprp-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#fff;color:var(--wprp-red);font-size:11px;font-weight:700;line-height:18px;text-align:center;box-shadow:0 1px 3px rgba(30,34,37,.3)}
 		#wprp-panel{position:absolute;right:0;bottom:64px;width:340px;max-width:calc(100vw - 40px);max-height:70vh;display:flex;flex-direction:column;background:#fff;color:var(--wprp-ink);border:1px solid #d6dade;border-radius:10px;box-shadow:0 10px 34px rgba(30,34,37,.28);overflow:hidden}
-		.wprp-head{display:flex;align-items:center;gap:.5rem;padding:.6rem .75rem;background:var(--wprp-blue);color:#fff}
+		.wprp-head{display:flex;align-items:center;gap:.5rem;padding:.6rem .75rem;background:var(--wprp-red);color:#fff}
 		.wprp-head .wprp-page{font-size:.78rem;opacity:.85;margin-left:auto;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 		.wprp-x{background:none;border:none;color:#fff;font-size:20px;line-height:1;cursor:pointer;padding:0 0 0 .25rem}
 		.wprp-list{padding:.5rem .75rem;overflow-y:auto;flex:1;min-height:60px}
 		.wprp-muted{color:var(--wprp-gray);font-size:.85rem;margin:.4rem 0}
-		.wprp-note{border:1px solid #e6e9ec;border-left:3px solid var(--wprp-cyan);border-radius:6px;padding:.45rem .6rem;margin-bottom:.5rem;font-size:.86rem}
+		.wprp-note{border:1px solid #e6e9ec;border-left:3px solid var(--wprp-red);border-radius:6px;padding:.45rem .6rem;margin-bottom:.5rem;font-size:.86rem}
 		.wprp-note.is-resolved{opacity:.55;border-left-color:var(--wprp-gray)}
 		.wprp-note .wprp-meta{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;font-size:.72rem;color:var(--wprp-gray);margin-bottom:.25rem}
-		.wprp-tag{background:var(--wprp-blue);color:#fff;border-radius:3px;padding:.02rem .3rem;font-weight:600}
+		.wprp-tag{background:var(--wprp-red);color:#fff;border-radius:3px;padding:.02rem .3rem;font-weight:600}
 		.wprp-note .wprp-body p{margin:.2rem 0}
 		.wprp-resolve{background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font-size:.72rem;cursor:pointer;padding:.1rem .4rem;margin-left:auto}
-		.wprp-resolve:hover{border-color:var(--wprp-blue);color:var(--wprp-blue)}
+		.wprp-resolve:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
 		.wprp-form{display:flex;flex-direction:column;gap:.4rem;padding:.6rem .75rem;border-top:1px solid #e6e9ec;background:#f7f9fa}
 		.wprp-form select,.wprp-form textarea{width:100%;border:1px solid #cfd4d8;border-radius:5px;padding:.35rem .5rem;font:inherit;font-size:.86rem;box-sizing:border-box}
 		.wprp-form textarea{resize:vertical}
-		.wprp-submit{align-self:flex-end;background:var(--wprp-blue);color:#fff;border:none;border-radius:5px;padding:.4rem .9rem;cursor:pointer;font-size:.86rem}
-		.wprp-submit:hover{background:#0f4279}
+		.wprp-submit{align-self:flex-end;background:var(--wprp-red);color:#fff;border:none;border-radius:5px;padding:.4rem .9rem;cursor:pointer;font-size:.86rem}
+		.wprp-submit:hover{background:var(--wprp-red-dark)}
 		.wprp-submit:disabled{opacity:.6;cursor:default}
+		.wprp-shotrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+		.wprp-shotbtn{display:inline-flex;align-items:center;gap:.25rem;background:#fff;border:1px solid #cfd4d8;border-radius:5px;color:var(--wprp-ink);font-size:.82rem;padding:.3rem .6rem;cursor:pointer}
+		.wprp-shotbtn:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
+		.wprp-shotbtn .dashicons{font-size:16px;width:16px;height:16px}
+		.wprp-shot-preview{position:relative;display:inline-block}
+		.wprp-shot-preview img{height:40px;width:auto;max-width:120px;border:1px solid #cfd4d8;border-radius:4px;display:block;object-fit:cover}
+		.wprp-shot-clear{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;border:none;background:var(--wprp-ink);color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0}
+		.wprp-note .wprp-shot{margin-top:.35rem;display:block}
+		.wprp-note .wprp-shot img{max-width:100%;border:1px solid #e6e9ec;border-radius:5px;display:block}
+		/* full-screen drag-to-capture overlay */
+		#wprp-capture{position:fixed;inset:0;z-index:99999;cursor:crosshair;background:rgba(30,34,37,.28)}
+		#wprp-capture .wprp-selbox{position:absolute;border:2px dashed var(--wprp-red);background:rgba(211,47,47,.12);pointer-events:none}
+		#wprp-capture .wprp-hint{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--wprp-ink);color:#fff;font-family:-apple-system,sans-serif;font-size:.82rem;padding:.4rem .8rem;border-radius:6px;pointer-events:none}
+		#wprp-busy{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(30,34,37,.18);font-family:-apple-system,sans-serif}
+		#wprp-busy span{background:var(--wprp-ink);color:#fff;font-size:.85rem;padding:.5rem 1rem;border-radius:6px}
 	</style>
 	<script id="wprp-js">
 	(function () {
@@ -449,6 +562,11 @@ function wprp_print_frontend_assets() {
 		var body = document.getElementById('wprp-body');
 		var typeSel = document.getElementById('wprp-type');
 		var countEl = document.getElementById('wprp-fab-count');
+		var shotBtn = document.getElementById('wprp-shot-btn');
+		var shotPrev = document.getElementById('wprp-shot-preview');
+		var shotThumb = document.getElementById('wprp-shot-thumb');
+		var shotClear = document.getElementById('wprp-shot-clear');
+		var pendingShot = null;
 
 		function api(path, opts) {
 			opts = opts || {};
@@ -465,7 +583,9 @@ function wprp_print_frontend_assets() {
 				'<div class="wprp-meta"><span class="wprp-tag">' + esc(n.typeLabel) + '</span>' +
 				'<span>' + esc(n.author) + '</span><span>' + esc(n.date) + '</span>' +
 				'<button type="button" class="wprp-resolve">' + (n.resolved ? '<?php echo esc_js( __( 'Reopen', 'wp-red-pen' ) ); ?>' : '<?php echo esc_js( __( 'Resolve', 'wp-red-pen' ) ); ?>') + '</button></div>' +
-				'<div class="wprp-body">' + n.body + '</div></div>';
+				'<div class="wprp-body">' + n.body + '</div>' +
+				(n.shot ? '<a class="wprp-shot" href="' + esc(n.shot) + '" target="_blank" rel="noopener"><img src="' + esc(n.shot) + '" alt="screenshot"></a>' : '') +
+				'</div>';
 		}
 
 		function render(notes) {
@@ -512,10 +632,89 @@ function wprp_print_frontend_assets() {
 			if (!text) { return; }
 			var submit = form.querySelector('.wprp-submit');
 			submit.disabled = true;
-			api('/notes', { method: 'POST', body: JSON.stringify({ target: cfg.target, body: text, type: typeSel.value, url: cfg.url }) })
-				.then(function () { body.value = ''; submit.disabled = false; load(); })
+			api('/notes', { method: 'POST', body: JSON.stringify({ target: cfg.target, body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '' }) })
+				.then(function () { body.value = ''; clearShot(); submit.disabled = false; load(); })
 				.catch(function () { submit.disabled = false; });
 		});
+
+		// ---- screenshot: drag a box, html2canvas the region, store as WebP ----
+		function clearShot() {
+			pendingShot = null;
+			shotPrev.hidden = true;
+			shotThumb.removeAttribute('src');
+		}
+		shotClear.addEventListener('click', clearShot);
+
+		shotBtn.addEventListener('click', function () {
+			if (typeof html2canvas === 'undefined') { return; }
+			startCapture();
+		});
+
+		function startCapture() {
+			panel.hidden = true; // keep our own UI out of the shot
+			var overlay = document.createElement('div');
+			overlay.id = 'wprp-capture';
+			var hint = document.createElement('div');
+			hint.className = 'wprp-hint';
+			hint.textContent = '<?php echo esc_js( __( 'Drag a box around the area to capture. Esc to cancel.', 'wp-red-pen' ) ); ?>';
+			var sel = document.createElement('div');
+			sel.className = 'wprp-selbox';
+			sel.style.display = 'none';
+			overlay.appendChild(hint);
+			overlay.appendChild(sel);
+			document.body.appendChild(overlay);
+
+			var sx = 0, sy = 0, dragging = false;
+			function down(e) { dragging = true; sx = e.clientX; sy = e.clientY; sel.style.display = 'block'; sel.style.left = sx + 'px'; sel.style.top = sy + 'px'; sel.style.width = '0'; sel.style.height = '0'; e.preventDefault(); }
+			function move(e) { if (!dragging) { return; } var x = Math.min(e.clientX, sx), y = Math.min(e.clientY, sy); sel.style.left = x + 'px'; sel.style.top = y + 'px'; sel.style.width = Math.abs(e.clientX - sx) + 'px'; sel.style.height = Math.abs(e.clientY - sy) + 'px'; }
+			function up(e) {
+				if (!dragging) { return; }
+				dragging = false;
+				var r = { x: Math.min(e.clientX, sx), y: Math.min(e.clientY, sy), w: Math.abs(e.clientX - sx), h: Math.abs(e.clientY - sy) };
+				teardown();
+				if (r.w < 8 || r.h < 8) { panel.hidden = false; return; }
+				capture(r);
+			}
+			function key(e) { if (e.key === 'Escape') { teardown(); panel.hidden = false; } }
+			function teardown() {
+				overlay.removeEventListener('mousedown', down);
+				window.removeEventListener('mousemove', move);
+				window.removeEventListener('mouseup', up);
+				window.removeEventListener('keydown', key);
+				if (overlay.parentNode) { overlay.parentNode.removeChild(overlay); }
+			}
+			overlay.addEventListener('mousedown', down);
+			window.addEventListener('mousemove', move);
+			window.addEventListener('mouseup', up);
+			window.addEventListener('keydown', key);
+		}
+
+		function capture(r) {
+			var busy = document.createElement('div');
+			busy.id = 'wprp-busy';
+			busy.innerHTML = '<span><?php echo esc_js( __( 'Capturing...', 'wp-red-pen' ) ); ?></span>';
+			document.body.appendChild(busy);
+			html2canvas(document.body, {
+				x: window.scrollX + r.x,
+				y: window.scrollY + r.y,
+				width: r.w,
+				height: r.h,
+				scale: 1,
+				useCORS: true,
+				backgroundColor: '#ffffff',
+				logging: false,
+				ignoreElements: function (el) { return el.id === 'wprp-busy' || el.id === 'wprp-root'; }
+			}).then(function (canvas) {
+				var data = canvas.toDataURL('image/webp', 0.82);
+				if (data.indexOf('data:image/webp') !== 0) { data = canvas.toDataURL('image/png'); }
+				pendingShot = data;
+				shotThumb.src = data;
+				shotPrev.hidden = false;
+			}).catch(function () {}).then(function () {
+				if (busy.parentNode) { busy.parentNode.removeChild(busy); }
+				panel.hidden = false;
+			});
+		}
 
 		// Prime the badge without opening the panel.
 		load();
@@ -530,6 +729,8 @@ add_action(
 	function () {
 		if ( wprp_devmode_on() ) {
 			wp_enqueue_style( 'dashicons' );
+			// Vendored html2canvas (MIT) for client-side region screenshots.
+			wp_enqueue_script( 'wprp-html2canvas', WPRP_PLUGIN_URL . 'assets/vendor/html2canvas.min.js', array(), '1.4.1', true );
 		}
 	}
 );
@@ -562,10 +763,14 @@ function wprp_render_metabox( $post ) {
 			$type     = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
 			$resolved = WPRP_STATUS_DONE === $n->post_status;
 			$author   = get_userdata( $n->post_author );
-			echo '<li style="border-left:3px solid ' . ( $resolved ? '#3A3A3C' : '#00AEEE' ) . ';padding:.25rem .5rem;margin:0 0 .5rem;background:#f7f9fa;' . ( $resolved ? 'opacity:.6' : '' ) . '">';
-			echo '<span style="background:#14569B;color:#fff;border-radius:3px;padding:0 .3rem;font-size:.7rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span> ';
+			echo '<li style="border-left:3px solid ' . ( $resolved ? '#3A3A3C' : '#D32F2F' ) . ';padding:.25rem .5rem;margin:0 0 .5rem;background:#f7f9fa;' . ( $resolved ? 'opacity:.6' : '' ) . '">';
+			echo '<span style="background:#D32F2F;color:#fff;border-radius:3px;padding:0 .3rem;font-size:.7rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span> ';
 			echo '<small>' . esc_html( $author ? $author->display_name : '' ) . ' &middot; ' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</small>';
 			echo '<div style="font-size:.85rem;margin-top:.2rem">' . wp_kses_post( wpautop( $n->post_content ) ) . '</div>';
+			$shot = wprp_shot_url( (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ) );
+			if ( $shot ) {
+				echo '<a href="' . esc_url( $shot ) . '" target="_blank" rel="noopener"><img src="' . esc_url( $shot ) . '" alt="" style="max-width:100%;margin-top:.3rem;border:1px solid #e6e9ec;border-radius:4px;display:block"></a>';
+			}
 			echo '</li>';
 		}
 		echo '</ul>';
@@ -653,8 +858,10 @@ function wprp_render_repo_page() {
 		);
 
 		echo '<tr' . ( $resolved ? ' style="opacity:.55"' : '' ) . '>';
-		echo '<td><span style="background:#14569B;color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.72rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span></td>';
-		echo '<td>' . wp_kses_post( wpautop( $n->post_content ) ) . '</td>';
+		echo '<td><span style="background:#D32F2F;color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.72rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span></td>';
+		$shot      = wprp_shot_url( (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ) );
+		$shot_html = $shot ? '<a href="' . esc_url( $shot ) . '" target="_blank" rel="noopener"><img src="' . esc_url( $shot ) . '" alt="" style="max-width:180px;height:auto;margin-top:.35rem;border:1px solid #e0e0e0;border-radius:4px;display:block"></a>' : '';
+		echo '<td>' . wp_kses_post( wpautop( $n->post_content ) ) . $shot_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $shot_html built with esc_url above
 		echo '<td>' . ( $target ? '<a href="' . esc_url( get_edit_post_link( $target ) ) . '">' . esc_html( get_the_title( $target ) ) . '</a> <a href="' . esc_url( get_permalink( $target ) ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '">&#8599;</a>' : '&mdash;' ) . '</td>';
 		echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
 		echo '<td>' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</td>';

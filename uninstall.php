@@ -9,6 +9,7 @@
  * Removes:
  *   - every wprp_note post (the notes themselves) and their postmeta
  *   - the wprp_devmode per-user preference on every user
+ *   - the uploads/wp-red-pen screenshots folder and its files
  *
  * Does NOT touch any post, page, or option the plugin did not create.
  */
@@ -31,6 +32,22 @@ function wprp_uninstall_site() {
 
 	// Drop the per-user Dev Mode preference.
 	$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => 'wprp_devmode' ) );
+
+	// Remove the screenshots folder (uploads/wp-red-pen) and its files.
+	$up  = wp_upload_dir();
+	$dir = trailingslashit( $up['basedir'] ) . 'wp-red-pen';
+	if ( is_dir( $dir ) ) {
+		$files = glob( $dir . '/*' );
+		if ( is_array( $files ) ) {
+			foreach ( $files as $f ) {
+				if ( is_file( $f ) ) {
+					wp_delete_file( $f );
+				}
+			}
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.dir_system_operations_rmdir -- cleanup of our own empty dir
+		@rmdir( $dir );
+	}
 }
 
 if ( is_multisite() ) {
