@@ -1232,6 +1232,9 @@ function wprp_render_metabox( $post ) {
 			if ( $ctx ) {
 				echo '<div style="font-size:.7rem;color:#3A3A3C;font-family:monospace;margin-top:.2rem">' . esc_html( $ctx ) . '</div>';
 			}
+			if ( get_post_meta( $n->ID, WPRP_META_ANCHOR, true ) ) {
+				echo '<div style="font-size:.7rem;color:#D32F2F;margin-top:.2rem"><span class="dashicons dashicons-location" style="font-size:13px;width:13px;height:13px;vertical-align:text-top"></span> ' . esc_html__( 'Pinned to an element', 'wp-red-pen' ) . '</div>';
+			}
 			$shot = wprp_shot_url( (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ) );
 			if ( $shot ) {
 				echo '<a href="' . esc_url( $shot ) . '" target="_blank" rel="noopener"><img src="' . esc_url( $shot ) . '" alt="" style="max-width:100%;margin-top:.3rem;border:1px solid #e6e9ec;border-radius:4px;display:block"></a>';
