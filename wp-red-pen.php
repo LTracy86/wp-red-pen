@@ -454,6 +454,7 @@ function wprp_open_count() {
 		array(
 			'post_type'      => WPRP_CPT,
 			'post_status'    => WPRP_STATUS_OPEN,
+			'post_parent'    => 0, // count notes, not replies
 			'posts_per_page' => 1,
 			'fields'         => 'ids',
 			'no_found_rows'  => false,
