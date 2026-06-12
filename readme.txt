@@ -62,6 +62,14 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.3.0 =
+* Element-level pinning: a "Pin to element" picker attaches a note to a specific element on the page; anchored notes show as numbered markers you can click to jump straight to the note.
+* Threaded replies: reply to any note from the front-end panel, building a discussion under each one.
+* Priority + assignment: tag notes Low / Normal / High and assign them to any editor or admin; the repository gains Priority and Assigned columns plus an "Assigned to me" filter.
+* CSV export: download the repository (honouring the current filters) as a CSV - no external service.
+* Auto-context: each note records the browser, OS, and viewport it was created in.
+* Fix: the floating toggle button could appear unresponsive because a stronger CSS rule overrode the panel's hidden state; the panel now toggles reliably.
+
 = 0.2.0 =
 * Screenshots: click Screenshot, drag a box around any area, and the region is captured client-side (html2canvas) and saved as a small WebP attached to the note. Shown on the note, the edit-screen panel, and the repository; cleaned up on note delete and uninstall.
 * Red accent: the chrome now uses the editorial red-pen colour.
