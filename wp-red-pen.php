@@ -107,8 +107,10 @@ function wprp_sanitize_anchor( $anchor ) {
 		return '';
 	}
 	$sel = trim( $data['sel'] );
-	// Allowed in CSS selector paths we generate: tag/class/id chars + structural punctuation.
-	if ( '' === $sel || strlen( $sel ) > 600 || preg_match( '/[<>"\']/', $sel ) ) {
+	// Our selectors use the child combinator ' > ', so '>' is allowed; we only block the
+	// chars that could break out of an HTML attribute/script context as defence in depth
+	// (the selector is JSON-encoded in REST output and only ever used in querySelector).
+	if ( '' === $sel || strlen( $sel ) > 600 || preg_match( '/[<"\']/', $sel ) ) {
 		return '';
 	}
 	$x = isset( $data['x'] ) ? (float) $data['x'] : 0.5;
