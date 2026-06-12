@@ -669,7 +669,7 @@ function wprp_print_frontend_assets() {
 			if (!text) { return; }
 			var submit = form.querySelector('.wprp-submit');
 			submit.disabled = true;
-			api('/notes', { method: 'POST', body: JSON.stringify({ target: cfg.target, body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '' }) })
+			api('/notes', { method: 'POST', body: JSON.stringify({ target: cfg.target, body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx() }) })
 				.then(function () { body.value = ''; clearShot(); submit.disabled = false; load(); })
 				.catch(function () { submit.disabled = false; });
 		});
