@@ -877,6 +877,20 @@ function wprp_print_frontend_assets() {
 				.then(load).catch(function () { btn.disabled = false; });
 		});
 
+		// Reply forms live inside each note; submit bubbles up to the list container.
+		list.addEventListener('submit', function (e) {
+			var rform = e.target.closest('.wprp-replyform');
+			if (!rform) { return; }
+			e.preventDefault();
+			var ta = rform.querySelector('.wprp-replytext');
+			var rtext = ta.value.trim();
+			if (!rtext) { return; }
+			var send = rform.querySelector('.wprp-replysend');
+			send.disabled = true;
+			api('/notes/' + rform.getAttribute('data-id') + '/replies', { method: 'POST', body: JSON.stringify({ body: rtext }) })
+				.then(load).catch(function () { send.disabled = false; });
+		});
+
 		form.addEventListener('submit', function (e) {
 			e.preventDefault();
 			var text = body.value.trim();
