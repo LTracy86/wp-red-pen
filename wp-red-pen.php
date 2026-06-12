@@ -661,6 +661,13 @@ function wprp_print_frontend_assets() {
 		.wprp-form{display:flex;flex-direction:column;gap:.4rem;padding:.6rem .75rem;border-top:1px solid #e6e9ec;background:#f7f9fa}
 		.wprp-form select,.wprp-form textarea{width:100%;border:1px solid #cfd4d8;border-radius:5px;padding:.35rem .5rem;font:inherit;font-size:.86rem;box-sizing:border-box}
 		.wprp-form textarea{resize:vertical}
+			.wprp-formrow{display:flex;gap:.4rem}
+			.wprp-formrow select{flex:1;min-width:0}
+			.wprp-prio{border-radius:3px;padding:.02rem .3rem;font-size:.68rem;font-weight:600;border:1px solid transparent}
+			.wprp-prio-high{background:var(--wprp-red);color:#fff}
+			.wprp-prio-normal{background:#eef1f3;color:var(--wprp-gray);border-color:#dfe3e6}
+			.wprp-prio-low{background:transparent;color:var(--wprp-gray);border-color:#dfe3e6}
+			.wprp-assignee{color:var(--wprp-gray);font-size:.72rem}
 		.wprp-submit{align-self:flex-end;background:var(--wprp-red);color:#fff;border:none;border-radius:5px;padding:.4rem .9rem;cursor:pointer;font-size:.86rem}
 		.wprp-submit:hover{background:var(--wprp-red-dark)}
 		.wprp-submit:disabled{opacity:.6;cursor:default}
