@@ -1033,6 +1033,143 @@ function wprp_print_frontend_assets() {
 			});
 		}
 
+		// ---- element pinning: pick an element, drop a numbered marker, click to open ----
+		function clearAnchor() {
+			pendingAnchor = null;
+			pinInfo.hidden = true;
+			pinLabel.textContent = '';
+		}
+		pinClear.addEventListener('click', clearAnchor);
+		pinBtn.addEventListener('click', startPin);
+
+		function cssEsc(s) { return (window.CSS && CSS.escape) ? CSS.escape(s) : String(s).replace(/[^a-zA-Z0-9_-]/g, '\\$&'); }
+
+		// Build a querySelector path from <body> down to el, anchoring on an id when present.
+		function cssPath(el) {
+			if (!el || el.nodeType !== 1) { return ''; }
+			var path = [];
+			while (el && el.nodeType === 1 && el !== document.body && el !== document.documentElement) {
+				if (el.id) { path.unshift('#' + cssEsc(el.id)); break; }
+				var tag = el.tagName.toLowerCase();
+				var nth = 1, sib = el;
+				while ((sib = sib.previousElementSibling)) { if (sib.tagName === el.tagName) { nth++; } }
+				path.unshift(tag + ':nth-of-type(' + nth + ')');
+				el = el.parentElement;
+			}
+			return path.join(' > ');
+		}
+
+		function showPinInfo(el) {
+			pinLabel.textContent = '<?php echo esc_js( __( 'Pinned to', 'wp-red-pen' ) ); ?> ' + (el.tagName ? el.tagName.toLowerCase() : 'element');
+			pinInfo.hidden = false;
+		}
+
+		function startPin() {
+			panel.hidden = true;
+			var ov = document.createElement('div');
+			ov.id = 'wprp-pinmode';
+			var hl = document.createElement('div');
+			hl.className = 'wprp-pinhl';
+			hl.style.display = 'none';
+			var hint = document.createElement('div');
+			hint.className = 'wprp-hint';
+			hint.textContent = '<?php echo esc_js( __( 'Click an element to pin this note to it. Esc to cancel.', 'wp-red-pen' ) ); ?>';
+			ov.appendChild(hl);
+			ov.appendChild(hint);
+			document.body.appendChild(ov);
+
+			// The overlay is on top, so drop pointer-events for the hit-test then restore.
+			function elAt(e) {
+				ov.style.pointerEvents = 'none';
+				var el = document.elementFromPoint(e.clientX, e.clientY);
+				ov.style.pointerEvents = 'auto';
+				return el;
+			}
+			function mv(e) {
+				var el = elAt(e);
+				if (!el || el === ov) { hl.style.display = 'none'; return; }
+				var r = el.getBoundingClientRect();
+				hl.style.display = 'block';
+				hl.style.left = r.left + 'px'; hl.style.top = r.top + 'px';
+				hl.style.width = r.width + 'px'; hl.style.height = r.height + 'px';
+			}
+			function clk(e) {
+				e.preventDefault(); e.stopPropagation();
+				var el = elAt(e);
+				teardown();
+				if (!el || el === ov || el === document.body || el === document.documentElement) { panel.hidden = false; return; }
+				var r = el.getBoundingClientRect();
+				var x = r.width ? (e.clientX - r.left) / r.width : 0.5;
+				var y = r.height ? (e.clientY - r.top) / r.height : 0.5;
+				var sel = cssPath(el);
+				if (!sel) { panel.hidden = false; return; }
+				pendingAnchor = { sel: sel, x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) };
+				showPinInfo(el);
+				panel.hidden = false;
+			}
+			function key(e) { if (e.key === 'Escape') { teardown(); panel.hidden = false; } }
+			function teardown() {
+				ov.removeEventListener('mousemove', mv);
+				ov.removeEventListener('click', clk);
+				window.removeEventListener('keydown', key);
+				if (ov.parentNode) { ov.parentNode.removeChild(ov); }
+			}
+			ov.addEventListener('mousemove', mv);
+			ov.addEventListener('click', clk);
+			window.addEventListener('keydown', key);
+		}
+
+		function openToNote(id) {
+			panel.hidden = false;
+			fab.setAttribute('aria-expanded', 'true');
+			focusId = id;
+			load();
+		}
+
+		function buildPins(notes) {
+			if (!pinLayer) { pinLayer = document.createElement('div'); pinLayer.id = 'wprp-pinlayer'; document.body.appendChild(pinLayer); }
+			pinLayer.innerHTML = '';
+			pins = [];
+			var i = 0;
+			notes.forEach(function (n) {
+				if (!n.anchor) { return; }
+				var a; try { a = JSON.parse(n.anchor); } catch (e) { return; }
+				if (!a || !a.sel) { return; }
+				i++;
+				var marker = document.createElement('button');
+				marker.type = 'button';
+				marker.className = 'wprp-pin' + (n.resolved ? ' is-resolved' : '');
+				marker.textContent = i;
+				marker.title = (n.typeLabel ? n.typeLabel + ': ' : '') + (n.body ? n.body.replace(/<[^>]*>/g, '').slice(0, 80) : '');
+				(function (noteId) { marker.addEventListener('click', function () { openToNote(noteId); }); })(n.id);
+				pinLayer.appendChild(marker);
+				pins.push({ sel: a.sel, x: typeof a.x === 'number' ? a.x : 0.5, y: typeof a.y === 'number' ? a.y : 0.5, el: marker });
+			});
+			positionPins();
+		}
+
+		function positionPins() {
+			for (var k = 0; k < pins.length; k++) {
+				var p = pins[k], t = null;
+				try { t = document.querySelector(p.sel); } catch (e) { t = null; }
+				if (!t) { p.el.style.display = 'none'; continue; }
+				var r = t.getBoundingClientRect();
+				if (r.width === 0 && r.height === 0) { p.el.style.display = 'none'; continue; }
+				p.el.style.display = 'flex';
+				p.el.style.left = (r.left + p.x * r.width) + 'px';
+				p.el.style.top = (r.top + p.y * r.height) + 'px';
+			}
+		}
+
+		var pinTick = false;
+		function repositionSoon() {
+			if (pinTick) { return; }
+			pinTick = true;
+			window.requestAnimationFrame(function () { positionPins(); pinTick = false; });
+		}
+		window.addEventListener('scroll', repositionSoon, true);
+		window.addEventListener('resize', repositionSoon);
+
 		// Prime the badge without opening the panel.
 		load();
 	})();
