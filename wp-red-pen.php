@@ -1020,8 +1020,22 @@ function wprp_render_repo_page() {
 	echo '<ul class="subsubsub">';
 	$i = 0;
 	foreach ( $tabs as $key => $label ) {
-		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $key ), admin_url( 'admin.php' ) ) );
+		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $key, 'assignee' => $who ), admin_url( 'admin.php' ) ) );
 		echo ( $i++ ? ' | ' : '' ) . '<li><a href="' . $url . '"' . ( $filter === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
+	}
+	echo '</ul><div style="clear:both"></div>';
+
+	// Assignee filter (preserves the status filter).
+	$who_tabs = array(
+		''     => __( 'All assignees', 'wp-red-pen' ),
+		'me'   => __( 'Assigned to me', 'wp-red-pen' ),
+		'none' => __( 'Unassigned', 'wp-red-pen' ),
+	);
+	echo '<ul class="subsubsub">';
+	$i = 0;
+	foreach ( $who_tabs as $key => $label ) {
+		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $key ), admin_url( 'admin.php' ) ) );
+		echo ( $i++ ? ' | ' : '' ) . '<li><a href="' . $url . '"' . ( $who === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
 	}
 	echo '</ul><div style="clear:both"></div>';
 
