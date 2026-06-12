@@ -62,6 +62,35 @@ function wprp_priorities() {
 	);
 }
 
+/**
+ * Users who may be assigned a note: everyone whose role carries the Red Pen
+ * capability (edit_posts). Returned as id => display_name, capped at 200.
+ */
+function wprp_assignable_users() {
+	$roles = array();
+	foreach ( wp_roles()->roles as $slug => $role ) {
+		if ( ! empty( $role['capabilities'][ WPRP_CAP ] ) ) {
+			$roles[] = $slug;
+		}
+	}
+	if ( ! $roles ) {
+		return array();
+	}
+	$users = get_users(
+		array(
+			'role__in' => $roles,
+			'orderby'  => 'display_name',
+			'number'   => 200,
+			'fields'   => array( 'ID', 'display_name' ),
+		)
+	);
+	$out = array();
+	foreach ( $users as $u ) {
+		$out[ (int) $u->ID ] = $u->display_name;
+	}
+	return $out;
+}
+
 /** True when the current user is allowed to use Red Pen at all. */
 function wprp_user_can() {
 	return is_user_logged_in() && current_user_can( WPRP_CAP );
