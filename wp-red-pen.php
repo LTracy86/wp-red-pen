@@ -824,7 +824,19 @@ function wprp_print_frontend_assets() {
 				'<div class="wprp-body">' + n.body + '</div>' +
 				(n.shot ? '<a class="wprp-shot" href="' + esc(n.shot) + '" target="_blank" rel="noopener"><img src="' + esc(n.shot) + '" alt="screenshot"></a>' : '') +
 				(n.ctx ? '<div class="wprp-ctx">' + esc(n.ctx) + '</div>' : '') +
+				'<div class="wprp-replies">' +
+					((n.replies && n.replies.length) ? n.replies.map(replyHtml).join('') : '') +
+					'<form class="wprp-replyform" data-id="' + n.id + '">' +
+						'<textarea class="wprp-replytext" rows="1" placeholder="<?php echo esc_js( __( 'Reply...', 'wp-red-pen' ) ); ?>" required></textarea>' +
+						'<button type="submit" class="wprp-replysend"><?php echo esc_js( __( 'Reply', 'wp-red-pen' ) ); ?></button>' +
+					'</form>' +
+				'</div>' +
 				'</div>';
+			}
+
+			function replyHtml(r) {
+				return '<div class="wprp-reply"><div class="wprp-reply-meta">' + esc(r.author) + ' &middot; ' + esc(r.date) + '</div>' +
+					'<div class="wprp-reply-body">' + r.body + '</div></div>';
 		}
 
 		function render(notes) {
