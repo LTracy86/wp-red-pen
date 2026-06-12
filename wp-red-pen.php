@@ -780,7 +780,21 @@ function wprp_print_frontend_assets() {
 		/* full-screen drag-to-capture overlay */
 		#wprp-capture{position:fixed;inset:0;z-index:99999;cursor:crosshair;background:rgba(30,34,37,.28)}
 		#wprp-capture .wprp-selbox{position:absolute;border:2px dashed var(--wprp-red);background:rgba(211,47,47,.12);pointer-events:none}
-		#wprp-capture .wprp-hint{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--wprp-ink);color:#fff;font-family:-apple-system,sans-serif;font-size:.82rem;padding:.4rem .8rem;border-radius:6px;pointer-events:none}
+		#wprp-capture .wprp-hint,#wprp-pinmode .wprp-hint{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--wprp-ink);color:#fff;font-family:-apple-system,sans-serif;font-size:.82rem;padding:.4rem .8rem;border-radius:6px;pointer-events:none}
+			/* element-pin: form row + indicator */
+			.wprp-pinrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+			.wprp-pin-info{font-size:.78rem;color:var(--wprp-gray);display:inline-flex;align-items:center;gap:.3rem;background:#eef1f3;border:1px solid #dfe3e6;border-radius:4px;padding:.1rem .2rem .1rem .45rem}
+			.wprp-pin-clear{border:none;background:var(--wprp-ink);color:#fff;width:16px;height:16px;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;padding:0}
+			/* element-pin: full-screen picker */
+			#wprp-pinmode{position:fixed;inset:0;z-index:99999;cursor:crosshair;background:rgba(30,34,37,.10)}
+			.wprp-pinhl{position:fixed;border:2px solid var(--wprp-red);background:rgba(211,47,47,.12);pointer-events:none;z-index:99999;box-sizing:border-box}
+			/* element-pin: the placed markers */
+			#wprp-pinlayer{position:fixed;inset:0;z-index:99988;pointer-events:none}
+			.wprp-pin{position:fixed;transform:translate(-50%,-50%);min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:var(--wprp-red);color:#fff;border:2px solid #fff;box-shadow:0 2px 6px rgba(30,34,37,.4);font-size:11px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;box-sizing:border-box}
+			.wprp-pin:hover{background:var(--wprp-red-dark)}
+			.wprp-pin.is-resolved{background:var(--wprp-gray);opacity:.65}
+			.wprp-note.wprp-flash{animation:wprp-flash 1.3s ease}
+			@keyframes wprp-flash{0%{background:rgba(211,47,47,.20)}100%{background:transparent}}
 		#wprp-busy{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(30,34,37,.18);font-family:-apple-system,sans-serif}
 		#wprp-busy span{background:var(--wprp-ink);color:#fff;font-size:.85rem;padding:.5rem 1rem;border-radius:6px}
 	</style>
