@@ -1384,7 +1384,8 @@ function wprp_render_repo_page() {
 		$reply_n   = count( wprp_get_replies( $n->ID ) );
 		/* translators: %d: number of replies */
 		$reply_html = $reply_n ? '<div style="font-size:.72rem;color:#3A3A3C;margin-top:.35rem">' . esc_html( sprintf( _n( '%d reply', '%d replies', $reply_n, 'wp-red-pen' ), $reply_n ) ) . '</div>' : '';
-		echo '<td>' . wp_kses_post( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
+		$anchor_html = get_post_meta( $n->ID, WPRP_META_ANCHOR, true ) ? '<div style="font-size:.72rem;color:#D32F2F;margin-top:.35rem"><span class="dashicons dashicons-location" style="font-size:14px;width:14px;height:14px;vertical-align:text-top"></span> ' . esc_html__( 'Pinned to an element', 'wp-red-pen' ) . '</div>' : '';
+		echo '<td>' . wp_kses_post( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
 		echo '<td>' . ( $target ? '<a href="' . esc_url( get_edit_post_link( $target ) ) . '">' . esc_html( get_the_title( $target ) ) . '</a> <a href="' . esc_url( get_permalink( $target ) ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '">&#8599;</a>' : '&mdash;' ) . '</td>';
 		echo '<td>' . ( $au ? esc_html( $au->display_name ) : '<span style="color:#9aa1a7">&mdash;</span>' ) . '</td>';
 		echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
