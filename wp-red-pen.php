@@ -237,6 +237,11 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	update_post_meta( $id, WPRP_META_TYPE, $type );
 	update_post_meta( $id, WPRP_META_URL, esc_url_raw( $url ) );
 
+	$ctx = sanitize_text_field( (string) $ctx );
+	if ( '' !== $ctx ) {
+		update_post_meta( $id, WPRP_META_CTX, mb_substr( $ctx, 0, 200 ) );
+	}
+
 	if ( '' !== (string) $shot ) {
 		$file = wprp_save_shot( $id, (string) $shot );
 		if ( '' !== $file ) {
