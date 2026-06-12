@@ -698,6 +698,8 @@ function wprp_print_frontend_assets() {
 		var form = document.getElementById('wprp-form');
 		var body = document.getElementById('wprp-body');
 		var typeSel = document.getElementById('wprp-type');
+			var prioSel = document.getElementById('wprp-priority');
+			var assigneeSel = document.getElementById('wprp-assignee');
 		var countEl = document.getElementById('wprp-fab-count');
 		var shotBtn = document.getElementById('wprp-shot-btn');
 		var shotPrev = document.getElementById('wprp-shot-preview');
