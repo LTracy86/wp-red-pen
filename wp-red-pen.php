@@ -511,6 +511,10 @@ function wprp_print_frontend_assets() {
 	?>
 	<style id="wprp-css">
 		#wprp-root{--wprp-red:#D32F2F;--wprp-red-dark:#B71C1C;--wprp-accent:#FF5252;--wprp-ink:#1E2225;--wprp-gray:#3A3A3C;position:fixed;right:20px;bottom:20px;z-index:99990;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+			/* The HTML [hidden] attribute is the weakest possible style, so an id/class rule that
+			   sets display (e.g. #wprp-panel{display:flex}) silently defeats it and the toggle does
+			   nothing. This rule (specificity 1,1,0) outranks those and keeps [hidden] authoritative. */
+			#wprp-root [hidden]{display:none}
 		#wprp-fab{width:52px;height:52px;border-radius:50%;border:none;background:var(--wprp-red);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(211,47,47,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .12s,background .12s}
 		#wprp-fab:hover{transform:translateY(-2px);background:var(--wprp-red-dark)}
 		#wprp-fab .dashicons{width:26px;height:26px;font-size:26px}
