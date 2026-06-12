@@ -53,6 +53,15 @@ function wprp_note_types() {
 	);
 }
 
+/** Priority keys -> human labels. Single source of truth for the priority dropdown. */
+function wprp_priorities() {
+	return array(
+		'low'    => __( 'Low', 'wp-red-pen' ),
+		'normal' => __( 'Normal', 'wp-red-pen' ),
+		'high'   => __( 'High', 'wp-red-pen' ),
+	);
+}
+
 /** True when the current user is allowed to use Red Pen at all. */
 function wprp_user_can() {
 	return is_user_logged_in() && current_user_can( WPRP_CAP );
