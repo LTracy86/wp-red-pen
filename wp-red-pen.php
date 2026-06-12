@@ -622,6 +622,7 @@ function wprp_print_frontend_assets() {
 				'<button type="button" class="wprp-resolve">' + (n.resolved ? '<?php echo esc_js( __( 'Reopen', 'wp-red-pen' ) ); ?>' : '<?php echo esc_js( __( 'Resolve', 'wp-red-pen' ) ); ?>') + '</button></div>' +
 				'<div class="wprp-body">' + n.body + '</div>' +
 				(n.shot ? '<a class="wprp-shot" href="' + esc(n.shot) + '" target="_blank" rel="noopener"><img src="' + esc(n.shot) + '" alt="screenshot"></a>' : '') +
+				(n.ctx ? '<div class="wprp-ctx">' + esc(n.ctx) + '</div>' : '') +
 				'</div>';
 		}
 
