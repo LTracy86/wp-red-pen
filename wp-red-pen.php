@@ -578,6 +578,14 @@ add_action(
 		foreach ( $types as $key => $label ) {
 			$opts .= '<option value="' . esc_attr( $key ) . '">' . esc_html( $label ) . '</option>';
 		}
+		$prio_opts = '';
+		foreach ( wprp_priorities() as $key => $label ) {
+			$prio_opts .= '<option value="' . esc_attr( $key ) . '"' . selected( $key, 'normal', false ) . '>' . esc_html( $label ) . '</option>';
+		}
+		$user_opts = '<option value="0">' . esc_html__( 'Unassigned', 'wp-red-pen' ) . '</option>';
+		foreach ( wprp_assignable_users() as $uid => $uname ) {
+			$user_opts .= '<option value="' . (int) $uid . '">' . esc_html( $uname ) . '</option>';
+		}
 		$cfg = wp_json_encode(
 			array(
 				'root'   => esc_url_raw( rest_url( WPRP_REST_NS ) ),
