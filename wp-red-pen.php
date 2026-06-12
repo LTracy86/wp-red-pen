@@ -458,7 +458,10 @@ add_action(
 							(string) $req->get_param( 'type' ),
 							(string) $req->get_param( 'url' ),
 							(string) $req->get_param( 'shot' ),
-							(string) $req->get_param( 'ctx' )
+							(string) $req->get_param( 'ctx' ),
+							(string) $req->get_param( 'priority' ),
+							(int) $req->get_param( 'assignee' ),
+							(string) $req->get_param( 'anchor' )
 						);
 						if ( is_wp_error( $id ) ) {
 							return $id;
