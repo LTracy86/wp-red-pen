@@ -246,8 +246,11 @@ add_action(
  * @param string $url       Context URL (where the note was dropped).
  * @param string $shot      Optional base64 image data URL to attach.
  * @param string $ctx       Optional browser/OS/viewport string (display only).
+ * @param string $priority  One of wprp_priorities() keys (default 'normal').
+ * @param int    $assignee  User id to assign the note to (0 = unassigned).
+ * @param string $anchor    Optional element-pin anchor JSON (selector + x/y).
  */
-function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '' ) {
+function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '' ) {
 	if ( ! wprp_user_can() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
