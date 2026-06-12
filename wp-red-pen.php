@@ -1055,6 +1055,13 @@ function wprp_render_metabox( $post ) {
 			if ( $shot ) {
 				echo '<a href="' . esc_url( $shot ) . '" target="_blank" rel="noopener"><img src="' . esc_url( $shot ) . '" alt="" style="max-width:100%;margin-top:.3rem;border:1px solid #e6e9ec;border-radius:4px;display:block"></a>';
 			}
+			$replies = wprp_get_replies( $n->ID );
+			foreach ( $replies as $r ) {
+				$ra = get_userdata( $r->post_author );
+				echo '<div style="margin:.3rem 0 0 .5rem;padding:.2rem .4rem;background:#fff;border-left:2px solid #cfd4d8;font-size:.8rem">';
+				echo '<small style="color:#3A3A3C">' . esc_html( $ra ? $ra->display_name : '' ) . ' &middot; ' . esc_html( get_the_time( get_option( 'date_format' ), $r ) ) . '</small>';
+				echo '<div>' . wp_kses_post( wpautop( $r->post_content ) ) . '</div></div>';
+			}
 			echo '</li>';
 		}
 		echo '</ul>';
