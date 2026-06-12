@@ -707,6 +707,10 @@ add_action(
 							<button type="button" id="wprp-shot-clear" class="wprp-shot-clear" aria-label="<?php esc_attr_e( 'Remove screenshot', 'wp-red-pen' ); ?>">&times;</button>
 						</div>
 					</div>
+					<div class="wprp-pinrow">
+						<button type="button" id="wprp-pin-btn" class="wprp-shotbtn"><span class="dashicons dashicons-location"></span> <?php esc_html_e( 'Pin to element', 'wp-red-pen' ); ?></button>
+						<span id="wprp-pin-info" class="wprp-pin-info" hidden><span id="wprp-pin-label"></span><button type="button" id="wprp-pin-clear" class="wprp-pin-clear" aria-label="<?php esc_attr_e( 'Remove pin', 'wp-red-pen' ); ?>">&times;</button></span>
+					</div>
 					<button type="submit" class="wprp-submit"><?php esc_html_e( 'Add note', 'wp-red-pen' ); ?></button>
 				</form>
 			</section>
