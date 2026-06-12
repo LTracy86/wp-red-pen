@@ -91,6 +91,39 @@ function wprp_assignable_users() {
 	return $out;
 }
 
+/**
+ * Validate + normalise an element-pin anchor payload into a compact JSON string
+ * ({"sel":"...","x":0.5,"y":0.3}). Returns '' if it is missing or malformed.
+ * sel is a CSS selector path (length-capped); x/y are 0..1 fractions of the
+ * element box. The selector is only ever used client-side in querySelector and
+ * is escaped on output, so we just bound its length + character set here.
+ */
+function wprp_sanitize_anchor( $anchor ) {
+	if ( ! is_string( $anchor ) || '' === $anchor ) {
+		return '';
+	}
+	$data = json_decode( $anchor, true );
+	if ( ! is_array( $data ) || empty( $data['sel'] ) || ! is_string( $data['sel'] ) ) {
+		return '';
+	}
+	$sel = trim( $data['sel'] );
+	// Allowed in CSS selector paths we generate: tag/class/id chars + structural punctuation.
+	if ( '' === $sel || strlen( $sel ) > 600 || preg_match( '/[<>"\']/', $sel ) ) {
+		return '';
+	}
+	$x = isset( $data['x'] ) ? (float) $data['x'] : 0.5;
+	$y = isset( $data['y'] ) ? (float) $data['y'] : 0.5;
+	$x = min( 1, max( 0, $x ) );
+	$y = min( 1, max( 0, $y ) );
+	return (string) wp_json_encode(
+		array(
+			'sel' => $sel,
+			'x'   => round( $x, 4 ),
+			'y'   => round( $y, 4 ),
+		)
+	);
+}
+
 /** True when the current user is allowed to use Red Pen at all. */
 function wprp_user_can() {
 	return is_user_logged_in() && current_user_can( WPRP_CAP );
