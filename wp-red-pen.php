@@ -209,6 +209,15 @@ add_action(
 			return;
 		}
 		wprp_delete_shot( (string) get_post_meta( $post_id, WPRP_META_SHOT, true ) );
+
+		// Non-hierarchical CPT: WP won't cascade child replies, so delete them here
+		// (only for top-level notes; replies have no children of their own).
+		$post = get_post( $post_id );
+		if ( $post && 0 === (int) $post->post_parent ) {
+			foreach ( wprp_get_replies( $post_id ) as $reply ) {
+				wp_delete_post( (int) $reply->ID, true );
+			}
+		}
 	}
 );
 
