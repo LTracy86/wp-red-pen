@@ -943,6 +943,69 @@ add_action(
 	}
 );
 
+/** admin-post handler: stream the repository as a CSV download (respects the status filter). */
+add_action(
+	'admin_post_wprp_export_csv',
+	function () {
+		if ( ! wprp_user_can()
+			|| ! isset( $_GET['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wprp_export_csv' ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+
+		$filter = isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : 'open';
+		$filter = in_array( $filter, array( 'open', 'resolved', 'all' ), true ) ? $filter : 'open';
+		$statuses = 'all' === $filter ? array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE ) : array( 'resolved' === $filter ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN );
+
+		$notes = get_posts(
+			array(
+				'post_type'      => WPRP_CPT,
+				'post_status'    => $statuses,
+				'post_parent'    => 0, // top-level notes only, not replies
+				'posts_per_page' => 5000,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
+		$types      = wprp_note_types();
+		$priorities = wprp_priorities();
+
+		$filename = 'wp-red-pen-' . $filter . '-' . gmdate( 'Ymd' ) . '.csv';
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=' . $filename );
+
+		$out = fopen( 'php://output', 'w' );
+		fputcsv( $out, array( 'ID', 'Type', 'Priority', 'Status', 'Note', 'On page', 'URL', 'Assignee', 'Author', 'Context', 'When' ) );
+		foreach ( $notes as $n ) {
+			$type     = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
+			$priority = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
+			$target   = (int) get_post_meta( $n->ID, WPRP_META_TARGET, true );
+			$assignee = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
+			$au       = $assignee ? get_userdata( $assignee ) : false;
+			$author   = get_userdata( $n->post_author );
+			fputcsv(
+				$out,
+				array(
+					$n->ID,
+					isset( $types[ $type ] ) ? $types[ $type ] : $type,
+					isset( $priorities[ $priority ] ) ? $priorities[ $priority ] : '',
+					WPRP_STATUS_DONE === $n->post_status ? 'Resolved' : 'Open',
+					wp_strip_all_tags( $n->post_content ),
+					$target ? get_the_title( $target ) : '',
+					$target ? get_permalink( $target ) : (string) get_post_meta( $n->ID, WPRP_META_URL, true ),
+					$au ? $au->display_name : '',
+					$author ? $author->display_name : '',
+					(string) get_post_meta( $n->ID, WPRP_META_CTX, true ),
+					get_the_time( 'Y-m-d H:i', $n ),
+				)
+			);
+		}
+		fclose( $out );
+		exit;
+	}
+);
+
 // ---------------------------------------------------------------------------
 // Admin: load dashicons on our screens (for the menu icon + meta box chrome)
 // ---------------------------------------------------------------------------
