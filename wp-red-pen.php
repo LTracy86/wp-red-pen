@@ -1085,6 +1085,7 @@ function wprp_render_repo_page() {
 		$ctx_html  = $ctx ? '<div style="font-size:.7rem;color:#3A3A3C;font-family:monospace;margin-top:.35rem">' . esc_html( $ctx ) . '</div>' : '';
 		echo '<td>' . wp_kses_post( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $shot_html/$ctx_html built with esc_* above
 		echo '<td>' . ( $target ? '<a href="' . esc_url( get_edit_post_link( $target ) ) . '">' . esc_html( get_the_title( $target ) ) . '</a> <a href="' . esc_url( get_permalink( $target ) ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '">&#8599;</a>' : '&mdash;' ) . '</td>';
+		echo '<td>' . ( $au ? esc_html( $au->display_name ) : '<span style="color:#9aa1a7">&mdash;</span>' ) . '</td>';
 		echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
 		echo '<td>' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</td>';
 		echo '<td><a class="button button-small" href="' . esc_url( $resolve_url ) . '">' . esc_html( $resolved ? __( 'Reopen', 'wp-red-pen' ) : __( 'Resolve', 'wp-red-pen' ) ) . '</a></td>';
