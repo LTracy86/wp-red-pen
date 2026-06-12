@@ -425,7 +425,12 @@ function wprp_note_to_array( $note ) {
 		'date'       => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
 		'target'     => (int) get_post_meta( $note->ID, WPRP_META_TARGET, true ),
 		'shot'       => wprp_shot_url( (string) get_post_meta( $note->ID, WPRP_META_SHOT, true ) ),
-		'ctx'        => (string) get_post_meta( $note->ID, WPRP_META_CTX, true ),
+		'ctx'         => (string) get_post_meta( $note->ID, WPRP_META_CTX, true ),
+		'priority'    => $priority,
+		'priorityLabel' => isset( $prios[ $priority ] ) ? $prios[ $priority ] : $prios['normal'],
+		'assignee'    => $assignee,
+		'assigneeName' => $au ? $au->display_name : '',
+		'anchor'      => (string) get_post_meta( $note->ID, WPRP_META_ANCHOR, true ),
 	);
 }
 
