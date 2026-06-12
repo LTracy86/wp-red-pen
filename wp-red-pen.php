@@ -594,6 +594,27 @@ function wprp_print_frontend_assets() {
 		}
 		function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
 
+			// A short, readable "browser / OS / viewport" string for the note, parsed from the
+			// user agent (best-effort; the raw UA is the fallback). Server sanitises + length-caps.
+			function buildCtx() {
+				var ua = navigator.userAgent || '';
+				var browser =
+					/Edg\//.test(ua) ? 'Edge' :
+					/OPR\/|Opera/.test(ua) ? 'Opera' :
+					/Firefox\//.test(ua) ? 'Firefox' :
+					/Chrome\//.test(ua) ? 'Chrome' :
+					/Safari\//.test(ua) ? 'Safari' : '';
+				var os =
+					/Windows/.test(ua) ? 'Windows' :
+					/Mac OS X|Macintosh/.test(ua) ? 'macOS' :
+					/Android/.test(ua) ? 'Android' :
+					/iPhone|iPad|iOS/.test(ua) ? 'iOS' :
+					/Linux/.test(ua) ? 'Linux' : '';
+				var vp = window.innerWidth + 'x' + window.innerHeight;
+				var parts = [browser, os, vp].filter(Boolean);
+				return parts.length ? parts.join(' / ') : ua.slice(0, 120);
+			}
+
 		function noteHtml(n) {
 			return '<div class="wprp-note ' + (n.resolved ? 'is-resolved' : '') + '" data-id="' + n.id + '">' +
 				'<div class="wprp-meta"><span class="wprp-tag">' + esc(n.typeLabel) + '</span>' +
