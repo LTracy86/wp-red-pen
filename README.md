@@ -32,7 +32,8 @@ Good for editorial review, client hand-offs, content audits, QA passes, and shar
 Single self-contained `wp-red-pen.php` (inline CSS/JS, no build step), in keeping with the TDM family's containment approach.
 
 - **Storage:** a private `wprp_note` custom post type. Note body is the post content; author and date are native; status is a custom post status (`wprp_open` / `wprp_resolved`); the target post id and note type are post meta. No custom tables.
-- **REST namespace `wprp/v1`:** `GET/POST /notes`, `POST /notes/{id}/status`, gated by an `edit_posts` capability check and the `wp_rest` nonce. The front-end button is the only REST client.
+- **REST namespace `wprp/v1`:** `GET/POST /notes`, `POST /notes/{id}/status`, `POST /notes/{id}/replies`, gated by an `edit_posts` capability check and the `wp_rest` nonce. The front-end button is the only REST client.
+- **Replies** are child `wprp_note` posts (`post_parent` = the note id); priority, assignee, context, and the element anchor are all post meta. Still no custom tables.
 - **Capability:** everything is gated on `edit_posts` (editors + admins). Logged-out visitors never receive the assets.
 
 ## Install
