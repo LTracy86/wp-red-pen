@@ -283,6 +283,20 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 		update_post_meta( $id, WPRP_META_CTX, mb_substr( $ctx, 0, 200 ) );
 	}
 
+	$prios    = wprp_priorities();
+	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
+	update_post_meta( $id, WPRP_META_PRIORITY, $priority );
+
+	$assignee = (int) $assignee;
+	if ( $assignee > 0 && user_can( $assignee, WPRP_CAP ) ) {
+		update_post_meta( $id, WPRP_META_ASSIGNEE, $assignee );
+	}
+
+	$anchor = wprp_sanitize_anchor( $anchor );
+	if ( '' !== $anchor ) {
+		update_post_meta( $id, WPRP_META_ANCHOR, $anchor );
+	}
+
 	if ( '' !== (string) $shot ) {
 		$file = wprp_save_shot( $id, (string) $shot );
 		if ( '' !== $file ) {
