@@ -1042,7 +1042,7 @@ function wprp_render_repo_page() {
 	// Local CSV export of the current filter (no external service - the user imports it wherever).
 	$export_url = wp_nonce_url(
 		add_query_arg(
-			array( 'action' => 'wprp_export_csv', 'status' => $filter ),
+			array( 'action' => 'wprp_export_csv', 'status' => $filter, 'assignee' => $who ),
 			admin_url( 'admin-post.php' )
 		),
 		'wprp_export_csv'
