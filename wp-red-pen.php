@@ -340,6 +340,64 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 }
 
 /**
+ * Add a reply to a note. Replies are child wprp_note posts (post_parent = the
+ * note id); they carry no target/type/status meaning of their own. Returns the
+ * new reply id or WP_Error.
+ *
+ * @param int    $parent_id The note being replied to.
+ * @param string $body      The reply text.
+ */
+function wprp_create_reply( $parent_id, $body ) {
+	if ( ! wprp_user_can() ) {
+		return new WP_Error( 'wprp_forbidden', __( 'You cannot reply.', 'wp-red-pen' ), array( 'status' => 403 ) );
+	}
+	$parent = get_post( $parent_id );
+	if ( ! $parent || WPRP_CPT !== $parent->post_type || (int) $parent->post_parent !== 0 ) {
+		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
+	}
+	$body = trim( wp_kses_post( (string) $body ) );
+	if ( '' === $body ) {
+		return new WP_Error( 'wprp_empty', __( 'The reply is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
+	}
+	return wp_insert_post(
+		array(
+			'post_type'    => WPRP_CPT,
+			'post_status'  => WPRP_STATUS_OPEN,
+			'post_parent'  => (int) $parent_id,
+			'post_author'  => get_current_user_id(),
+			'post_content' => $body,
+			'post_title'   => wp_trim_words( wp_strip_all_tags( $body ), 8, '...' ),
+		),
+		true
+	);
+}
+
+/** Replies (child posts) of a note, oldest first. */
+function wprp_get_replies( $parent_id ) {
+	return get_posts(
+		array(
+			'post_type'      => WPRP_CPT,
+			'post_status'    => array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE ),
+			'post_parent'    => (int) $parent_id,
+			'posts_per_page' => 200,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+		)
+	);
+}
+
+/** Shape a reply post into the plain array the JS consumes. */
+function wprp_reply_to_array( $reply ) {
+	$author = get_userdata( $reply->post_author );
+	return array(
+		'id'     => (int) $reply->ID,
+		'body'   => wpautop( wp_kses_post( $reply->post_content ) ),
+		'author' => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
+		'date'   => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $reply ),
+	);
+}
+
+/**
  * Flip a note open/resolved. Returns true or WP_Error.
  *
  * @param int    $note_id Note post id.
