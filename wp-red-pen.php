@@ -928,7 +928,14 @@ function wprp_render_metabox( $post ) {
 			$author   = get_userdata( $n->post_author );
 			echo '<li style="border-left:3px solid ' . ( $resolved ? '#3A3A3C' : '#D32F2F' ) . ';padding:.25rem .5rem;margin:0 0 .5rem;background:#f7f9fa;' . ( $resolved ? 'opacity:.6' : '' ) . '">';
 			echo '<span style="background:#D32F2F;color:#fff;border-radius:3px;padding:0 .3rem;font-size:.7rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span> ';
-			echo '<small>' . esc_html( $author ? $author->display_name : '' ) . ' &middot; ' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</small>';
+			$priority = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
+			$prios    = wprp_priorities();
+			if ( isset( $prios[ $priority ] ) && 'normal' !== $priority ) {
+				echo '<span style="border:1px solid #dfe3e6;border-radius:3px;padding:0 .3rem;font-size:.68rem;font-weight:600;color:#3A3A3C">' . esc_html( $prios[ $priority ] ) . '</span> ';
+			}
+			$assignee = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
+			$au       = $assignee ? get_userdata( $assignee ) : false;
+			echo '<small>' . esc_html( $author ? $author->display_name : '' ) . ' &middot; ' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . ( $au ? ' &middot; &rarr; ' . esc_html( $au->display_name ) : '' ) . '</small>';
 			echo '<div style="font-size:.85rem;margin-top:.2rem">' . wp_kses_post( wpautop( $n->post_content ) ) . '</div>';
 			$ctx = (string) get_post_meta( $n->ID, WPRP_META_CTX, true );
 			if ( $ctx ) {
