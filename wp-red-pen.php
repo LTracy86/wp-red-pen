@@ -894,7 +894,11 @@ function wprp_print_frontend_assets() {
 		}
 
 		function load() {
-			api('/notes?target=' + encodeURIComponent(cfg.target)).then(render).catch(function () {
+			return api('/notes?target=' + encodeURIComponent(cfg.target)).then(function (notes) {
+				render(notes);
+				buildPins(notes);
+				return notes;
+			}).catch(function () {
 				list.innerHTML = '<p class="wprp-muted"><?php echo esc_js( __( 'Could not load notes.', 'wp-red-pen' ) ); ?></p>';
 			});
 		}
