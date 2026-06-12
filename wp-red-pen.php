@@ -1118,16 +1118,28 @@ add_action(
 		$filter = in_array( $filter, array( 'open', 'resolved', 'all' ), true ) ? $filter : 'open';
 		$statuses = 'all' === $filter ? array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE ) : array( 'resolved' === $filter ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN );
 
-		$notes = get_posts(
-			array(
-				'post_type'      => WPRP_CPT,
-				'post_status'    => $statuses,
-				'post_parent'    => 0, // top-level notes only, not replies
-				'posts_per_page' => 5000,
-				'orderby'        => 'date',
-				'order'          => 'DESC',
-			)
+		$who = isset( $_GET['assignee'] ) ? sanitize_key( wp_unslash( $_GET['assignee'] ) ) : '';
+		$who = in_array( $who, array( 'me', 'none' ), true ) ? $who : '';
+
+		$query_args = array(
+			'post_type'      => WPRP_CPT,
+			'post_status'    => $statuses,
+			'post_parent'    => 0, // top-level notes only, not replies
+			'posts_per_page' => 5000,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
 		);
+		if ( 'me' === $who ) {
+			$query_args['meta_key']   = WPRP_META_ASSIGNEE; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			$query_args['meta_value'] = (int) get_current_user_id(); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		} elseif ( 'none' === $who ) {
+			$query_args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'relation' => 'OR',
+				array( 'key' => WPRP_META_ASSIGNEE, 'compare' => 'NOT EXISTS' ),
+				array( 'key' => WPRP_META_ASSIGNEE, 'value' => 0 ),
+			);
+		}
+		$notes = get_posts( $query_args );
 		$types      = wprp_note_types();
 		$priorities = wprp_priorities();
 
