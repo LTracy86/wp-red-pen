@@ -406,9 +406,14 @@ function wprp_open_count() {
 
 /** Shape a note post into the plain array the JS + REST consume. */
 function wprp_note_to_array( $note ) {
-	$type  = (string) get_post_meta( $note->ID, WPRP_META_TYPE, true );
-	$types = wprp_note_types();
-	$author = get_userdata( $note->post_author );
+	$type     = (string) get_post_meta( $note->ID, WPRP_META_TYPE, true );
+	$types    = wprp_note_types();
+	$author   = get_userdata( $note->post_author );
+	$priority = (string) get_post_meta( $note->ID, WPRP_META_PRIORITY, true );
+	$prios    = wprp_priorities();
+	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
+	$assignee = (int) get_post_meta( $note->ID, WPRP_META_ASSIGNEE, true );
+	$au       = $assignee ? get_userdata( $assignee ) : false;
 	return array(
 		'id'         => (int) $note->ID,
 		'body'       => wpautop( wp_kses_post( $note->post_content ) ),
