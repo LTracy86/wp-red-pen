@@ -207,8 +207,9 @@ add_action(
  * @param string $type      One of wprp_note_types() keys.
  * @param string $url       Context URL (where the note was dropped).
  * @param string $shot      Optional base64 image data URL to attach.
+ * @param string $ctx       Optional browser/OS/viewport string (display only).
  */
-function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '' ) {
+function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '' ) {
 	if ( ! wprp_user_can() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
