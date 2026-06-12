@@ -17,6 +17,11 @@ Good for editorial review, client hand-offs, content audits, QA passes, and shar
 - **Floating note button** on the front end, shown only to logged-in users who can edit posts. Per-user **Dev Mode** toggle in the admin bar.
 - **Snip a screenshot** - click Screenshot, drag a box around the area, done. The region is captured client-side (vendored html2canvas) and stored as a small WebP in `uploads/wp-red-pen/`, attached to the note.
 - **Typed notes** - note, suggested edit, bug/problem, or question - attached to the current post/page.
+- **Element-level pinning** - a "Pin to element" picker attaches a note to a specific element; anchored notes show as numbered markers on the page that jump to the note when clicked.
+- **Threaded replies** - reply to any note from the panel to build a discussion under it.
+- **Priority + assignment** - tag notes Low / Normal / High and assign them to any editor/admin; the repository adds Priority and Assigned columns and an "Assigned to me" filter.
+- **CSV export** of the repository (honouring the active filters) - local, no external service.
+- **Auto-context** - each note records the browser, OS, and viewport it was created in.
 - **Per-post meta box** on the edit screen listing that page's notes.
 - **Shared repository** admin page: every note across the site, filterable by Open / Resolved / All, with one-click resolve/reopen.
 - **Open-note badge** on the admin bar and the floating button.
