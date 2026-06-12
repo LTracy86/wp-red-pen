@@ -368,7 +368,8 @@ add_action(
 							(string) $req->get_param( 'body' ),
 							(string) $req->get_param( 'type' ),
 							(string) $req->get_param( 'url' ),
-							(string) $req->get_param( 'shot' )
+							(string) $req->get_param( 'shot' ),
+							(string) $req->get_param( 'ctx' )
 						);
 						if ( is_wp_error( $id ) ) {
 							return $id;
