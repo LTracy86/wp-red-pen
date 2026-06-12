@@ -878,6 +878,16 @@ function wprp_render_repo_page() {
 	}
 	echo '</ul><div style="clear:both"></div>';
 
+	// Local CSV export of the current filter (no external service - the user imports it wherever).
+	$export_url = wp_nonce_url(
+		add_query_arg(
+			array( 'action' => 'wprp_export_csv', 'status' => $filter ),
+			admin_url( 'admin-post.php' )
+		),
+		'wprp_export_csv'
+	);
+	echo '<p><a class="button" href="' . esc_url( $export_url ) . '"><span class="dashicons dashicons-download" style="vertical-align:text-top"></span> ' . esc_html__( 'Export CSV', 'wp-red-pen' ) . '</a></p>';
+
 	if ( ! $notes ) {
 		echo '<p>' . esc_html__( 'No notes here.', 'wp-red-pen' ) . '</p></div>';
 		return;
