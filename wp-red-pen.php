@@ -558,6 +558,22 @@ add_action(
 				},
 			)
 		);
+
+		register_rest_route(
+			WPRP_REST_NS,
+			'/notes/(?P<id>\d+)/replies',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => $perm,
+				'callback'            => function ( $req ) {
+					$res = wprp_create_reply( (int) $req['id'], (string) $req->get_param( 'body' ) );
+					if ( is_wp_error( $res ) ) {
+						return $res;
+					}
+					return rest_ensure_response( wprp_note_to_array( get_post( (int) $req['id'] ) ) );
+				},
+			)
+		);
 	}
 );
 
