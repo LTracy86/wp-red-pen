@@ -36,6 +36,10 @@ define( 'WPRP_META_TARGET', '_wprp_target' );   // attached post/page id
 define( 'WPRP_META_TYPE',   '_wprp_type' );     // note | suggestion | bug | question
 define( 'WPRP_META_URL',    '_wprp_url' );      // context url where it was added
 define( 'WPRP_META_SHOT',   '_wprp_shot' );     // attached screenshot filename (in uploads/wp-red-pen)
+define( 'WPRP_META_CTX',    '_wprp_ctx' );      // browser/OS/viewport string captured at creation
+define( 'WPRP_META_PRIORITY', '_wprp_priority' ); // low | normal | high
+define( 'WPRP_META_ASSIGNEE', '_wprp_assignee' ); // assigned user id (0 = unassigned)
+define( 'WPRP_META_ANCHOR', '_wprp_anchor' );   // element-pin anchor (JSON: selector + relative x/y)
 define( 'WPRP_SHOT_DIR',    'wp-red-pen' );     // uploads subfolder for screenshots
 define( 'WPRP_REST_NS',     'wprp/v1' );
 
