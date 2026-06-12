@@ -806,6 +806,10 @@ function wprp_render_metabox( $post ) {
 			echo '<span style="background:#D32F2F;color:#fff;border-radius:3px;padding:0 .3rem;font-size:.7rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span> ';
 			echo '<small>' . esc_html( $author ? $author->display_name : '' ) . ' &middot; ' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</small>';
 			echo '<div style="font-size:.85rem;margin-top:.2rem">' . wp_kses_post( wpautop( $n->post_content ) ) . '</div>';
+			$ctx = (string) get_post_meta( $n->ID, WPRP_META_CTX, true );
+			if ( $ctx ) {
+				echo '<div style="font-size:.7rem;color:#3A3A3C;font-family:monospace;margin-top:.2rem">' . esc_html( $ctx ) . '</div>';
+			}
 			$shot = wprp_shot_url( (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ) );
 			if ( $shot ) {
 				echo '<a href="' . esc_url( $shot ) . '" target="_blank" rel="noopener"><img src="' . esc_url( $shot ) . '" alt="" style="max-width:100%;margin-top:.3rem;border:1px solid #e6e9ec;border-radius:4px;display:block"></a>';
