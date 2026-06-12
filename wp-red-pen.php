@@ -542,6 +542,7 @@ function wprp_print_frontend_assets() {
 		.wprp-note .wprp-meta{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;font-size:.72rem;color:var(--wprp-gray);margin-bottom:.25rem}
 		.wprp-tag{background:var(--wprp-red);color:#fff;border-radius:3px;padding:.02rem .3rem;font-weight:600}
 		.wprp-note .wprp-body p{margin:.2rem 0}
+			.wprp-ctx{margin-top:.3rem;font-size:.68rem;color:var(--wprp-gray);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 		.wprp-resolve{background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font-size:.72rem;cursor:pointer;padding:.1rem .4rem;margin-left:auto}
 		.wprp-resolve:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
 		.wprp-form{display:flex;flex-direction:column;gap:.4rem;padding:.6rem .75rem;border-top:1px solid #e6e9ec;background:#f7f9fa}
