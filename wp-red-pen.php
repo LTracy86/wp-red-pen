@@ -732,6 +732,14 @@ function wprp_print_frontend_assets() {
 		.wprp-tag{background:var(--wprp-red);color:#fff;border-radius:3px;padding:.02rem .3rem;font-weight:600}
 		.wprp-note .wprp-body p{margin:.2rem 0}
 			.wprp-ctx{margin-top:.3rem;font-size:.68rem;color:var(--wprp-gray);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+			.wprp-replies{margin-top:.4rem;border-top:1px dashed #e6e9ec;padding-top:.4rem}
+			.wprp-reply{font-size:.8rem;padding:.2rem .4rem;margin-bottom:.3rem;background:#f3f5f6;border-radius:4px}
+			.wprp-reply-meta{font-size:.68rem;color:var(--wprp-gray);margin-bottom:.1rem}
+			.wprp-reply-body p{margin:.15rem 0}
+			.wprp-replyform{display:flex;gap:.3rem;margin-top:.25rem}
+			.wprp-replytext{flex:1;min-width:0;border:1px solid #cfd4d8;border-radius:4px;padding:.25rem .4rem;font:inherit;font-size:.8rem;resize:vertical;box-sizing:border-box}
+			.wprp-replysend{background:#fff;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-ink);font-size:.78rem;padding:.2rem .55rem;cursor:pointer;white-space:nowrap}
+			.wprp-replysend:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
 		.wprp-resolve{background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font-size:.72rem;cursor:pointer;padding:.1rem .4rem;margin-left:auto}
 		.wprp-resolve:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
 		.wprp-form{display:flex;flex-direction:column;gap:.4rem;padding:.6rem .75rem;border-top:1px solid #e6e9ec;background:#f7f9fa}
