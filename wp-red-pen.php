@@ -817,6 +817,14 @@ function wprp_print_frontend_assets() {
 		var shotThumb = document.getElementById('wprp-shot-thumb');
 		var shotClear = document.getElementById('wprp-shot-clear');
 		var pendingShot = null;
+		var pinBtn = document.getElementById('wprp-pin-btn');
+		var pinInfo = document.getElementById('wprp-pin-info');
+		var pinLabel = document.getElementById('wprp-pin-label');
+		var pinClear = document.getElementById('wprp-pin-clear');
+		var pendingAnchor = null;
+		var pinLayer = null;
+		var pins = [];
+		var focusId = null;
 
 		function api(path, opts) {
 			opts = opts || {};
