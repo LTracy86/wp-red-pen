@@ -949,8 +949,8 @@ function wprp_print_frontend_assets() {
 			if (!text) { return; }
 			var submit = form.querySelector('.wprp-submit');
 			submit.disabled = true;
-			api('/notes', { method: 'POST', body: JSON.stringify({ target: cfg.target, body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, assignee: assigneeSel.value }) })
-				.then(function () { body.value = ''; clearShot(); submit.disabled = false; load(); })
+			api('/notes', { method: 'POST', body: JSON.stringify({ target: cfg.target, body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, assignee: assigneeSel.value, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '' }) })
+				.then(function () { body.value = ''; clearShot(); clearAnchor(); submit.disabled = false; load(); })
 				.catch(function () { submit.disabled = false; });
 		});
 
