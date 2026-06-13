@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.5.2 =
+* Delete a note from the repository: a Delete button on each row permanently removes the note along with its replies and screenshot (with a confirmation prompt). Previously notes could only be resolved, never removed.
+
 = 0.5.1 =
 * Failed saves no longer fail silently: adding, editing, replying to, or resolving a note now shows a brief error toast if the request does not go through, so a dropped note is never mistaken for a saved one.
 * Press Esc to close the open notes panel.
