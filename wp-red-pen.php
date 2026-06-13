@@ -67,6 +67,173 @@ function wprp_priorities() {
 	);
 }
 
+/** View scopes the widget can be shown on (for the global visibility setting). */
+function wprp_view_scopes() {
+	return array(
+		'singular' => __( 'Posts &amp; pages (singular)', 'wp-red-pen' ),
+		'archive'  => __( 'Archives (post-type, taxonomy, author, date)', 'wp-red-pen' ),
+		'home'     => __( 'Home / front page', 'wp-red-pen' ),
+		'search'   => __( 'Search results', 'wp-red-pen' ),
+		'notfound' => __( '404 (not found)', 'wp-red-pen' ),
+	);
+}
+
+/** Enabled view scopes (global option). Default: every scope. */
+function wprp_show_on() {
+	$saved = get_option( WPRP_SHOW_OPT, null );
+	if ( ! is_array( $saved ) ) {
+		return array_keys( wprp_view_scopes() ); // default on everywhere
+	}
+	return array_values( array_intersect( $saved, array_keys( wprp_view_scopes() ) ) );
+}
+
+/** The scope key for the current front-end view (matches wprp_view_scopes keys). */
+function wprp_current_scope() {
+	if ( is_404() ) {
+		return 'notfound';
+	}
+	if ( is_search() ) {
+		return 'search';
+	}
+	if ( is_front_page() || is_home() ) {
+		return 'home';
+	}
+	if ( is_singular() ) {
+		return 'singular';
+	}
+	if ( is_archive() ) {
+		return 'archive';
+	}
+	return 'other';
+}
+
+/**
+ * The targeting context for the current view, at both levels. Returns:
+ *   array( 'page' => array(key,label,target), 'template' => array(key,label) )
+ * The 'page' level identifies the specific thing on screen (a post, a term, a
+ * post-type archive, the search/404/home page); 'template' identifies the view
+ * type so a note applies to every page rendered the same way. 'target' is the
+ * post id when the page is a singular post (kept for the meta box), else 0.
+ */
+function wprp_current_context() {
+	$page = array(
+		'key'    => '',
+		'label'  => '',
+		'target' => 0,
+	);
+	$tpl = array(
+		'key'   => '',
+		'label' => '',
+	);
+
+	if ( is_singular() ) {
+		$id      = (int) get_queried_object_id();
+		$pt      = get_post_type( $id );
+		$pt_obj  = $pt ? get_post_type_object( $pt ) : null;
+		$pt_name = $pt_obj ? $pt_obj->labels->singular_name : $pt;
+		$page    = array(
+			'key'    => 'post:' . $id,
+			/* translators: %s: post title */
+			'label'  => sprintf( __( 'Page: %s', 'wp-red-pen' ), get_the_title( $id ) ),
+			'target' => $id,
+		);
+		$tpl = array(
+			'key'   => 'tpl:single-' . $pt,
+			/* translators: %s: post type singular name */
+			'label' => sprintf( __( 'Template: single %s', 'wp-red-pen' ), $pt_name ),
+		);
+	} elseif ( is_post_type_archive() ) {
+		$pt      = (string) ( is_array( get_query_var( 'post_type' ) ) ? reset( $q ) : get_query_var( 'post_type' ) );
+		$pt_obj  = $pt ? get_post_type_object( $pt ) : null;
+		$pt_name = $pt_obj ? $pt_obj->labels->name : $pt;
+		$page    = array(
+			'key'    => 'pt_archive:' . $pt,
+			/* translators: %s: post type name */
+			'label'  => sprintf( __( 'Archive: %s', 'wp-red-pen' ), $pt_name ),
+			'target' => 0,
+		);
+		$tpl = array(
+			'key'   => 'tpl:archive-' . $pt,
+			/* translators: %s: post type name */
+			'label' => sprintf( __( 'Template: %s archive', 'wp-red-pen' ), $pt_name ),
+		);
+	} elseif ( is_tax() || is_category() || is_tag() ) {
+		$term = get_queried_object();
+		if ( $term && isset( $term->term_id ) ) {
+			$page = array(
+				'key'    => 'term:' . $term->taxonomy . ':' . (int) $term->term_id,
+				/* translators: 1: term name, 2: taxonomy */
+				'label'  => sprintf( __( 'Archive: %1$s (%2$s)', 'wp-red-pen' ), $term->name, $term->taxonomy ),
+				'target' => 0,
+			);
+			$tpl = array(
+				'key'   => 'tpl:taxonomy-' . $term->taxonomy,
+				/* translators: %s: taxonomy */
+				'label' => sprintf( __( 'Template: %s archive', 'wp-red-pen' ), $term->taxonomy ),
+			);
+		}
+	} elseif ( is_author() ) {
+		$a    = get_queried_object();
+		$page = array(
+			'key'    => 'author:' . ( $a ? (int) $a->ID : 0 ),
+			/* translators: %s: author display name */
+			'label'  => sprintf( __( 'Author archive: %s', 'wp-red-pen' ), $a ? $a->display_name : '' ),
+			'target' => 0,
+		);
+		$tpl = array(
+			'key'   => 'tpl:author',
+			'label' => __( 'Template: author archive', 'wp-red-pen' ),
+		);
+	} elseif ( is_date() ) {
+		$ymd  = get_query_var( 'year' ) . '/' . get_query_var( 'monthnum' ) . '/' . get_query_var( 'day' );
+		$page = array(
+			'key'    => 'date:' . $ymd,
+			'label'  => __( 'Date archive', 'wp-red-pen' ),
+			'target' => 0,
+		);
+		$tpl = array(
+			'key'   => 'tpl:date',
+			'label' => __( 'Template: date archive', 'wp-red-pen' ),
+		);
+	} elseif ( is_search() ) {
+		$page = array(
+			'key'    => 'search',
+			'label'  => __( 'Search results', 'wp-red-pen' ),
+			'target' => 0,
+		);
+		$tpl = array(
+			'key'   => 'tpl:search',
+			'label' => __( 'Template: search results', 'wp-red-pen' ),
+		);
+	} elseif ( is_404() ) {
+		$page = array(
+			'key'    => '404',
+			'label'  => __( '404 (not found)', 'wp-red-pen' ),
+			'target' => 0,
+		);
+		$tpl = array(
+			'key'   => 'tpl:404',
+			'label' => __( 'Template: 404', 'wp-red-pen' ),
+		);
+	} elseif ( is_front_page() || is_home() ) {
+		$is_front = is_front_page();
+		$page     = array(
+			'key'    => $is_front ? 'front' : 'home',
+			'label'  => $is_front ? __( 'Front page', 'wp-red-pen' ) : __( 'Blog index', 'wp-red-pen' ),
+			'target' => 0,
+		);
+		$tpl = array(
+			'key'   => $is_front ? 'tpl:front' : 'tpl:home',
+			'label' => $is_front ? __( 'Template: front page', 'wp-red-pen' ) : __( 'Template: blog index', 'wp-red-pen' ),
+		);
+	}
+
+	return array(
+		'page'     => $page,
+		'template' => $tpl,
+	);
+}
+
 /**
  * Users who may be assigned a note: everyone whose role carries the Red Pen
  * capability (edit_posts). Returned as id => display_name, capped at 200.
