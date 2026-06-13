@@ -747,6 +747,46 @@ function wprp_get_notes_for( $target_id, $status = 'any' ) {
 	);
 }
 
+/**
+ * Notes whose context key is one of $keys (top-level only). The front end passes
+ * the current view's page key AND template key, so a page shows both its own
+ * notes and the template-level notes that apply to every page like it.
+ *
+ * @param string[] $keys   Context keys to match.
+ * @param string   $status 'open' | 'resolved' | 'any'.
+ * @return WP_Post[]
+ */
+function wprp_get_notes_for_context( $keys, $status = 'any' ) {
+	$keys = array_values( array_filter( array_map( 'strval', (array) $keys ) ) );
+	if ( ! $keys ) {
+		return array();
+	}
+	$statuses = array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE );
+	if ( 'open' === $status ) {
+		$statuses = array( WPRP_STATUS_OPEN );
+	} elseif ( 'resolved' === $status ) {
+		$statuses = array( WPRP_STATUS_DONE );
+	}
+	return get_posts(
+		array(
+			'post_type'      => WPRP_CPT,
+			'post_status'    => $statuses,
+			'post_parent'    => 0,
+			'posts_per_page' => 200,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query'     => array(
+				array(
+					'key'     => WPRP_META_CTXKEY,
+					'value'   => $keys,
+					'compare' => 'IN',
+				),
+			),
+		)
+	);
+}
+
 /** Count of open notes across the whole site (for the admin-bar badge). */
 function wprp_open_count() {
 	$q = new WP_Query(
