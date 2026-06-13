@@ -1364,8 +1364,10 @@ function wprp_print_frontend_assets() {
 				(n.level === 'template' ? '<span class="wprp-level" title="' + esc(n.ctxLabel || '') + '"><?php echo esc_js( __( 'Template', 'wp-red-pen' ) ); ?></span>' : '') +
 				'<span>' + esc(n.author) + '</span><span>' + esc(n.date) + '</span>' +
 				(n.assigneeName ? '<span class="wprp-assignee">&rarr; ' + esc(n.assigneeName) + '</span>' : '') +
+				'<span class="wprp-actions">' +
+				(n.anchor ? '<button type="button" class="wprp-locate" title="<?php echo esc_js( __( 'Highlight the pinned element', 'wp-red-pen' ) ); ?>" aria-label="<?php echo esc_js( __( 'Highlight the pinned element', 'wp-red-pen' ) ); ?>"><span class="dashicons dashicons-search"></span></button>' : '') +
 				'<button type="button" class="wprp-resolve">' + (n.resolved ? '<?php echo esc_js( __( 'Reopen', 'wp-red-pen' ) ); ?>' : '<?php echo esc_js( __( 'Resolve', 'wp-red-pen' ) ); ?>') + '</button>' +
-				'<button type="button" class="wprp-edit"><?php echo esc_js( __( 'Edit', 'wp-red-pen' ) ); ?></button></div>' +
+				'<button type="button" class="wprp-edit"><?php echo esc_js( __( 'Edit', 'wp-red-pen' ) ); ?></button></span></div>' +
 				'<div class="wprp-body">' + n.body + '</div>' +
 				(n.shot ? '<a class="wprp-shot" href="' + esc(n.shot) + '" target="_blank" rel="noopener"><img src="' + esc(n.shot) + '" alt="screenshot"></a>' : '') +
 				(n.ctx ? '<div class="wprp-ctx">' + esc(n.ctx) + '</div>' : '') +
