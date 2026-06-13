@@ -33,6 +33,10 @@ function wprp_uninstall_site() {
 	// Drop the per-user Dev Mode preference.
 	$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => 'wprp_devmode' ) );
 
+	// Drop our options (schema version + visibility setting).
+	delete_option( 'wprp_db_version' );
+	delete_option( 'wprp_show_on' );
+
 	// Remove the screenshots folder (uploads/wp-red-pen) and its files.
 	$up  = wp_upload_dir();
 	$dir = trailingslashit( $up['basedir'] ) . 'wp-red-pen';
