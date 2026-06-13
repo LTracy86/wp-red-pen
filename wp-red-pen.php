@@ -1026,6 +1026,7 @@ function wprp_print_frontend_assets() {
 
 		function load() {
 			return api('/notes?target=' + encodeURIComponent(cfg.target)).then(function (notes) {
+				lastNotes = notes;
 				render(notes);
 				buildPins(notes);
 				return notes;
