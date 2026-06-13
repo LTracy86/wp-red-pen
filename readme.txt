@@ -64,7 +64,7 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 = 0.6.0 =
 * Resizable panel: drag the left edge of the notes panel to make it wider, and the custom width is remembered (per browser) across pages and visits.
-* On first use the panel auto-sizes to fill the empty gutter beside your content, so it expands into available space instead of covering the page (falls back to the default width on full-width layouts).
+* The panel is a little wider by default (420px).
 
 = 0.5.3 =
 * Performance: the repository page now counts each note's replies with a single grouped query instead of one query per row.
