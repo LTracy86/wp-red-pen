@@ -1437,7 +1437,7 @@ function wprp_print_frontend_assets() {
 					if (pendingAnchor) { payload.anchor = JSON.stringify(pendingAnchor); } else if (anchorRemove) { payload.anchor_remove = 1; }
 				api('/notes/' + editingId, { method: 'POST', body: JSON.stringify(payload) })
 					.then(function () { exitEdit(); submit.disabled = false; load(); })
-					.catch(function () { submit.disabled = false; });
+					.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
 				return;
 			}
 			var lvl = levelSel ? levelSel.value : 'page';
