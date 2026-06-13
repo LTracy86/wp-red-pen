@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.4.0 =
+* Edit a note after adding it: an Edit button on each note loads it back into the form so you can change the text, type, priority, and assignee, swap or remove the screenshot, and re-pin, move, or clear the attached element. Cancel backs out without saving.
+
 = 0.3.0 =
 * Element-level pinning: a "Pin to element" picker attaches a note to a specific element on the page; anchored notes show as numbered markers you can click to jump straight to the note.
 * Threaded replies: reply to any note from the front-end panel, building a discussion under each one.
