@@ -143,7 +143,8 @@ function wprp_current_context() {
 			'label' => sprintf( __( 'Template: single %s', 'wp-red-pen' ), $pt_name ),
 		);
 	} elseif ( is_post_type_archive() ) {
-		$pt      = (string) ( is_array( get_query_var( 'post_type' ) ) ? reset( $q ) : get_query_var( 'post_type' ) );
+		$ptq     = get_query_var( 'post_type' );
+		$pt      = (string) ( is_array( $ptq ) ? reset( $ptq ) : $ptq );
 		$pt_obj  = $pt ? get_post_type_object( $pt ) : null;
 		$pt_name = $pt_obj ? $pt_obj->labels->name : $pt;
 		$page    = array(
