@@ -987,6 +987,10 @@ add_action(
 							'anchor_remove' => $req->get_param( 'anchor_remove' ),
 							'shot'          => (string) $req->get_param( 'shot' ),
 							'shot_remove'   => $req->get_param( 'shot_remove' ),
+								'level'         => $req->get_param( 'level' ),
+								'ctx_key'       => $req->get_param( 'ctx_key' ),
+								'ctx_label'     => $req->get_param( 'ctx_label' ),
+								'target'        => $req->get_param( 'target' ),
 						)
 					);
 					if ( is_wp_error( $res ) ) {
