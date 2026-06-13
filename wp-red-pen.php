@@ -1997,6 +1997,19 @@ add_action(
 	}
 );
 
+/**
+ * Neutralise CSV formula injection. A cell whose first character is one of = + - @
+ * (or a leading tab/CR) is treated as a formula by Excel/Sheets; prefix it with a
+ * single quote so it imports as literal text. Applied to every user-supplied cell.
+ */
+function wprp_csv_cell( $value ) {
+	$value = (string) $value;
+	if ( '' !== $value && false !== strpos( "=+-@\t\r", $value[0] ) ) {
+		return "'" . $value;
+	}
+	return $value;
+}
+
 /** admin-post handler: stream the repository as a CSV download (respects the status filter). */
 add_action(
 	'admin_post_wprp_export_csv',
