@@ -1937,6 +1937,8 @@ function wprp_render_repo_page() {
 	echo '<table class="wp-list-table widefat fixed striped"><thead><tr>';
 	echo '<th>' . esc_html__( 'Type', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Priority', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Note', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Where', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Assigned', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'By', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'When', 'wp-red-pen' ) . '</th><th></th></tr></thead><tbody>';
 
+	$reply_counts = wprp_reply_counts( wp_list_pluck( $notes, 'ID' ) ); // one query, not one-per-row
+
 	foreach ( $notes as $n ) {
 		$type     = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
 		$target   = (int) get_post_meta( $n->ID, WPRP_META_TARGET, true );
