@@ -812,6 +812,8 @@ function wprp_note_to_array( $note ) {
 	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
 	$assignee = (int) get_post_meta( $note->ID, WPRP_META_ASSIGNEE, true );
 	$au       = $assignee ? get_userdata( $assignee ) : false;
+	$level    = (string) get_post_meta( $note->ID, WPRP_META_LEVEL, true );
+	$level    = ( 'template' === $level ) ? 'template' : 'page';
 	return array(
 		'id'         => (int) $note->ID,
 		'body'       => wpautop( wp_kses_post( $note->post_content ) ),
