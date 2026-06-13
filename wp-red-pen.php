@@ -1438,31 +1438,9 @@ function wprp_print_frontend_assets() {
 		function storedW() { try { var v = parseInt(localStorage.getItem(WPRP_W_KEY), 10); return (v > 0) ? v : 0; } catch (e) { return 0; } }
 		function saveW(w) { try { localStorage.setItem(WPRP_W_KEY, String(Math.round(clampW(w)))); } catch (e) {} }
 
-		// Right-side gutter: the largest gap between a main-content wrapper's right edge and the
-		// viewport edge. The panel is right-anchored, so this is the empty space it can grow into
-		// without covering content. Returns 0 when the layout is full-width (no usable gutter).
-		function detectGutter() {
-			var sels = ['main', '#main', '.site-main', '#primary', '#content', '.content-area', 'article', '.entry-content', '.wp-site-blocks', '#page'];
-			var best = 0;
-			for (var i = 0; i < sels.length; i++) {
-				var el = document.querySelector(sels[i]);
-				if (!el) { continue; }
-				var r = el.getBoundingClientRect();
-				if (r.width < 240 || r.height < 120) { continue; } // skip tiny/irrelevant matches
-				var g = window.innerWidth - r.right;
-				if (g > best) { best = g; }
-			}
-			return best;
-		}
-
-		// Initial width: a saved custom width wins; otherwise, on first run, widen to fill the
-		// detected gutter (minus a margin) but only when that beats the CSS default of 340.
+		// Initial width: re-apply a saved custom width if there is one; otherwise the CSS default stands.
 		(function initWidth() {
 			var w = storedW();
-			if (!w) {
-				var g = detectGutter();
-				if (g - 24 > 340) { w = g - 24; }
-			}
 			if (w) { applyW(w); }
 		})();
 
