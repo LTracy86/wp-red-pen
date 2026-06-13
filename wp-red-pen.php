@@ -2073,12 +2073,12 @@ add_action(
 					isset( $priorities[ $priority ] ) ? $priorities[ $priority ] : '',
 					$level,
 					WPRP_STATUS_DONE === $n->post_status ? 'Resolved' : 'Open',
-					wp_strip_all_tags( $n->post_content ),
-					'' !== $ctx_label ? $ctx_label : ( $target ? get_the_title( $target ) : '' ),
+					wprp_csv_cell( wp_strip_all_tags( $n->post_content ) ),
+					wprp_csv_cell( '' !== $ctx_label ? $ctx_label : ( $target ? get_the_title( $target ) : '' ) ),
 					$target ? get_permalink( $target ) : (string) get_post_meta( $n->ID, WPRP_META_URL, true ),
-					$au ? $au->display_name : '',
-					$author ? $author->display_name : '',
-					(string) get_post_meta( $n->ID, WPRP_META_CTX, true ),
+					wprp_csv_cell( $au ? $au->display_name : '' ),
+					wprp_csv_cell( $author ? $author->display_name : '' ),
+					wprp_csv_cell( (string) get_post_meta( $n->ID, WPRP_META_CTX, true ) ),
 					get_the_time( 'Y-m-d H:i', $n ),
 				)
 			);
