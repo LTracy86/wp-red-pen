@@ -1418,7 +1418,7 @@ function wprp_print_frontend_assets() {
 			var send = rform.querySelector('.wprp-replysend');
 			send.disabled = true;
 			api('/notes/' + rform.getAttribute('data-id') + '/replies', { method: 'POST', body: JSON.stringify({ body: rtext }) })
-				.then(load).catch(function () { send.disabled = false; });
+				.then(load).catch(function () { send.disabled = false; toast(SAVE_FAILED); });
 		});
 
 		form.addEventListener('submit', function (e) {
