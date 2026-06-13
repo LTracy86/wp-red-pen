@@ -36,6 +36,7 @@ Single self-contained `wp-red-pen.php` (inline CSS/JS, no build step), in keepin
 - **Storage:** a private `wprp_note` custom post type. Note body is the post content; author and date are native; status is a custom post status (`wprp_open` / `wprp_resolved`); the target post id and note type are post meta. No custom tables.
 - **REST namespace `wprp/v1`:** `GET/POST /notes`, `POST /notes/{id}` (edit), `POST /notes/{id}/status`, `POST /notes/{id}/replies`, gated by an `edit_posts` capability check and the `wp_rest` nonce. The front-end button is the only REST client.
 - **Replies** are child `wprp_note` posts (`post_parent` = the note id); priority, assignee, context, and the element anchor are all post meta. Still no custom tables.
+- **Targeting context:** each note stores a `_wprp_ctx_key` (e.g. `post:12`, `pt_archive:composer`, `term:genre:5`, `tpl:single-track`, `search`, `404`), `_wprp_ctx_label`, and `_wprp_level` (page/template). The front end fetches by the current view's page + template keys. A one-time `init` migration backfills legacy notes as `post:` page notes (schema tracked in the `wprp_db_version` option). Visibility is the global `wprp_show_on` option.
 - **Capability:** everything is gated on `edit_posts` (editors + admins). Logged-out visitors never receive the assets.
 
 ## Install
