@@ -1987,6 +1987,26 @@ add_action(
 	}
 );
 
+/** admin-post handler for the repository Delete button (permanent; cleans up replies + screenshot via before_delete_post). */
+add_action(
+	'admin_post_wprp_delete',
+	function () {
+		$note = isset( $_GET['note'] ) ? (int) $_GET['note'] : 0;
+		if ( ! $note || ! wprp_user_can()
+			|| ! isset( $_GET['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wprp_delete_' . $note ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+		// Only ever delete our own note CPT. Force-delete fires before_delete_post, which
+		// sweeps the screenshot file and any child replies.
+		if ( WPRP_CPT === get_post_type( $note ) ) {
+			wp_delete_post( $note, true );
+		}
+		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url( 'admin.php?page=wp-red-pen' ) );
+		exit;
+	}
+);
+
 /** admin-post handler: save the global "where Red Pen appears" visibility setting. */
 add_action(
 	'admin_post_wprp_save_visibility',
