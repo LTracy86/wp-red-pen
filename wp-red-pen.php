@@ -1291,6 +1291,17 @@ function wprp_print_frontend_assets() {
 		}
 		function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
 
+			// Transient error/notice toast (so a failed save never fails silently).
+			var toastEl = null, toastTimer = null;
+			function toast(msg) {
+				if (!toastEl) { toastEl = document.createElement('div'); toastEl.id = 'wprp-toast'; document.body.appendChild(toastEl); }
+				toastEl.textContent = msg;
+				toastEl.style.display = 'block';
+				if (toastTimer) { clearTimeout(toastTimer); }
+				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, 4000);
+			}
+			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save - check your connection and try again.', 'wp-red-pen' ) ); ?>';
+
 			// A short, readable "browser / OS / viewport" string for the note, parsed from the
 			// user agent (best-effort; the raw UA is the fallback). Server sanitises + length-caps.
 			function buildCtx() {
