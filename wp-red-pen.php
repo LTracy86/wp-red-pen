@@ -818,6 +818,10 @@ add_action(
 						<button type="button" id="wprp-pin-btn" class="wprp-shotbtn"><span class="dashicons dashicons-location"></span> <?php esc_html_e( 'Pin to element', 'wp-red-pen' ); ?></button>
 						<span id="wprp-pin-info" class="wprp-pin-info" hidden><span id="wprp-pin-label"></span><button type="button" id="wprp-pin-clear" class="wprp-pin-clear" aria-label="<?php esc_attr_e( 'Remove pin', 'wp-red-pen' ); ?>">&times;</button></span>
 					</div>
+					<div class="wprp-editbar" id="wprp-editbar" hidden>
+						<span><?php esc_html_e( 'Editing note', 'wp-red-pen' ); ?></span>
+						<button type="button" id="wprp-edit-cancel" class="wprp-edit-cancel"><?php esc_html_e( 'Cancel', 'wp-red-pen' ); ?></button>
+					</div>
 					<button type="submit" class="wprp-submit"><?php esc_html_e( 'Add note', 'wp-red-pen' ); ?></button>
 				</form>
 			</section>
