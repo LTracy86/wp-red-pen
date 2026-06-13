@@ -62,6 +62,11 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.5.1 =
+* Failed saves no longer fail silently: adding, editing, replying to, or resolving a note now shows a brief error toast if the request does not go through, so a dropped note is never mistaken for a saved one.
+* Press Esc to close the open notes panel.
+* Hardened CSV export against spreadsheet formula injection (cells starting with = + - @ are now exported as plain text).
+
 = 0.5.0 =
 * Red Pen now works on archives, taxonomy pages, the home/front page, search, and 404 - not just single posts and pages.
 * New "reporting level" choice on every note: report it against This page (the exact post or archive you're on) or This template (the view type, so it covers every page rendered the same way). A page shows its own notes plus the template notes that apply to it.
