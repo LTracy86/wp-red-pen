@@ -1821,6 +1821,19 @@ function wprp_render_repo_page() {
 	echo '<div class="wrap"><h1 style="display:flex;align-items:center;gap:.5rem"><span class="dashicons dashicons-edit"></span>' . esc_html__( 'Red Pen - Notes Repository', 'wp-red-pen' ) . '</h1>';
 	echo '<p>' . esc_html__( 'Every note, flag, and suggested edit dropped across the site. Shared with all editors and admins.', 'wp-red-pen' ) . '</p>';
 
+	// Visibility settings: which front-end views show the Red Pen widget (global).
+	$show_on  = wprp_show_on();
+	$save_url = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_save_visibility' ), 'wprp_save_visibility' );
+	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:640px">';
+	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Where Red Pen appears', 'wp-red-pen' ) . '</summary>';
+	echo '<form method="post" action="' . esc_url( $save_url ) . '" style="margin-top:.6rem">';
+	echo '<p style="margin:.2rem 0 .6rem;color:#646970">' . esc_html__( 'Choose which front-end views show the floating button for users in Dev Mode.', 'wp-red-pen' ) . '</p>';
+	foreach ( wprp_view_scopes() as $key => $label ) {
+		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="scopes[]" value="' . esc_attr( $key ) . '"' . checked( in_array( $key, $show_on, true ), true, false ) . '> ' . wp_kses_post( $label ) . '</label>';
+	}
+	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
+	echo '</form></details>';
+
 	// Status filter tabs.
 	$tabs = array(
 		'open'     => __( 'Open', 'wp-red-pen' ),
