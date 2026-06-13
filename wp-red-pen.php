@@ -1938,6 +1938,24 @@ add_action(
 	}
 );
 
+/** admin-post handler: save the global "where Red Pen appears" visibility setting. */
+add_action(
+	'admin_post_wprp_save_visibility',
+	function () {
+		if ( ! wprp_user_can()
+			|| ! isset( $_POST['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_save_visibility' ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+		$valid    = array_keys( wprp_view_scopes() );
+		$submitted = isset( $_POST['scopes'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['scopes'] ) ) : array();
+		$scopes   = array_values( array_intersect( $submitted, $valid ) );
+		update_option( WPRP_SHOW_OPT, $scopes ); // empty array = show nowhere (a valid choice)
+		wp_safe_redirect( admin_url( 'admin.php?page=wp-red-pen' ) );
+		exit;
+	}
+);
+
 /** admin-post handler: stream the repository as a CSV download (respects the status filter). */
 add_action(
 	'admin_post_wprp_export_csv',
