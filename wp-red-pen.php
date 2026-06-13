@@ -1196,7 +1196,7 @@ function wprp_print_frontend_assets() {
 		#wprp-fab:hover{transform:translateY(-2px);background:var(--wprp-red-dark)}
 		#wprp-fab .dashicons{width:26px;height:26px;font-size:26px}
 		.wprp-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#fff;color:var(--wprp-red);font-size:11px;font-weight:700;line-height:18px;text-align:center;box-shadow:0 1px 3px rgba(30,34,37,.3)}
-		#wprp-panel{position:absolute;right:0;bottom:64px;width:340px;max-width:calc(100vw - 40px);max-height:70vh;display:flex;flex-direction:column;background:#fff;color:var(--wprp-ink);border:1px solid #d6dade;border-radius:10px;box-shadow:0 10px 34px rgba(30,34,37,.28);overflow:hidden}
+		#wprp-panel{position:absolute;right:0;bottom:64px;width:420px;max-width:calc(100vw - 40px);max-height:70vh;display:flex;flex-direction:column;background:#fff;color:var(--wprp-ink);border:1px solid #d6dade;border-radius:10px;box-shadow:0 10px 34px rgba(30,34,37,.28);overflow:hidden}
 			/* left-edge drag handle: the panel is right-anchored, so dragging the left edge widens it */
 			.wprp-resize{position:absolute;left:0;top:0;width:9px;height:100%;cursor:ew-resize;z-index:6;touch-action:none}
 			.wprp-resize::before{content:"";position:absolute;left:2px;top:50%;transform:translateY(-50%);width:3px;height:36px;border-radius:2px;background:#cfd4d8;transition:background .12s}
