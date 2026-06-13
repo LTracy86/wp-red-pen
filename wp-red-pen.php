@@ -1354,7 +1354,8 @@ function wprp_print_frontend_assets() {
 		}
 
 		function load() {
-			return api('/notes?target=' + encodeURIComponent(cfg.target)).then(function (notes) {
+			var keys = [cfg.page && cfg.page.key, cfg.template && cfg.template.key].filter(Boolean).join(',');
+			return api('/notes?keys=' + encodeURIComponent(keys)).then(function (notes) {
 				lastNotes = notes;
 				render(notes);
 				buildPins(notes);
