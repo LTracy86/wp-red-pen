@@ -1084,10 +1084,54 @@ function wprp_print_frontend_assets() {
 			if (!text) { return; }
 			var submit = form.querySelector('.wprp-submit');
 			submit.disabled = true;
+			if (editingId) {
+				// Update: send body/type/priority/assignee always; screenshot + anchor only when
+				// changed (a new payload) or explicitly removed - otherwise leave them untouched.
+				var payload = { body: text, type: typeSel.value, priority: prioSel.value, assignee: assigneeSel.value };
+				if (pendingShot) { payload.shot = pendingShot; } else if (shotRemove) { payload.shot_remove = 1; }
+				if (pendingAnchor) { payload.anchor = JSON.stringify(pendingAnchor); } else if (anchorRemove) { payload.anchor_remove = 1; }
+				api('/notes/' + editingId, { method: 'POST', body: JSON.stringify(payload) })
+					.then(function () { exitEdit(); submit.disabled = false; load(); })
+					.catch(function () { submit.disabled = false; });
+				return;
+			}
 			api('/notes', { method: 'POST', body: JSON.stringify({ target: cfg.target, body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, assignee: assigneeSel.value, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '' }) })
 				.then(function () { body.value = ''; clearShot(); clearAnchor(); submit.disabled = false; load(); })
 				.catch(function () { submit.disabled = false; });
 		});
+
+		// ---- edit mode: prefill the form from an existing note; submit PATCHes it ----
+		function enterEdit(n) {
+			editingId = n.id;
+			shotRemove = false; anchorRemove = false;
+			pendingShot = null; pendingAnchor = null;
+			typeSel.value = n.type || 'note';
+			prioSel.value = n.priority || 'normal';
+			assigneeSel.value = String(n.assignee || 0);
+			body.value = (n.raw != null ? n.raw : '').trim();
+			// existing screenshot: show it; kept unless the user replaces or clears it
+			if (n.shot) { shotThumb.src = n.shot; shotPrev.hidden = false; } else { shotPrev.hidden = true; shotThumb.removeAttribute('src'); }
+			// existing element pin: show the indicator; kept unless replaced or cleared
+			if (n.anchor) { pinLabel.textContent = '<?php echo esc_js( __( 'Pinned to element', 'wp-red-pen' ) ); ?>'; pinInfo.hidden = false; } else { pinInfo.hidden = true; pinLabel.textContent = ''; }
+			editBar.hidden = false;
+			if (submitBtn) { submitBtn.textContent = SAVE_LABEL; }
+			panel.hidden = false;
+			body.focus();
+			form.scrollIntoView({ block: 'nearest' });
+		}
+
+		function exitEdit() {
+			editingId = null;
+			shotRemove = false; anchorRemove = false;
+			pendingShot = null; pendingAnchor = null;
+			body.value = '';
+			typeSel.value = 'note'; prioSel.value = 'normal'; assigneeSel.value = '0';
+			shotPrev.hidden = true; shotThumb.removeAttribute('src');
+			pinInfo.hidden = true; pinLabel.textContent = '';
+			editBar.hidden = true;
+			if (submitBtn) { submitBtn.textContent = ADD_LABEL; }
+		}
+		if (editCancel) { editCancel.addEventListener('click', exitEdit); }
 
 		// ---- screenshot: drag a box, html2canvas the region, store as WebP ----
 		function clearShot() {
