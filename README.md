@@ -14,7 +14,8 @@ Good for editorial review, client hand-offs, content audits, QA passes, and shar
 
 ## What it does
 
-- **Floating note button** on the front end, shown only to logged-in users who can edit posts. Per-user **Dev Mode** toggle in the admin bar.
+- **Floating note button** on the front end, shown only to logged-in users who can edit posts. Per-user **Dev Mode** toggle in the admin bar. Works on singular posts/pages **and** archives, taxonomy pages, the home/front page, search, and 404 - controlled by a global **"Where Red Pen appears"** setting (defaults to everywhere).
+- **Reporting level** per note: target **This page** (the exact post or archive you're on) or **This template** (the view type, so the note covers every page rendered the same way). A page shows its own notes plus the template notes that apply to it.
 - **Snip a screenshot** - click Screenshot, drag a box around the area, done. The region is captured client-side (vendored html2canvas) and stored as a small WebP in `uploads/wp-red-pen/`, attached to the note.
 - **Typed notes** - note, suggested edit, bug/problem, or question - attached to the current post/page.
 - **Edit any note after adding it** - change the text, type, priority, or assignee; swap, remove, or add a screenshot; re-pin, move, or clear the attached element.
