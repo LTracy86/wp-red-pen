@@ -1488,6 +1488,11 @@ function wprp_print_frontend_assets() {
 		}
 
 		list.addEventListener('click', function (e) {
+			var lbtn = e.target.closest('.wprp-locate');
+				if (lbtn) {
+					locateNote(lbtn.closest('.wprp-note').getAttribute('data-id'));
+					return;
+				}
 			var ebtn = e.target.closest('.wprp-edit');
 				if (ebtn) {
 					var eid = ebtn.closest('.wprp-note').getAttribute('data-id');
