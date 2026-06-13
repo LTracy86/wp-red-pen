@@ -899,7 +899,10 @@ add_action(
 					'callback'            => function ( $req ) {
 						$target = (int) $req->get_param( 'target' );
 						$status = (string) $req->get_param( 'status' );
-						$notes  = wprp_get_notes_for( $target, $status ? $status : 'any' );
+						$keys   = (string) $req->get_param( 'keys' );
+							$notes  = ( '' !== $keys )
+								? wprp_get_notes_for_context( explode( ',', $keys ), $status ? $status : 'any' )
+								: wprp_get_notes_for( $target, $status ? $status : 'any' );
 						return rest_ensure_response( array_map( 'wprp_note_to_array', $notes ) );
 					},
 				),
