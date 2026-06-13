@@ -1253,6 +1253,9 @@ function wprp_print_frontend_assets() {
 		var typeSel = document.getElementById('wprp-type');
 			var prioSel = document.getElementById('wprp-priority');
 			var assigneeSel = document.getElementById('wprp-assignee');
+			var levelSel = document.getElementById('wprp-level');
+			// The current view's contexts (key/label/target) the server computed for this page.
+			function ctxForLevel(lvl) { return (lvl === 'template' && cfg.template && cfg.template.key) ? cfg.template : cfg.page; }
 		var countEl = document.getElementById('wprp-fab-count');
 		var shotBtn = document.getElementById('wprp-shot-btn');
 		var shotPrev = document.getElementById('wprp-shot-preview');
