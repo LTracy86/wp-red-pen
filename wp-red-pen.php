@@ -1153,6 +1153,7 @@ function wprp_print_frontend_assets() {
 				var data = canvas.toDataURL('image/webp', 0.82);
 				if (data.indexOf('data:image/webp') !== 0) { data = canvas.toDataURL('image/png'); }
 				pendingShot = data;
+					shotRemove = false; // a fresh capture supersedes any pending removal
 				shotThumb.src = data;
 				shotPrev.hidden = false;
 			}).catch(function () {}).then(function () {
