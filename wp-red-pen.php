@@ -1315,6 +1315,7 @@ function wprp_print_frontend_assets() {
 			return '<div class="wprp-note ' + (n.resolved ? 'is-resolved' : '') + '" data-id="' + n.id + '">' +
 				'<div class="wprp-meta"><span class="wprp-tag">' + esc(n.typeLabel) + '</span>' +
 				'<span class="wprp-prio wprp-prio-' + esc(n.priority || 'normal') + '">' + esc(n.priorityLabel) + '</span>' +
+				(n.level === 'template' ? '<span class="wprp-level" title="' + esc(n.ctxLabel || '') + '"><?php echo esc_js( __( 'Template', 'wp-red-pen' ) ); ?></span>' : '') +
 				'<span>' + esc(n.author) + '</span><span>' + esc(n.date) + '</span>' +
 				(n.assigneeName ? '<span class="wprp-assignee">&rarr; ' + esc(n.assigneeName) + '</span>' : '') +
 				'<button type="button" class="wprp-resolve">' + (n.resolved ? '<?php echo esc_js( __( 'Reopen', 'wp-red-pen' ) ); ?>' : '<?php echo esc_js( __( 'Resolve', 'wp-red-pen' ) ); ?>') + '</button>' +
