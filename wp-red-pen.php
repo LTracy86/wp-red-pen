@@ -941,6 +941,15 @@ function wprp_print_frontend_assets() {
 		var pinLayer = null;
 		var pins = [];
 		var focusId = null;
+		var editingId = null;     // null = create mode; a note id = editing that note
+		var shotRemove = false;   // edit mode: user cleared the existing screenshot
+		var anchorRemove = false; // edit mode: user cleared the existing element pin
+		var lastNotes = [];       // most recent notes payload (so Edit can prefill from it)
+		var editBar = document.getElementById('wprp-editbar');
+		var editCancel = document.getElementById('wprp-edit-cancel');
+		var submitBtn = form.querySelector('.wprp-submit');
+		var ADD_LABEL = submitBtn ? submitBtn.textContent : 'Add note';
+		var SAVE_LABEL = '<?php echo esc_js( __( 'Save changes', 'wp-red-pen' ) ); ?>';
 
 		function api(path, opts) {
 			opts = opts || {};
