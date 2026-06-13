@@ -1046,7 +1046,15 @@ function wprp_print_frontend_assets() {
 		});
 
 		list.addEventListener('click', function (e) {
-			var btn = e.target.closest('.wprp-resolve');
+			var ebtn = e.target.closest('.wprp-edit');
+				if (ebtn) {
+					var eid = ebtn.closest('.wprp-note').getAttribute('data-id');
+					for (var i = 0; i < lastNotes.length; i++) {
+						if (String(lastNotes[i].id) === String(eid)) { enterEdit(lastNotes[i]); break; }
+					}
+					return;
+				}
+				var btn = e.target.closest('.wprp-resolve');
 			if (!btn) { return; }
 			var wrap = btn.closest('.wprp-note');
 			var id = wrap.getAttribute('data-id');
