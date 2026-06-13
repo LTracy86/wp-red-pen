@@ -1841,7 +1841,7 @@ function wprp_print_frontend_assets() {
 		function repositionSoon() {
 			if (pinTick) { return; }
 			pinTick = true;
-			window.requestAnimationFrame(function () { positionPins(); pinTick = false; });
+			window.requestAnimationFrame(function () { positionPins(); positionLocateHl(); pinTick = false; });
 		}
 		window.addEventListener('scroll', repositionSoon, true);
 		window.addEventListener('resize', repositionSoon);
