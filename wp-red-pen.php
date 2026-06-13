@@ -1126,6 +1126,9 @@ add_action(
 						<select id="wprp-priority" aria-label="<?php esc_attr_e( 'Priority', 'wp-red-pen' ); ?>"><?php echo $prio_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
 					</div>
 					<select id="wprp-assignee" aria-label="<?php esc_attr_e( 'Assign to', 'wp-red-pen' ); ?>"><?php echo $user_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
+						<label class="wprp-levellabel"><?php esc_html_e( 'Reporting level', 'wp-red-pen' ); ?>
+							<select id="wprp-level" aria-label="<?php esc_attr_e( 'Reporting level', 'wp-red-pen' ); ?>"><?php echo $level_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
+						</label>
 					<textarea id="wprp-body" rows="3" placeholder="<?php esc_attr_e( 'Add a note, flag, or suggested edit...', 'wp-red-pen' ); ?>" required></textarea>
 					<div class="wprp-shotrow">
 						<button type="button" id="wprp-shot-btn" class="wprp-shotbtn"><span class="dashicons dashicons-camera"></span> <?php esc_html_e( 'Screenshot', 'wp-red-pen' ); ?></button>
