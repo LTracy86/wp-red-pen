@@ -1387,6 +1387,12 @@ function wprp_print_frontend_assets() {
 		document.getElementById('wprp-close').addEventListener('click', function () {
 			panel.hidden = true; fab.setAttribute('aria-expanded', 'false');
 		});
+		// Esc closes the open panel - but not while a capture/pin overlay is up (those own Esc).
+		document.addEventListener('keydown', function (e) {
+			if (e.key !== 'Escape' || panel.hidden) { return; }
+			if (document.getElementById('wprp-capture') || document.getElementById('wprp-pinmode')) { return; }
+			panel.hidden = true; fab.setAttribute('aria-expanded', 'false'); fab.focus();
+		});
 
 		list.addEventListener('click', function (e) {
 			var ebtn = e.target.closest('.wprp-edit');
