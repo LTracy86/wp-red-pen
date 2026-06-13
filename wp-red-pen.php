@@ -433,6 +433,81 @@ function wprp_set_status( $note_id, $status ) {
 }
 
 /**
+ * Update an existing note's editable fields. body/type/priority/assignee are set
+ * whenever present in $args. The screenshot and element anchor each support an
+ * explicit *_remove flag (so the large payloads only travel when actually changed):
+ * remove wins, else a non-empty replacement applies, else the field is left as-is.
+ * Replacing a screenshot deletes the old file. Returns true or WP_Error.
+ *
+ * @param int   $note_id A top-level note id (not a reply).
+ * @param array $args    body, type, priority, assignee, anchor, anchor_remove, shot, shot_remove.
+ */
+function wprp_update_note( $note_id, $args ) {
+	if ( ! wprp_user_can() ) {
+		return new WP_Error( 'wprp_forbidden', __( 'Not allowed.', 'wp-red-pen' ), array( 'status' => 403 ) );
+	}
+	$note = get_post( $note_id );
+	if ( ! $note || WPRP_CPT !== $note->post_type || 0 !== (int) $note->post_parent ) {
+		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
+	}
+
+	$body = trim( wp_kses_post( (string) ( isset( $args['body'] ) ? $args['body'] : '' ) ) );
+	if ( '' === $body ) {
+		return new WP_Error( 'wprp_empty', __( 'The note is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
+	}
+	wp_update_post(
+		array(
+			'ID'           => (int) $note_id,
+			'post_content' => $body,
+			'post_title'   => wp_trim_words( wp_strip_all_tags( $body ), 8, '...' ),
+		)
+	);
+
+	if ( isset( $args['type'] ) ) {
+		$types = wprp_note_types();
+		$type  = isset( $types[ $args['type'] ] ) ? $args['type'] : 'note';
+		update_post_meta( $note_id, WPRP_META_TYPE, $type );
+	}
+
+	if ( isset( $args['priority'] ) ) {
+		$prios    = wprp_priorities();
+		$priority = isset( $prios[ $args['priority'] ] ) ? $args['priority'] : 'normal';
+		update_post_meta( $note_id, WPRP_META_PRIORITY, $priority );
+	}
+
+	if ( isset( $args['assignee'] ) ) {
+		$assignee = (int) $args['assignee'];
+		if ( $assignee > 0 && user_can( $assignee, WPRP_CAP ) ) {
+			update_post_meta( $note_id, WPRP_META_ASSIGNEE, $assignee );
+		} else {
+			delete_post_meta( $note_id, WPRP_META_ASSIGNEE );
+		}
+	}
+
+	if ( ! empty( $args['anchor_remove'] ) ) {
+		delete_post_meta( $note_id, WPRP_META_ANCHOR );
+	} elseif ( '' !== (string) ( isset( $args['anchor'] ) ? $args['anchor'] : '' ) ) {
+		$anchor = wprp_sanitize_anchor( (string) $args['anchor'] );
+		if ( '' !== $anchor ) {
+			update_post_meta( $note_id, WPRP_META_ANCHOR, $anchor );
+		}
+	}
+
+	if ( ! empty( $args['shot_remove'] ) ) {
+		wprp_delete_shot( (string) get_post_meta( $note_id, WPRP_META_SHOT, true ) );
+		delete_post_meta( $note_id, WPRP_META_SHOT );
+	} elseif ( '' !== (string) ( isset( $args['shot'] ) ? $args['shot'] : '' ) ) {
+		$file = wprp_save_shot( $note_id, (string) $args['shot'] );
+		if ( '' !== $file ) {
+			wprp_delete_shot( (string) get_post_meta( $note_id, WPRP_META_SHOT, true ) );
+			update_post_meta( $note_id, WPRP_META_SHOT, $file );
+		}
+	}
+
+	return true;
+}
+
+/**
  * Notes attached to a target post.
  *
  * @param int    $target_id Target post id.
