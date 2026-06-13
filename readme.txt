@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.6.1 =
+* Notes pinned to an element now have a magnifying-glass button (left of Resolve) that scrolls to the element and draws a red, padded highlight box around it.
+
 = 0.6.0 =
 * Resizable panel: drag the left edge of the notes panel to make it wider, and the custom width is remembered (per browser) across pages and visits.
 * The panel is a little wider by default (420px).
