@@ -1922,6 +1922,13 @@ function wprp_render_repo_page() {
 			),
 			'wprp_resolve_' . $n->ID
 		);
+		$delete_url = wp_nonce_url(
+			add_query_arg(
+				array( 'action' => 'wprp_delete', 'note' => $n->ID ),
+				admin_url( 'admin-post.php' )
+			),
+			'wprp_delete_' . $n->ID
+		);
 
 		$priority  = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
 		$assignee  = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
