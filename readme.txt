@@ -62,6 +62,10 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.5.3 =
+* Performance: the repository page now counts each note's replies with a single grouped query instead of one query per row.
+* Tested up to WordPress 7.0.
+
 = 0.5.2 =
 * Delete a note from the repository: a Delete button on each row permanently removes the note along with its replies and screenshot (with a confirmation prompt). Previously notes could only be resolved, never removed.
 
