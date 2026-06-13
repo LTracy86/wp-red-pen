@@ -661,6 +661,35 @@ add_action(
 				},
 			)
 		);
+
+		// Update an existing note (edit text / type / priority / assignee / screenshot / pin).
+		register_rest_route(
+			WPRP_REST_NS,
+			'/notes/(?P<id>\d+)',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => $perm,
+				'callback'            => function ( $req ) {
+					$res = wprp_update_note(
+						(int) $req['id'],
+						array(
+							'body'          => (string) $req->get_param( 'body' ),
+							'type'          => $req->get_param( 'type' ),
+							'priority'      => $req->get_param( 'priority' ),
+							'assignee'      => $req->get_param( 'assignee' ),
+							'anchor'        => (string) $req->get_param( 'anchor' ),
+							'anchor_remove' => $req->get_param( 'anchor_remove' ),
+							'shot'          => (string) $req->get_param( 'shot' ),
+							'shot_remove'   => $req->get_param( 'shot_remove' ),
+						)
+					);
+					if ( is_wp_error( $res ) ) {
+						return $res;
+					}
+					return rest_ensure_response( wprp_note_to_array( get_post( (int) $req['id'] ) ) );
+				},
+			)
+		);
 	}
 );
 
