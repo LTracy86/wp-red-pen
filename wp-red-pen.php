@@ -2024,23 +2024,26 @@ add_action(
 		header( 'Content-Disposition: attachment; filename=' . $filename );
 
 		$out = fopen( 'php://output', 'w' );
-		fputcsv( $out, array( 'ID', 'Type', 'Priority', 'Status', 'Note', 'On page', 'URL', 'Assignee', 'Author', 'Context', 'When' ) );
+		fputcsv( $out, array( 'ID', 'Type', 'Priority', 'Level', 'Status', 'Note', 'Where', 'URL', 'Assignee', 'Author', 'Environment', 'When' ) );
 		foreach ( $notes as $n ) {
-			$type     = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
-			$priority = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
-			$target   = (int) get_post_meta( $n->ID, WPRP_META_TARGET, true );
-			$assignee = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
-			$au       = $assignee ? get_userdata( $assignee ) : false;
-			$author   = get_userdata( $n->post_author );
+			$type      = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
+			$priority  = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
+			$target    = (int) get_post_meta( $n->ID, WPRP_META_TARGET, true );
+			$assignee  = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
+			$au        = $assignee ? get_userdata( $assignee ) : false;
+			$author    = get_userdata( $n->post_author );
+			$ctx_label = (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true );
+			$level     = ( 'template' === (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true ) ) ? 'Template' : 'Page';
 			fputcsv(
 				$out,
 				array(
 					$n->ID,
 					isset( $types[ $type ] ) ? $types[ $type ] : $type,
 					isset( $priorities[ $priority ] ) ? $priorities[ $priority ] : '',
+					$level,
 					WPRP_STATUS_DONE === $n->post_status ? 'Resolved' : 'Open',
 					wp_strip_all_tags( $n->post_content ),
-					$target ? get_the_title( $target ) : '',
+					'' !== $ctx_label ? $ctx_label : ( $target ? get_the_title( $target ) : '' ),
 					$target ? get_permalink( $target ) : (string) get_post_meta( $n->ID, WPRP_META_URL, true ),
 					$au ? $au->display_name : '',
 					$author ? $author->display_name : '',
