@@ -1428,7 +1428,7 @@ function wprp_print_frontend_assets() {
 			panel.hidden = true; fab.setAttribute('aria-expanded', 'false'); fab.focus();
 		});
 
-		// ---- resizable panel: drag the left edge to widen; width persists; first run fits the content gutter ----
+		// ---- resizable panel: drag the left edge to widen; the custom width persists ----
 		var resizeHandle = document.getElementById('wprp-resize');
 		var WPRP_W_KEY = 'wprpPanelWidth';
 		var MIN_W = 300;
