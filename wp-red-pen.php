@@ -1963,7 +1963,8 @@ function wprp_render_repo_page() {
 		echo '<td>' . ( $au ? esc_html( $au->display_name ) : '<span style="color:#9aa1a7">&mdash;</span>' ) . '</td>';
 		echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
 		echo '<td>' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</td>';
-		echo '<td><a class="button button-small" href="' . esc_url( $resolve_url ) . '">' . esc_html( $resolved ? __( 'Reopen', 'wp-red-pen' ) : __( 'Resolve', 'wp-red-pen' ) ) . '</a></td>';
+		echo '<td><a class="button button-small" href="' . esc_url( $resolve_url ) . '">' . esc_html( $resolved ? __( 'Reopen', 'wp-red-pen' ) : __( 'Resolve', 'wp-red-pen' ) ) . '</a> ';
+		echo '<a class="button button-small button-link-delete" style="color:#b32d2e" href="' . esc_url( $delete_url ) . '" onclick="return confirm(\'' . esc_js( __( 'Delete this note permanently, including its replies and screenshot? This cannot be undone.', 'wp-red-pen' ) ) . '\');">' . esc_html__( 'Delete', 'wp-red-pen' ) . '</a></td>';
 		echo '</tr>';
 	}
 	echo '</tbody></table></div>';
