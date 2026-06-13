@@ -1167,6 +1167,7 @@ function wprp_print_frontend_assets() {
 			pendingAnchor = null;
 			pinInfo.hidden = true;
 			pinLabel.textContent = '';
+				if (editingId) { anchorRemove = true; } // editing: clearing removes the saved pin
 		}
 		pinClear.addEventListener('click', clearAnchor);
 		pinBtn.addEventListener('click', startPin);
