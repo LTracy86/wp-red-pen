@@ -667,6 +667,21 @@ function wprp_update_note( $note_id, $args ) {
 		update_post_meta( $note_id, WPRP_META_TYPE, $type );
 	}
 
+	// Re-target (change page/template level) when the editor sends a context.
+	if ( isset( $args['level'] ) || isset( $args['ctx_key'] ) ) {
+		$target = isset( $args['target'] ) ? (int) $args['target'] : 0;
+		update_post_meta( $note_id, WPRP_META_TARGET, $target );
+		wprp_save_context(
+			$note_id,
+			array(
+				'level' => isset( $args['level'] ) ? $args['level'] : 'page',
+				'key'   => isset( $args['ctx_key'] ) ? $args['ctx_key'] : '',
+				'label' => isset( $args['ctx_label'] ) ? $args['ctx_label'] : '',
+			),
+			$target
+		);
+	}
+
 	if ( isset( $args['priority'] ) ) {
 		$prios    = wprp_priorities();
 		$priority = isset( $prios[ $args['priority'] ] ) ? $args['priority'] : 'normal';
