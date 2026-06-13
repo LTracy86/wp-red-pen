@@ -518,6 +518,7 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	update_post_meta( $id, WPRP_META_TARGET, (int) $target_id );
 	update_post_meta( $id, WPRP_META_TYPE, $type );
 	update_post_meta( $id, WPRP_META_URL, esc_url_raw( $url ) );
+	wprp_save_context( $id, $context, (int) $target_id );
 
 	$ctx = sanitize_text_field( (string) $ctx );
 	if ( '' !== $ctx ) {
