@@ -1204,6 +1204,9 @@ function wprp_print_frontend_assets() {
 			.wprp-prio-normal{background:#eef1f3;color:var(--wprp-gray);border-color:#dfe3e6}
 			.wprp-prio-low{background:transparent;color:var(--wprp-gray);border-color:#dfe3e6}
 			.wprp-assignee{color:var(--wprp-gray);font-size:.72rem}
+			.wprp-levellabel{display:flex;flex-direction:column;gap:.15rem;font-size:.7rem;color:var(--wprp-gray);font-weight:600}
+			.wprp-levellabel select{font-weight:400}
+			.wprp-note .wprp-level{background:#eef1f3;color:var(--wprp-gray);border:1px solid #dfe3e6;border-radius:3px;padding:.02rem .3rem;font-size:.66rem;font-weight:600}
 		.wprp-submit{align-self:flex-end;background:var(--wprp-red);color:#fff;border:none;border-radius:5px;padding:.4rem .9rem;cursor:pointer;font-size:.86rem}
 		.wprp-submit:hover{background:var(--wprp-red-dark)}
 		.wprp-submit:disabled{opacity:.6;cursor:default}
