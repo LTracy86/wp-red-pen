@@ -467,7 +467,31 @@ add_action(
  * @param int    $assignee  User id to assign the note to (0 = unassigned).
  * @param string $anchor    Optional element-pin anchor JSON (selector + x/y).
  */
-function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '' ) {
+/**
+ * Persist a note's targeting context. $context may carry 'level' (page|template),
+ * 'key' (canonical context key, e.g. post:12 / pt_archive:composer / tpl:single-x)
+ * and 'label' (human). Falls back to a post: key when only a post target is known,
+ * so legacy create calls and the per-post meta box keep working.
+ */
+function wprp_save_context( $note_id, $context, $target_id = 0 ) {
+	$context = is_array( $context ) ? $context : array();
+	$level   = ( isset( $context['level'] ) && 'template' === $context['level'] ) ? 'template' : 'page';
+	$key     = isset( $context['key'] ) ? sanitize_text_field( (string) $context['key'] ) : '';
+	$label   = isset( $context['label'] ) ? sanitize_text_field( (string) $context['label'] ) : '';
+	if ( '' === $key && (int) $target_id > 0 ) {
+		$key   = 'post:' . (int) $target_id;
+		$label = '' !== $label ? $label : get_the_title( (int) $target_id );
+	}
+	update_post_meta( $note_id, WPRP_META_LEVEL, $level );
+	if ( '' !== $key ) {
+		update_post_meta( $note_id, WPRP_META_CTXKEY, $key );
+	}
+	if ( '' !== $label ) {
+		update_post_meta( $note_id, WPRP_META_CTXLABEL, mb_substr( $label, 0, 200 ) );
+	}
+}
+
+function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array() ) {
 	if ( ! wprp_user_can() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
