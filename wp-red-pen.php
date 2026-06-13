@@ -1068,13 +1068,18 @@ add_action(
 add_action(
 	'wp_footer',
 	function () {
-		if ( ! wprp_devmode_on() || ! is_singular() ) {
+		if ( ! wprp_devmode_on() ) {
 			return;
 		}
-		$target = (int) get_queried_object_id();
-		if ( ! $target ) {
+		$scope = wprp_current_scope();
+		if ( ! in_array( $scope, wprp_show_on(), true ) ) {
 			return;
 		}
+		$ctx = wprp_current_context();
+		if ( '' === $ctx['page']['key'] ) {
+			return; // a view we can't target (shouldn't happen for enabled scopes)
+		}
+		$target = (int) $ctx['page']['target'];
 		$types = wprp_note_types();
 		$opts  = '';
 		foreach ( $types as $key => $label ) {
