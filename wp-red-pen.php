@@ -1093,13 +1093,18 @@ add_action(
 		foreach ( wprp_assignable_users() as $uid => $uname ) {
 			$user_opts .= '<option value="' . (int) $uid . '">' . esc_html( $uname ) . '</option>';
 		}
+		// Level options built from the current view: This page + (when distinct) This template.
+		$level_opts = '<option value="page">' . esc_html( $ctx['page']['label'] ) . '</option>';
+		if ( '' !== $ctx['template']['key'] ) {
+			$level_opts .= '<option value="template">' . esc_html( $ctx['template']['label'] ) . '</option>';
+		}
 		$cfg = wp_json_encode(
 			array(
-				'root'   => esc_url_raw( rest_url( WPRP_REST_NS ) ),
-				'nonce'  => wp_create_nonce( 'wp_rest' ),
-				'target' => $target,
-				'url'    => esc_url_raw( home_url( add_query_arg( array() ) ) ),
-				'title'  => get_the_title( $target ),
+				'root'     => esc_url_raw( rest_url( WPRP_REST_NS ) ),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'url'      => esc_url_raw( home_url( add_query_arg( array() ) ) ),
+				'page'     => $ctx['page'],     // { key, label, target }
+				'template' => $ctx['template'], // { key, label }
 			)
 		);
 		?>
