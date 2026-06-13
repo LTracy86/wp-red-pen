@@ -1404,7 +1404,7 @@ function wprp_print_frontend_assets() {
 			var resolved = !wrap.classList.contains('is-resolved');
 			btn.disabled = true;
 			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: resolved }) })
-				.then(load).catch(function () { btn.disabled = false; });
+				.then(load).catch(function () { btn.disabled = false; toast(SAVE_FAILED); });
 		});
 
 		// Reply forms live inside each note; submit bubbles up to the list container.
