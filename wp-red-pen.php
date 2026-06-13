@@ -487,6 +487,7 @@ function wprp_note_to_array( $note ) {
 	return array(
 		'id'         => (int) $note->ID,
 		'body'       => wpautop( wp_kses_post( $note->post_content ) ),
+		'raw'        => $note->post_content, // unformatted, for the edit textarea
 		'type'       => $type,
 		'typeLabel'  => isset( $types[ $type ] ) ? $types[ $type ] : $types['note'],
 		'status'     => $note->post_status,
