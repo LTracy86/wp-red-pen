@@ -1142,6 +1142,7 @@ add_action(
 				<span id="wprp-fab-count" class="wprp-count" hidden></span>
 			</button>
 			<section id="wprp-panel" hidden aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
+				<div id="wprp-resize" class="wprp-resize" role="separator" aria-orientation="vertical" aria-label="<?php esc_attr_e( 'Drag to resize the panel', 'wp-red-pen' ); ?>" title="<?php esc_attr_e( 'Drag to resize', 'wp-red-pen' ); ?>"></div>
 				<header class="wprp-head">
 					<strong><?php esc_html_e( 'Red Pen', 'wp-red-pen' ); ?></strong>
 					<span class="wprp-page"><?php echo esc_html( $ctx['page']['label'] ); ?></span>
