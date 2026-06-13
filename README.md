@@ -48,7 +48,7 @@ Single self-contained `wp-red-pen.php` (inline CSS/JS, no build step), in keepin
 ## Roadmap
 
 - Shipped in 0.3.0: element-level click-to-pin, threaded replies, priority + assignment, CSV export, auto-context.
-- Next candidates: reassign/repriortise from the repository (currently set at creation), drawing/markup over a screenshot, an "In Progress" status between Open and Resolved, a "jump to next open note" helper.
+- Next candidates: edit/reassign from the repository table too (the front-end panel now has full editing; the repo is still view + resolve), drawing/markup over a screenshot, an "In Progress" status between Open and Resolved, a "jump to next open note" helper.
 - Deliberately out of scope (the free-tier wedge): email/notification alerts, external SaaS sync, push to Jira/Slack/Trello, real-time collaboration, license servers, per-seat billing.
 
 ## License
