@@ -1922,7 +1922,19 @@ function wprp_render_repo_page() {
 		$reply_html = $reply_n ? '<div style="font-size:.72rem;color:#3A3A3C;margin-top:.35rem">' . esc_html( sprintf( _n( '%d reply', '%d replies', $reply_n, 'wp-red-pen' ), $reply_n ) ) . '</div>' : '';
 		$anchor_html = get_post_meta( $n->ID, WPRP_META_ANCHOR, true ) ? '<div style="font-size:.72rem;color:#D32F2F;margin-top:.35rem"><span class="dashicons dashicons-location" style="font-size:14px;width:14px;height:14px;vertical-align:text-top"></span> ' . esc_html__( 'Pinned to an element', 'wp-red-pen' ) . '</div>' : '';
 		echo '<td>' . wp_kses_post( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
-		echo '<td>' . ( $target ? '<a href="' . esc_url( get_edit_post_link( $target ) ) . '">' . esc_html( get_the_title( $target ) ) . '</a> <a href="' . esc_url( get_permalink( $target ) ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '">&#8599;</a>' : '&mdash;' ) . '</td>';
+		$ctx_label = (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true );
+		$level     = ( 'template' === (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true ) ) ? 'template' : 'page';
+		if ( $target ) {
+			$where = '<a href="' . esc_url( get_edit_post_link( $target ) ) . '">' . esc_html( '' !== $ctx_label ? $ctx_label : get_the_title( $target ) ) . '</a> <a href="' . esc_url( get_permalink( $target ) ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '">&#8599;</a>';
+		} else {
+			$ctx_url = (string) get_post_meta( $n->ID, WPRP_META_URL, true );
+			$where   = esc_html( '' !== $ctx_label ? $ctx_label : __( '(no page)', 'wp-red-pen' ) );
+			if ( $ctx_url ) {
+				$where .= ' <a href="' . esc_url( $ctx_url ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '" target="_blank" rel="noopener">&#8599;</a>';
+			}
+		}
+		$lvl_badge = '<div style="margin-top:.25rem"><span style="font-size:.68rem;font-weight:600;color:#3A3A3C;border:1px solid #dfe3e6;border-radius:3px;padding:0 .3rem">' . esc_html( 'template' === $level ? __( 'Template', 'wp-red-pen' ) : __( 'Page', 'wp-red-pen' ) ) . '</span></div>';
+		echo '<td>' . $where . $lvl_badge . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_* above
 		echo '<td>' . ( $au ? esc_html( $au->display_name ) : '<span style="color:#9aa1a7">&mdash;</span>' ) . '</td>';
 		echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
 		echo '<td>' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</td>';
