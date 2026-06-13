@@ -1461,6 +1461,7 @@ function wprp_print_frontend_assets() {
 			pendingShot = null; pendingAnchor = null;
 			body.value = '';
 			typeSel.value = 'note'; prioSel.value = 'normal'; assigneeSel.value = '0';
+			if (levelSel) { levelSel.value = 'page'; }
 			shotPrev.hidden = true; shotThumb.removeAttribute('src');
 			pinInfo.hidden = true; pinLabel.textContent = '';
 			editBar.hidden = true;
