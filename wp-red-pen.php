@@ -1233,6 +1233,7 @@ function wprp_print_frontend_assets() {
 				var sel = cssPath(el);
 				if (!sel) { panel.hidden = false; return; }
 				pendingAnchor = { sel: sel, x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) };
+				anchorRemove = false; // a fresh pin supersedes any pending removal
 				showPinInfo(el);
 				panel.hidden = false;
 			}
