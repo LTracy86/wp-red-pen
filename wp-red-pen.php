@@ -919,7 +919,12 @@ add_action(
 							(string) $req->get_param( 'ctx' ),
 							(string) $req->get_param( 'priority' ),
 							(int) $req->get_param( 'assignee' ),
-							(string) $req->get_param( 'anchor' )
+							(string) $req->get_param( 'anchor' ),
+							array(
+								'level' => (string) $req->get_param( 'level' ),
+								'key'   => (string) $req->get_param( 'ctx_key' ),
+								'label' => (string) $req->get_param( 'ctx_label' ),
+							)
 						);
 						if ( is_wp_error( $id ) ) {
 							return $id;
