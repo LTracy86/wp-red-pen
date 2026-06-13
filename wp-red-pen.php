@@ -1221,8 +1221,14 @@ function wprp_print_frontend_assets() {
 			.wprp-replytext{flex:1;min-width:0;border:1px solid #cfd4d8;border-radius:4px;padding:.25rem .4rem;font:inherit;font-size:.8rem;resize:vertical;box-sizing:border-box}
 			.wprp-replysend{background:#fff;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-ink);font-size:.78rem;padding:.2rem .55rem;cursor:pointer;white-space:nowrap}
 			.wprp-replysend:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
-		.wprp-resolve{background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font-size:.72rem;cursor:pointer;padding:.1rem .4rem;margin-left:auto}
+		.wprp-meta .wprp-actions{margin-left:auto;display:inline-flex;align-items:center;gap:.35rem}
+		.wprp-resolve{background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font-size:.72rem;cursor:pointer;padding:.1rem .4rem}
 		.wprp-resolve:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
+		.wprp-locate{display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);cursor:pointer;padding:.1rem .3rem}
+		.wprp-locate:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
+		.wprp-locate .dashicons{font-size:15px;width:15px;height:15px}
+		/* locate highlight: a red bordered box drawn with padding around the pinned element */
+		#wprp-locate-hl{position:fixed;z-index:99987;border:3px solid var(--wprp-red);border-radius:4px;background:rgba(211,47,47,.08);box-shadow:0 0 0 2px rgba(255,255,255,.5);pointer-events:none;transition:opacity .25s}
 		.wprp-edit{background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font-size:.72rem;cursor:pointer;padding:.1rem .4rem}
 			.wprp-edit:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
 			.wprp-editbar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-size:.78rem;color:var(--wprp-red);background:#fff4f4;border:1px solid #f3c0c0;border-radius:5px;padding:.25rem .5rem}
