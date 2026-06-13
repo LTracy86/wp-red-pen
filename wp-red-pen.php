@@ -1442,6 +1442,7 @@ function wprp_print_frontend_assets() {
 			typeSel.value = n.type || 'note';
 			prioSel.value = n.priority || 'normal';
 			assigneeSel.value = String(n.assignee || 0);
+			if (levelSel) { levelSel.value = (n.level === 'template' && cfg.template && cfg.template.key) ? 'template' : 'page'; }
 			body.value = (n.raw != null ? n.raw : '').trim();
 			// existing screenshot: show it; kept unless the user replaces or clears it
 			if (n.shot) { shotThumb.src = n.shot; shotPrev.hidden = false; } else { shotPrev.hidden = true; shotThumb.removeAttribute('src'); }
