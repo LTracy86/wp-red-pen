@@ -866,7 +866,12 @@ function wprp_print_frontend_assets() {
 			.wprp-replysend:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
 		.wprp-resolve{background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font-size:.72rem;cursor:pointer;padding:.1rem .4rem;margin-left:auto}
 		.wprp-resolve:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
-		.wprp-form{display:flex;flex-direction:column;gap:.4rem;padding:.6rem .75rem;border-top:1px solid #e6e9ec;background:#f7f9fa}
+		.wprp-edit{background:none;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font-size:.72rem;cursor:pointer;padding:.1rem .4rem}
+			.wprp-edit:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
+			.wprp-editbar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-size:.78rem;color:var(--wprp-red);background:#fff4f4;border:1px solid #f3c0c0;border-radius:5px;padding:.25rem .5rem}
+			.wprp-edit-cancel{background:none;border:none;color:var(--wprp-gray);text-decoration:underline;cursor:pointer;font-size:.78rem;padding:0}
+			.wprp-edit-cancel:hover{color:var(--wprp-red)}
+			.wprp-form{display:flex;flex-direction:column;gap:.4rem;padding:.6rem .75rem;border-top:1px solid #e6e9ec;background:#f7f9fa}
 		.wprp-form select,.wprp-form textarea{width:100%;border:1px solid #cfd4d8;border-radius:5px;padding:.35rem .5rem;font:inherit;font-size:.86rem;box-sizing:border-box}
 		.wprp-form textarea{resize:vertical}
 			.wprp-formrow{display:flex;gap:.4rem}
