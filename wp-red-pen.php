@@ -1784,6 +1784,46 @@ function wprp_print_frontend_assets() {
 			positionPins();
 		}
 
+		// ---- locate: from a note's magnifying glass, scroll to + outline its pinned element ----
+		var locHl = null, locTarget = null, locTimer = null;
+		var LOC_PAD = 6;
+		var LOCATE_MISSING = '<?php echo esc_js( __( 'That pinned element is not on this page right now.', 'wp-red-pen' ) ); ?>';
+		function positionLocateHl() {
+			if (!locHl || !locTarget) { return; }
+			if (!document.body.contains(locTarget)) { hideLocateHl(); return; }
+			var r = locTarget.getBoundingClientRect();
+			locHl.style.left = (r.left - LOC_PAD) + 'px';
+			locHl.style.top = (r.top - LOC_PAD) + 'px';
+			locHl.style.width = (r.width + LOC_PAD * 2) + 'px';
+			locHl.style.height = (r.height + LOC_PAD * 2) + 'px';
+		}
+		function showLocateHl(el) {
+			if (!locHl) { locHl = document.createElement('div'); locHl.id = 'wprp-locate-hl'; document.body.appendChild(locHl); }
+			locTarget = el;
+			locHl.style.display = 'block';
+			locHl.style.opacity = '1';
+			positionLocateHl();
+			if (locTimer) { clearTimeout(locTimer); }
+			locTimer = setTimeout(hideLocateHl, 2800);
+		}
+		function hideLocateHl() {
+			if (locTimer) { clearTimeout(locTimer); locTimer = null; }
+			if (!locHl) { return; }
+			locHl.style.opacity = '0';
+			setTimeout(function () { if (locHl && locHl.style.opacity === '0') { locHl.style.display = 'none'; locTarget = null; } }, 280);
+		}
+		function locateNote(id) {
+			var note = null;
+			for (var i = 0; i < lastNotes.length; i++) { if (String(lastNotes[i].id) === String(id)) { note = lastNotes[i]; break; } }
+			if (!note || !note.anchor) { return; }
+			var a; try { a = JSON.parse(note.anchor); } catch (e) { return; }
+			if (!a || !a.sel) { return; }
+			var el; try { el = document.querySelector(a.sel); } catch (e) { el = null; }
+			if (!el) { toast(LOCATE_MISSING); return; }
+			el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+			showLocateHl(el);
+		}
+
 		function positionPins() {
 			for (var k = 0; k < pins.length; k++) {
 				var p = pins[k], t = null;
