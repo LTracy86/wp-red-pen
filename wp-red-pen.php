@@ -40,8 +40,13 @@ define( 'WPRP_META_CTX',    '_wprp_ctx' );      // browser/OS/viewport string ca
 define( 'WPRP_META_PRIORITY', '_wprp_priority' ); // low | normal | high
 define( 'WPRP_META_ASSIGNEE', '_wprp_assignee' ); // assigned user id (0 = unassigned)
 define( 'WPRP_META_ANCHOR', '_wprp_anchor' );   // element-pin anchor (JSON: selector + relative x/y)
+define( 'WPRP_META_CTXKEY', '_wprp_ctx_key' );  // context key: post:ID | term:tax:ID | pt_archive:slug | tpl:* | home | search | 404 ...
+define( 'WPRP_META_CTXLABEL', '_wprp_ctx_label' ); // human label for the context
+define( 'WPRP_META_LEVEL',  '_wprp_level' );    // page | template
 define( 'WPRP_SHOT_DIR',    'wp-red-pen' );     // uploads subfolder for screenshots
 define( 'WPRP_REST_NS',     'wprp/v1' );
+define( 'WPRP_DBVER_OPT',   'wprp_db_version' ); // schema version (for one-time data migrations)
+define( 'WPRP_SHOW_OPT',    'wprp_show_on' );    // global: which view scopes show the widget
 
 /** Note types -> human labels. The single source of truth for the dropdowns. */
 function wprp_note_types() {
