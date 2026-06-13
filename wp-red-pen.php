@@ -595,6 +595,34 @@ function wprp_get_replies( $parent_id ) {
 	);
 }
 
+/**
+ * Reply counts for many notes in a single query: array( parent_id => count ).
+ * Avoids the N+1 of calling wprp_get_replies() per row in the repository table just
+ * to count children.
+ */
+function wprp_reply_counts( $parent_ids ) {
+	global $wpdb;
+	$parent_ids = array_values( array_unique( array_filter( array_map( 'intval', (array) $parent_ids ) ) ) );
+	if ( ! $parent_ids ) {
+		return array();
+	}
+	$placeholders = implode( ',', array_fill( 0, count( $parent_ids ), '%d' ) );
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$rows = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT post_parent, COUNT(*) AS c FROM {$wpdb->posts}
+			 WHERE post_type = %s AND post_status IN ( %s, %s ) AND post_parent IN ( {$placeholders} )
+			 GROUP BY post_parent",
+			array_merge( array( WPRP_CPT, WPRP_STATUS_OPEN, WPRP_STATUS_DONE ), $parent_ids )
+		)
+	);
+	$out = array();
+	foreach ( (array) $rows as $r ) {
+		$out[ (int) $r->post_parent ] = (int) $r->c;
+	}
+	return $out;
+}
+
 /** Shape a reply post into the plain array the JS consumes. */
 function wprp_reply_to_array( $reply ) {
 	$author = get_userdata( $reply->post_author );
