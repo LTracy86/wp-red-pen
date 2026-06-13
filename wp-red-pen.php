@@ -1086,6 +1086,7 @@ function wprp_print_frontend_assets() {
 			pendingShot = null;
 			shotPrev.hidden = true;
 			shotThumb.removeAttribute('src');
+				if (editingId) { shotRemove = true; } // editing: clearing removes the saved screenshot
 		}
 		shotClear.addEventListener('click', clearShot);
 
