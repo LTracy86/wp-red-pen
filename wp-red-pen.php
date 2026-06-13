@@ -1116,7 +1116,7 @@ add_action(
 			<section id="wprp-panel" hidden aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
 				<header class="wprp-head">
 					<strong><?php esc_html_e( 'Red Pen', 'wp-red-pen' ); ?></strong>
-					<span class="wprp-page"><?php echo esc_html( get_the_title( $target ) ); ?></span>
+					<span class="wprp-page"><?php echo esc_html( $ctx['page']['label'] ); ?></span>
 					<button type="button" class="wprp-x" id="wprp-close" aria-label="<?php esc_attr_e( 'Close', 'wp-red-pen' ); ?>">&times;</button>
 				</header>
 				<div id="wprp-list" class="wprp-list"><p class="wprp-muted"><?php esc_html_e( 'Loading notes...', 'wp-red-pen' ); ?></p></div>
