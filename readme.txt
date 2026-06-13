@@ -62,6 +62,12 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.5.0 =
+* Red Pen now works on archives, taxonomy pages, the home/front page, search, and 404 - not just single posts and pages.
+* New "reporting level" choice on every note: report it against This page (the exact post or archive you're on) or This template (the view type, so it covers every page rendered the same way). A page shows its own notes plus the template notes that apply to it.
+* New "Where Red Pen appears" setting on the Red Pen admin page: choose which kinds of views show the floating button (defaults to everywhere).
+* Repository gains a Where column and a Page/Template badge; CSV export gains Level and Where columns. Existing notes are migrated automatically.
+
 = 0.4.0 =
 * Edit a note after adding it: an Edit button on each note loads it back into the form so you can change the text, type, priority, and assignee, swap or remove the screenshot, and re-pin, move, or clear the attached element. Cancel backs out without saving.
 
