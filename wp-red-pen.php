@@ -840,6 +840,46 @@ function wprp_note_to_array( $note ) {
 }
 
 // ---------------------------------------------------------------------------
+// One-time data migration: backfill the page/template context on legacy notes
+// ---------------------------------------------------------------------------
+add_action(
+	'init',
+	function () {
+		if ( version_compare( (string) get_option( WPRP_DBVER_OPT, '0' ), '0.5.0', '>=' ) ) {
+			return;
+		}
+		// Legacy notes were created before the context model: they have a numeric
+		// _wprp_target but no _wprp_ctx_key. Backfill them as page-level post notes.
+		$legacy = get_posts(
+			array(
+				'post_type'      => WPRP_CPT,
+				'post_status'    => array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE ),
+				'post_parent'    => 0,
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'meta_query'     => array(
+					array(
+						'key'     => WPRP_META_CTXKEY,
+						'compare' => 'NOT EXISTS',
+					),
+				),
+			)
+		);
+		foreach ( $legacy as $nid ) {
+			$t = (int) get_post_meta( $nid, WPRP_META_TARGET, true );
+			update_post_meta( $nid, WPRP_META_LEVEL, 'page' );
+			if ( $t > 0 ) {
+				update_post_meta( $nid, WPRP_META_CTXKEY, 'post:' . $t );
+				update_post_meta( $nid, WPRP_META_CTXLABEL, mb_substr( (string) get_the_title( $t ), 0, 200 ) );
+			}
+		}
+		update_option( WPRP_DBVER_OPT, '0.5.0' );
+	},
+	20
+);
+
+// ---------------------------------------------------------------------------
 // REST API - the front-end button talks to this
 // ---------------------------------------------------------------------------
 add_action(
