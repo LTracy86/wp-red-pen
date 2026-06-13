@@ -832,6 +832,9 @@ function wprp_note_to_array( $note ) {
 		'assignee'    => $assignee,
 		'assigneeName' => $au ? $au->display_name : '',
 		'anchor'      => (string) get_post_meta( $note->ID, WPRP_META_ANCHOR, true ),
+		'level'       => $level,
+		'ctxKey'      => (string) get_post_meta( $note->ID, WPRP_META_CTXKEY, true ),
+		'ctxLabel'    => (string) get_post_meta( $note->ID, WPRP_META_CTXLABEL, true ),
 		'replies'     => array_map( 'wprp_reply_to_array', wprp_get_replies( $note->ID ) ),
 	);
 }
