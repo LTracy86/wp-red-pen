@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.7.1 =
+* Resolved notes now drop off the active list in the floating panel (it shows open notes only), and their numbered pin marker no longer appears on the page. Resolved notes stay available - and reopenable - on the Resolved / All tabs of the admin Red Pen repository.
+
 = 0.7.0 =
 * Accessibility pass. The notes panel is now a labelled dialog with focus management: opening it moves focus inside, Tab and Shift+Tab stay within the panel, and closing it (button or Escape) returns focus to where you were.
 * Error and notice messages are announced to screen readers (the toast is now a live alert region).
