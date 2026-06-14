@@ -1474,7 +1474,16 @@ function wprp_print_frontend_assets() {
 		});
 
 		// ---- resizable panel: drag the left edge to widen; the custom width persists ----
-		var resizeHandle = document.getElementById('wprp-resize');
+		// Focus trap: while the panel is open, Tab/Shift+Tab cycle within it.
+			panel.addEventListener('keydown', function (e) {
+				if (e.key !== 'Tab' || panel.hidden) { return; }
+				var f = panelFocusables();
+				if (!f.length) { return; }
+				var first = f[0], last = f[f.length - 1];
+				if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+				else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+			});
+			var resizeHandle = document.getElementById('wprp-resize');
 		var WPRP_W_KEY = 'wprpPanelWidth';
 		var MIN_W = 300;
 		function maxW() { return Math.max(MIN_W, window.innerWidth - 40); }
