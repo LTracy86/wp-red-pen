@@ -1687,6 +1687,14 @@ function wprp_print_frontend_assets() {
 				if (overlay.parentNode) { overlay.parentNode.removeChild(overlay); }
 			}
 			overlay.addEventListener('mousedown', down);
+				// Touch floor: map touch events onto the same drag handlers so capture works on tablets/phones.
+				function tc(e) { return (e.touches && e.touches[0]) ? e.touches[0] : (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : e; }
+				function tdown(e) { var t = tc(e); down({ clientX: t.clientX, clientY: t.clientY, preventDefault: function () { if (e.cancelable) { e.preventDefault(); } } }); }
+				function tmove(e) { var t = tc(e); move({ clientX: t.clientX, clientY: t.clientY }); if (dragging && e.cancelable) { e.preventDefault(); } }
+				function tup(e) { var t = tc(e); up({ clientX: t.clientX, clientY: t.clientY }); }
+				overlay.addEventListener('touchstart', tdown, { passive: false });
+				window.addEventListener('touchmove', tmove, { passive: false });
+				window.addEventListener('touchend', tup);
 			window.addEventListener('mousemove', move);
 			window.addEventListener('mouseup', up);
 			window.addEventListener('keydown', key);
