@@ -386,11 +386,21 @@ add_action(
 		wprp_delete_shot( (string) get_post_meta( $post_id, WPRP_META_SHOT, true ) );
 
 		// Non-hierarchical CPT: WP won't cascade child replies, so delete them here
-		// (only for top-level notes; replies have no children of their own).
+		// (only for top-level notes; replies have no children of their own). Fetch ALL
+		// children unbounded - wprp_get_replies caps at 200, which would orphan the rest.
 		$post = get_post( $post_id );
 		if ( $post && 0 === (int) $post->post_parent ) {
-			foreach ( wprp_get_replies( $post_id ) as $reply ) {
-				wp_delete_post( (int) $reply->ID, true );
+			$reply_ids = get_posts(
+				array(
+					'post_type'      => WPRP_CPT,
+					'post_status'    => array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE ),
+					'post_parent'    => (int) $post_id,
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+				)
+			);
+			foreach ( $reply_ids as $reply_id ) {
+				wp_delete_post( (int) $reply_id, true );
 			}
 		}
 	}
