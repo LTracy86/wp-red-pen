@@ -1355,7 +1355,7 @@ function wprp_print_frontend_assets() {
 			// Transient error/notice toast (so a failed save never fails silently).
 			var toastEl = null, toastTimer = null;
 			function toast(msg) {
-				if (!toastEl) { toastEl = document.createElement('div'); toastEl.id = 'wprp-toast'; document.body.appendChild(toastEl); }
+				if (!toastEl) { toastEl = document.createElement('div'); toastEl.id = 'wprp-toast'; toastEl.setAttribute('role', 'alert'); toastEl.setAttribute('aria-live', 'assertive'); toastEl.setAttribute('aria-atomic', 'true'); document.body.appendChild(toastEl); }
 				toastEl.textContent = msg;
 				toastEl.style.display = 'block';
 				if (toastTimer) { clearTimeout(toastTimer); }
