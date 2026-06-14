@@ -1362,6 +1362,13 @@ function wprp_print_frontend_assets() {
 				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, 4000);
 			}
 			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save - check your connection and try again.', 'wp-red-pen' ) ); ?>';
+				// a11y strings + reduced-motion check (built once).
+				var FAB_LABEL = '<?php echo esc_js( __( 'Red Pen notes', 'wp-red-pen' ) ); ?>';
+				var FAB_LABEL_N = '<?php echo esc_js( __( 'Red Pen notes, %d open', 'wp-red-pen' ) ); ?>';
+				var PIN_PREFIX = '<?php echo esc_js( __( 'Note', 'wp-red-pen' ) ); ?>';
+				var RESOLVED_WORD = '<?php echo esc_js( __( 'resolved', 'wp-red-pen' ) ); ?>';
+				function reduceMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+				function updateFabLabel(open) { fab.setAttribute('aria-label', open > 0 ? FAB_LABEL_N.replace('%d', open) : FAB_LABEL); }
 
 			// A short, readable "browser / OS / viewport" string for the note, parsed from the
 			// user agent (best-effort; the raw UA is the fallback). Server sanitises + length-caps.
