@@ -1470,7 +1470,7 @@ function wprp_print_frontend_assets() {
 		document.addEventListener('keydown', function (e) {
 			if (e.key !== 'Escape' || panel.hidden) { return; }
 			if (document.getElementById('wprp-capture') || document.getElementById('wprp-pinmode')) { return; }
-			panel.hidden = true; fab.setAttribute('aria-expanded', 'false'); fab.focus();
+			panel.hidden = true; fab.setAttribute('aria-expanded', 'false'); wprpRestoreFocus();
 		});
 
 		// ---- resizable panel: drag the left edge to widen; the custom width persists ----
