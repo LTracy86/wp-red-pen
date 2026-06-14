@@ -62,6 +62,16 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.7.0 =
+* Accessibility pass. The notes panel is now a labelled dialog with focus management: opening it moves focus inside, Tab and Shift+Tab stay within the panel, and closing it (button or Escape) returns focus to where you were.
+* Error and notice messages are announced to screen readers (the toast is now a live alert region).
+* The notes list announces when it is loading and when it updates, so screen-reader users hear new content arrive.
+* The floating button's label now reflects how many notes are open (for example "Red Pen notes, 3 open").
+* Element pins now have descriptive labels (note number, type, and a snippet) instead of an unlabelled number.
+* The resize handle is keyboard-operable: focus it and use the arrow keys (Shift for larger steps, Home/End for min/max) to set the panel width.
+* Respects the operating-system "reduce motion" setting - the note flash, button transitions, and smooth scrolling are turned off when you ask for less motion.
+* The screenshot capture and element-pin tools now work with touch (drag to select or highlight, lift to confirm).
+
 = 0.6.2 =
 * Security: the front-end config blob is now escaped on output, closing a stored-XSS path where a crafted post title could break out of the widget's data attribute and run script in an editor or admin's browser.
 * Deleting a note now removes all of its replies even past the 200 most recent, so no orphaned replies are left behind.
