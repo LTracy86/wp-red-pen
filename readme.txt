@@ -62,6 +62,10 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.6.2 =
+* Security: the front-end config blob is now escaped on output, closing a stored-XSS path where a crafted post title could break out of the widget's data attribute and run script in an editor or admin's browser.
+* Deleting a note now removes all of its replies even past the 200 most recent, so no orphaned replies are left behind.
+
 = 0.6.1 =
 * Notes pinned to an element now have a magnifying-glass button (left of Resolve) that scrolls to the element and draws a red, padded highlight box around it.
 
