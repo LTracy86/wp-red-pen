@@ -1290,6 +1290,17 @@ function wprp_print_frontend_assets() {
 		#wprp-busy{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(30,34,37,.18);font-family:-apple-system,sans-serif}
 		#wprp-busy span{background:var(--wprp-ink);color:#fff;font-size:.85rem;padding:.5rem 1rem;border-radius:6px}
 		#wprp-toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:100000;background:var(--wprp-red-dark);color:#fff;font-family:-apple-system,sans-serif;font-size:.82rem;padding:.45rem .9rem;border-radius:6px;box-shadow:0 4px 14px rgba(30,34,37,.4);max-width:80vw;text-align:center}
+			/* Keyboard focus: a visible ring on every interactive surface, legible over any site background. */
+			#wprp-root :focus-visible{outline:2px solid var(--wprp-red);outline-offset:2px}
+			#wprp-fab:focus-visible,.wprp-pin:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 5px var(--wprp-red)}
+			.wprp-resize:focus-visible{outline:2px solid var(--wprp-red);outline-offset:-2px}
+			/* Respect the user's reduced-motion preference: kill transitions, the flash, and the resize accent grow. */
+			@media (prefers-reduced-motion: reduce){
+				#wprp-fab,#wprp-fab:hover{transition:none;transform:none}
+				.wprp-resize::before,.wprp-resize:hover::before{transition:none}
+				#wprp-locate-hl{transition:none}
+				.wprp-note.wprp-flash{animation:none}
+			}
 	</style>
 	<script id="wprp-js">
 	(function () {
