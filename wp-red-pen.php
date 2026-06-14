@@ -1810,6 +1810,8 @@ function wprp_print_frontend_assets() {
 			function key(e) { if (e.key === 'Escape') { teardown(); panel.hidden = false; } }
 			function teardown() {
 				ov.removeEventListener('mousemove', mv);
+					ov.removeEventListener('touchmove', tmv);
+					ov.removeEventListener('touchend', tend);
 				ov.removeEventListener('click', clk);
 				window.removeEventListener('keydown', key);
 				if (ov.parentNode) { ov.parentNode.removeChild(ov); }
