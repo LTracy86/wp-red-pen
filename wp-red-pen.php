@@ -1369,6 +1369,11 @@ function wprp_print_frontend_assets() {
 				var RESOLVED_WORD = '<?php echo esc_js( __( 'resolved', 'wp-red-pen' ) ); ?>';
 				function reduceMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 				function updateFabLabel(open) { fab.setAttribute('aria-label', open > 0 ? FAB_LABEL_N.replace('%d', open) : FAB_LABEL); }
+				// Focus management for the panel (a role=dialog): trap Tab inside it, restore focus on close.
+				var wprpLastFocus = null;
+				var WPRP_FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+				function panelFocusables() { return Array.prototype.slice.call(panel.querySelectorAll(WPRP_FOCUSABLE)).filter(function (el) { return el.offsetParent !== null; }); }
+				function wprpRestoreFocus() { var back = (wprpLastFocus && document.body.contains(wprpLastFocus)) ? wprpLastFocus : fab; wprpLastFocus = null; try { back.focus(); } catch (e) {} }
 
 			// A short, readable "browser / OS / viewport" string for the note, parsed from the
 			// user agent (best-effort; the raw UA is the fallback). Server sanitises + length-caps.
