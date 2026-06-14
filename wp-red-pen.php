@@ -1529,6 +1529,12 @@ function wprp_print_frontend_assets() {
 			}
 			resizeHandle.addEventListener('mousedown', rzDown);
 			resizeHandle.addEventListener('touchstart', rzDown, { passive: false });
+				// Keyboard resize: arrows nudge (Shift = larger step), Home/End jump to min/max.
+				resizeHandle.addEventListener('keydown', function (e) {
+					var cur = panel.getBoundingClientRect().width || (parseInt(panel.style.width, 10) || 420), step = e.shiftKey ? 60 : 20, nw = cur;
+					if (e.key === 'ArrowLeft') { nw = cur + step; } else if (e.key === 'ArrowRight') { nw = cur - step; } else if (e.key === 'Home') { nw = MIN_W; } else if (e.key === 'End') { nw = maxW(); } else { return; }
+					e.preventDefault(); applyW(nw); saveW(panel.getBoundingClientRect().width || nw);
+				});
 			// Keep an explicit width within bounds when the viewport shrinks.
 			window.addEventListener('resize', function () { if (panel.style.width) { applyW(parseInt(panel.style.width, 10) || MIN_W); } });
 		}
