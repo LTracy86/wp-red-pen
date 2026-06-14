@@ -1430,6 +1430,7 @@ function wprp_print_frontend_assets() {
 			notes.forEach(function (n) { if (!n.resolved) { open++; } });
 			if (open > 0) { countEl.textContent = open; countEl.hidden = false; } else { countEl.hidden = true; }
 				updateFabLabel(open);
+				list.setAttribute('aria-busy', 'false');
 			if (focusId) {
 				var fel = list.querySelector('.wprp-note[data-id="' + focusId + '"]');
 				if (fel) { fel.scrollIntoView({ block: 'center' }); fel.classList.remove('wprp-flash'); void fel.offsetWidth; fel.classList.add('wprp-flash'); }
