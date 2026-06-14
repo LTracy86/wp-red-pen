@@ -1446,7 +1446,7 @@ function wprp_print_frontend_assets() {
 		function load() {
 			var keys = [cfg.page && cfg.page.key, cfg.template && cfg.template.key].filter(Boolean).join(',');
 			list.setAttribute('aria-busy', 'true');
-				return api('/notes?keys=' + encodeURIComponent(keys)).then(function (notes) {
+				return api('/notes?keys=' + encodeURIComponent(keys) + '&status=open').then(function (notes) {
 				lastNotes = notes;
 				render(notes);
 				buildPins(notes);
