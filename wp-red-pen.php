@@ -1681,6 +1681,9 @@ function wprp_print_frontend_assets() {
 			function key(e) { if (e.key === 'Escape') { teardown(); panel.hidden = false; } }
 			function teardown() {
 				overlay.removeEventListener('mousedown', down);
+					overlay.removeEventListener('touchstart', tdown);
+					window.removeEventListener('touchmove', tmove);
+					window.removeEventListener('touchend', tup);
 				window.removeEventListener('mousemove', move);
 				window.removeEventListener('mouseup', up);
 				window.removeEventListener('keydown', key);
