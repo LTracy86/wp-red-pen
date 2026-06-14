@@ -1620,6 +1620,7 @@ function wprp_print_frontend_assets() {
 			editBar.hidden = false;
 			if (submitBtn) { submitBtn.textContent = SAVE_LABEL; }
 			panel.hidden = false;
+			fab.setAttribute('aria-expanded', 'true');
 			body.focus();
 			form.scrollIntoView({ block: 'nearest' });
 		}
