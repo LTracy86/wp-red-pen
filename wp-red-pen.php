@@ -1136,7 +1136,7 @@ add_action(
 			)
 		);
 		?>
-		<div id="wprp-root" data-cfg='<?php echo $cfg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_json_encode is safe in a single-quoted attr ?>'>
+		<div id="wprp-root" data-cfg='<?php echo esc_attr( $cfg ); ?>'>
 			<button type="button" id="wprp-fab" aria-expanded="false" title="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
 				<span class="dashicons dashicons-edit"></span>
 				<span id="wprp-fab-count" class="wprp-count" hidden></span>
