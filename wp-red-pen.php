@@ -1463,7 +1463,7 @@ function wprp_print_frontend_assets() {
 			fab.setAttribute('aria-expanded', show ? 'true' : 'false');
 			if (show) { wprpLastFocus = document.activeElement; load(); try { panel.focus(); } catch (e) {} }
 		});
-		document.getElementById('wprp-close').addEventListener('click', function () {
+		document.getElementById('wprp-close').addEventListener('click', function () { wprpRestoreFocus();
 			panel.hidden = true; fab.setAttribute('aria-expanded', 'false');
 		});
 		// Esc closes the open panel - but not while a capture/pin overlay is up (those own Esc).
