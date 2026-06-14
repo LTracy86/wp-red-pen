@@ -1815,6 +1815,11 @@ function wprp_print_frontend_assets() {
 				if (ov.parentNode) { ov.parentNode.removeChild(ov); }
 			}
 			ov.addEventListener('mousemove', mv);
+				// Touch floor: drag a finger to highlight, lift to pin.
+				function tmv(e) { var t = e.touches && e.touches[0]; if (t) { mv({ clientX: t.clientX, clientY: t.clientY }); if (e.cancelable) { e.preventDefault(); } } }
+				function tend(e) { var t = e.changedTouches && e.changedTouches[0]; if (t) { clk({ clientX: t.clientX, clientY: t.clientY, preventDefault: function () {}, stopPropagation: function () {} }); } }
+				ov.addEventListener('touchmove', tmv, { passive: false });
+				ov.addEventListener('touchend', tend);
 			ov.addEventListener('click', clk);
 			window.addEventListener('keydown', key);
 		}
