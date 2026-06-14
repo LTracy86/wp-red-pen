@@ -1428,7 +1428,7 @@ function wprp_print_frontend_assets() {
 		function render(notes) {
 			var open = 0;
 			if (!notes.length) {
-				list.innerHTML = '<p class="wprp-muted"><?php echo esc_js( __( 'No notes on this page yet.', 'wp-red-pen' ) ); ?></p>';
+				list.innerHTML = '<p class="wprp-muted"><?php echo esc_js( __( 'No open notes on this page.', 'wp-red-pen' ) ); ?></p>';
 			} else {
 				list.innerHTML = notes.map(noteHtml).join('');
 			}
