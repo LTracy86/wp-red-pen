@@ -1461,7 +1461,7 @@ function wprp_print_frontend_assets() {
 			var show = panel.hidden;
 			panel.hidden = !show;
 			fab.setAttribute('aria-expanded', show ? 'true' : 'false');
-			if (show) { load(); }
+			if (show) { wprpLastFocus = document.activeElement; load(); try { panel.focus(); } catch (e) {} }
 		});
 		document.getElementById('wprp-close').addEventListener('click', function () {
 			panel.hidden = true; fab.setAttribute('aria-expanded', 'false');
