@@ -1158,7 +1158,7 @@ add_action(
 					<span class="wprp-page"><?php echo esc_html( $ctx['page']['label'] ); ?></span>
 					<button type="button" class="wprp-x" id="wprp-close" aria-label="<?php esc_attr_e( 'Close', 'wp-red-pen' ); ?>">&times;</button>
 				</header>
-				<div id="wprp-list" class="wprp-list"><p class="wprp-muted"><?php esc_html_e( 'Loading notes...', 'wp-red-pen' ); ?></p></div>
+				<div id="wprp-list" class="wprp-list" aria-live="polite" aria-busy="true"><p class="wprp-muted"><?php esc_html_e( 'Loading notes...', 'wp-red-pen' ); ?></p></div>
 				<form id="wprp-form" class="wprp-form">
 					<div class="wprp-formrow">
 						<select id="wprp-type" aria-label="<?php esc_attr_e( 'Note type', 'wp-red-pen' ); ?>"><?php echo $opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
