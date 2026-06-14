@@ -1830,7 +1830,9 @@ function wprp_print_frontend_assets() {
 				marker.type = 'button';
 				marker.className = 'wprp-pin' + (n.resolved ? ' is-resolved' : '');
 				marker.textContent = i;
-				marker.title = (n.typeLabel ? n.typeLabel + ': ' : '') + (n.body ? n.body.replace(/<[^>]*>/g, '').slice(0, 80) : '');
+				var pinSnippet = (n.typeLabel ? n.typeLabel + ': ' : '') + (n.body ? n.body.replace(/<[^>]*>/g, '').slice(0, 80) : '');
+				marker.title = pinSnippet;
+				marker.setAttribute('aria-label', PIN_PREFIX + ' ' + i + ': ' + pinSnippet + (n.resolved ? ' (' + RESOLVED_WORD + ')' : ''));
 				(function (noteId) { marker.addEventListener('click', function () { openToNote(noteId); }); })(n.id);
 				pinLayer.appendChild(marker);
 				pins.push({ sel: a.sel, x: typeof a.x === 'number' ? a.x : 0.5, y: typeof a.y === 'number' ? a.y : 0.5, el: marker });
