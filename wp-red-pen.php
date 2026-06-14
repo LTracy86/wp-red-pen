@@ -1808,6 +1808,7 @@ function wprp_print_frontend_assets() {
 		}
 
 		function openToNote(id) {
+			if (panel.hidden) { wprpLastFocus = document.activeElement; }
 			panel.hidden = false;
 			fab.setAttribute('aria-expanded', 'true');
 			focusId = id;
