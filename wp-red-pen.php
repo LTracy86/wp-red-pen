@@ -1876,7 +1876,7 @@ function wprp_print_frontend_assets() {
 			if (!a || !a.sel) { return; }
 			var el; try { el = document.querySelector(a.sel); } catch (e) { el = null; }
 			if (!el) { toast(LOCATE_MISSING); return; }
-			el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+			el.scrollIntoView({ block: 'center', behavior: reduceMotion() ? 'auto' : 'smooth' });
 			showLocateHl(el);
 		}
 
