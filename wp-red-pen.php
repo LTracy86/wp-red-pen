@@ -1619,7 +1619,12 @@ function wprp_print_frontend_assets() {
 			var resolved = !wrap.classList.contains('is-resolved');
 			btn.disabled = true;
 			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: resolved }) })
-				.then(load).catch(function () { btn.disabled = false; toast(SAVE_FAILED); });
+				.then(function () {
+					toast(resolved ? RESOLVED_MSG : REOPENED_MSG, UNDO_LABEL, function () {
+						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: !resolved }) }).then(load).catch(function () { toast(SAVE_FAILED); });
+					});
+					load();
+				}).catch(function () { btn.disabled = false; toast(SAVE_FAILED); });
 		});
 
 		// Reply forms live inside each note; submit bubbles up to the list container.
