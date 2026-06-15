@@ -1383,7 +1383,13 @@ function wprp_print_frontend_assets() {
 			var toastEl = null, toastTimer = null;
 			function toast(msg, actionLabel, actionFn) {
 				if (!toastEl) { toastEl = document.createElement('div'); toastEl.id = 'wprp-toast'; toastEl.setAttribute('role', 'alert'); toastEl.setAttribute('aria-live', 'assertive'); toastEl.setAttribute('aria-atomic', 'true'); document.body.appendChild(toastEl); }
-				toastEl.textContent = msg;
+				toastEl.textContent = '';
+					var _tspan = document.createElement('span'); _tspan.textContent = msg; toastEl.appendChild(_tspan);
+					if (actionLabel && actionFn) {
+						var _tbtn = document.createElement('button'); _tbtn.type = 'button'; _tbtn.className = 'wprp-toast-action'; _tbtn.textContent = actionLabel;
+						_tbtn.addEventListener('click', function () { if (toastTimer) { clearTimeout(toastTimer); } toastEl.style.display = 'none'; actionFn(); });
+						toastEl.appendChild(_tbtn);
+					}
 				toastEl.style.display = 'block';
 				if (toastTimer) { clearTimeout(toastTimer); }
 				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, 4000);
