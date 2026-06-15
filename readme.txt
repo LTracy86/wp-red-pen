@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.7.6 =
+* The Tools > Red Pen menu item now has a red pen icon (like Smooth Moves), and the pen icon in the admin bar and on the repository page is now the brand accent red.
+
 = 0.7.5 =
 * Red Pen now lives under the Tools menu instead of taking its own top-level spot in the admin sidebar, keeping the main dashboard menu uncluttered. (Same page, same permissions - just Tools > Red Pen.)
 
