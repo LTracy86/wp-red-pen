@@ -1707,6 +1707,8 @@ function wprp_print_frontend_assets() {
 			shotPrev.hidden = true; shotThumb.removeAttribute('src');
 			pinInfo.hidden = true; pinLabel.textContent = '';
 			editBar.hidden = true;
+			if (moreBox) { moreBox.hidden = true; }
+			if (moreToggle) { moreToggle.setAttribute('aria-expanded', 'false'); }
 			if (submitBtn) { submitBtn.textContent = ADD_LABEL; }
 		}
 		if (editCancel) { editCancel.addEventListener('click', exitEdit); }
