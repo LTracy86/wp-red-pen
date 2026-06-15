@@ -1472,7 +1472,7 @@ function wprp_print_frontend_assets() {
 			var notes = [];
 			for (var _j = 0; _j < lastNotes.length; _j++) { if ((currentTab === 'resolved') === !!lastNotes[_j].resolved) { notes.push(lastNotes[_j]); } }
 			if (!notes.length) {
-				list.innerHTML = '<p class="wprp-muted"><?php echo esc_js( __( 'No open notes on this page.', 'wp-red-pen' ) ); ?></p>';
+				list.innerHTML = '<p class="wprp-muted">' + (currentTab === 'resolved' ? EMPTY_RESOLVED : EMPTY_OPEN) + '</p>';
 			} else {
 				list.innerHTML = notes.map(noteHtml).join('');
 			}
