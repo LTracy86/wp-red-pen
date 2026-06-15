@@ -1513,6 +1513,54 @@ function wprp_print_frontend_assets() {
 			});
 		}
 
+		// ---- surgical DOM updates: patch only the affected note so other notes' reply drafts + scroll survive ----
+		function noteNodeById(nid) { return list.querySelector('.wprp-note[data-id="' + nid + '"]'); }
+		function htmlToNode(html) { var d = document.createElement('div'); d.innerHTML = html; return d.firstChild; }
+		function lastNotesIndex(nid) { for (var i = 0; i < lastNotes.length; i++) { if (String(lastNotes[i].id) === String(nid)) { return i; } } return -1; }
+		function noteBelongsToTab(n) { return (currentTab === 'resolved') === !!n.resolved; }
+		function clearPlaceholder() { if (!list.querySelector('.wprp-note')) { list.innerHTML = ''; } }
+		function showEmptyIfNeeded() { if (!list.querySelector('.wprp-note')) { list.innerHTML = '<p class="wprp-muted">' + (currentTab === 'resolved' ? EMPTY_RESOLVED : EMPTY_OPEN) + '</p>'; } }
+		function refreshCounts() {
+			var o = 0, r = 0;
+			for (var i = 0; i < lastNotes.length; i++) { if (lastNotes[i].resolved) { r++; } else { o++; } }
+			if (tabOpenBtn) { tabOpenBtn.textContent = TAB_OPEN + ' (' + o + ')'; }
+			if (tabResolvedBtn) { tabResolvedBtn.textContent = TAB_RESOLVED + ' (' + r + ')'; }
+			if (o > 0) { countEl.textContent = o; countEl.hidden = false; } else { countEl.hidden = true; }
+			updateFabLabel(o);
+		}
+		// Replace a single note's node in place (reply / edit) - leaves every other note untouched.
+		function patchNoteInPlace(data) {
+			var idx = lastNotesIndex(data.id);
+			if (idx >= 0) { lastNotes[idx] = data; } else { lastNotes.unshift(data); }
+			var node = noteNodeById(data.id);
+			if (node) { node.parentNode.replaceChild(htmlToNode(noteHtml(data)), node); }
+			else if (noteBelongsToTab(data)) { clearPlaceholder(); list.insertBefore(htmlToNode(noteHtml(data)), list.firstChild); }
+			refreshCounts(); buildPins(lastNotes);
+		}
+		// Flip a note's status locally (resolve / reopen / undo) and move it on/off the active tab.
+		function applyStatusLocally(nid, resolvedBool) {
+			var idx = lastNotesIndex(nid);
+			if (idx >= 0) { lastNotes[idx].resolved = resolvedBool; lastNotes[idx].status = resolvedBool ? 'wprp_resolved' : 'wprp_open'; }
+			var n = (idx >= 0) ? lastNotes[idx] : null;
+			var node = noteNodeById(nid);
+			if (n && noteBelongsToTab(n)) {
+				if (node) { node.parentNode.replaceChild(htmlToNode(noteHtml(n)), node); }
+				else { clearPlaceholder(); list.insertBefore(htmlToNode(noteHtml(n)), list.firstChild); }
+			} else if (node) { node.parentNode.removeChild(node); }
+			showEmptyIfNeeded(); refreshCounts(); buildPins(lastNotes);
+		}
+		// Drop a freshly created note straight into the list (newest first) without a refetch.
+		function applyNewNote(data) {
+			lastNotes.unshift(data);
+			if (noteBelongsToTab(data)) {
+				clearPlaceholder();
+				var n = htmlToNode(noteHtml(data));
+				list.insertBefore(n, list.firstChild);
+				n.classList.remove('wprp-flash'); void n.offsetWidth; n.classList.add('wprp-flash');
+			}
+			refreshCounts(); buildPins(lastNotes);
+		}
+
 		// ---- Open / Resolved tabs: switch which notes the panel lists (client-side from lastNotes) ----
 		function setTab(tab) { currentTab = (tab === 'resolved') ? 'resolved' : 'open'; render(); }
 		if (tabOpenBtn) { tabOpenBtn.addEventListener('click', function () { setTab('open'); }); }
