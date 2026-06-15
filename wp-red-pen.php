@@ -1420,7 +1420,7 @@ function wprp_print_frontend_assets() {
 				'<div class="wprp-replies">' +
 					((n.replies && n.replies.length) ? n.replies.map(replyHtml).join('') : '') +
 					'<form class="wprp-replyform" data-id="' + n.id + '">' +
-						'<textarea class="wprp-replytext" rows="1" placeholder="<?php echo esc_js( __( 'Reply...', 'wp-red-pen' ) ); ?>" required></textarea>' +
+						'<textarea class="wprp-replytext" rows="2" placeholder="<?php echo esc_js( __( 'Reply...', 'wp-red-pen' ) ); ?>" required></textarea>' +
 						'<button type="submit" class="wprp-replysend"><?php echo esc_js( __( 'Reply', 'wp-red-pen' ) ); ?></button>' +
 					'</form>' +
 				'</div>' +
