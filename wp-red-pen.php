@@ -1081,6 +1081,21 @@ add_action(
 	80
 );
 
+/**
+ * Tint the admin-bar Red Pen pen icon with the brand accent red. The core
+ * `#wpadminbar .ab-icon::before` rule sets the icon colour directly, so an inline
+ * span colour won't win - this higher-specificity rule does. The admin bar renders
+ * on the front end too (for logged-in users), so print on both wp_head + admin_head.
+ */
+function wprp_admin_bar_icon_css() {
+	if ( ! wprp_user_can() ) {
+		return;
+	}
+	echo '<style id="wprp-adminbar-css">#wpadminbar #wp-admin-bar-wprp-toggle .ab-icon:before{color:#D32F2F}</style>';
+}
+add_action( 'admin_head', 'wprp_admin_bar_icon_css' );
+add_action( 'wp_head', 'wprp_admin_bar_icon_css' );
+
 /** Handle the admin-bar toggle click (flip the per-user meta, then redirect clean). */
 add_action(
 	'init',
