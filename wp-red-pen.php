@@ -1719,7 +1719,7 @@ function wprp_print_frontend_assets() {
 		shotClear.addEventListener('click', clearShot);
 
 		shotBtn.addEventListener('click', function () {
-			if (typeof html2canvas === 'undefined') { return; }
+			if (typeof html2canvas === 'undefined') { toast(SHOT_UNAVAILABLE); return; }
 			startCapture();
 		});
 
