@@ -62,6 +62,13 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.7.2 =
+* The notes panel now has Open and Resolved tabs (with live counts). Resolving a note moves it to the Resolved tab; the button there reads Reopen and moves it back.
+* Resolving or reopening shows a brief "Undo" toast so a misclick is one click to fix.
+* The add-note form is lighter: priority, assignee, and reporting level are tucked behind a "More" button, so jotting a quick note is just pick-a-type and type. (Editing a note expands them automatically.)
+* Reply boxes are taller and grow as you type.
+* If the screenshot tool fails to load, the button now says so instead of doing nothing.
+
 = 0.7.1 =
 * Resolved notes now drop off the active list in the floating panel (it shows open notes only), and their numbered pin marker no longer appears on the page. Resolved notes stay available - and reopenable - on the Resolved / All tabs of the admin Red Pen repository.
 
