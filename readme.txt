@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.7.4 =
+* Resolving, reopening, replying to, adding, and editing a note now update just that one note in the panel instead of reloading the whole list. A half-typed reply in another note is no longer wiped, and the panel no longer jumps back to the top after an action.
+
 = 0.7.3 =
 * The notes panel now has a button (top-right) that opens the full notes repository in the WordPress admin.
 * Your report settings - type, priority, assignee, and reporting level - are remembered between page loads, so filing several similar notes (same type, same assignee) no longer means re-picking every time.
