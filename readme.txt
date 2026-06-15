@@ -62,6 +62,11 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.7.3 =
+* The notes panel now has a button (top-right) that opens the full notes repository in the WordPress admin.
+* Your report settings - type, priority, assignee, and reporting level - are remembered between page loads, so filing several similar notes (same type, same assignee) no longer means re-picking every time.
+* The numbered pin markers now use the app's bright red so they stand out more clearly on the page.
+
 = 0.7.2 =
 * The notes panel now has Open and Resolved tabs (with live counts). Resolving a note moves it to the Resolved tab; the button there reads Reopen and moves it back.
 * Resolving or reopening shows a brief "Undo" toast so a misclick is one click to fix.
