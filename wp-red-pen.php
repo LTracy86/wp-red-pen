@@ -1156,7 +1156,8 @@ add_action(
 				<header class="wprp-head">
 					<strong><?php esc_html_e( 'Red Pen', 'wp-red-pen' ); ?></strong>
 					<span class="wprp-page"><?php echo esc_html( $ctx['page']['label'] ); ?></span>
-					<button type="button" class="wprp-x" id="wprp-close" aria-label="<?php esc_attr_e( 'Close', 'wp-red-pen' ); ?>">&times;</button>
+					<a class="wprp-repo-link" href="<?php echo esc_url( admin_url( 'admin.php?page=wp-red-pen' ) ); ?>" target="_blank" rel="noopener" title="<?php esc_attr_e( 'Open the notes repository', 'wp-red-pen' ); ?>" aria-label="<?php esc_attr_e( 'Open the notes repository', 'wp-red-pen' ); ?>"><span class="dashicons dashicons-list-view" aria-hidden="true"></span></a>
+						<button type="button" class="wprp-x" id="wprp-close" aria-label="<?php esc_attr_e( 'Close', 'wp-red-pen' ); ?>">&times;</button>
 				</header>
 				<div class="wprp-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Filter notes', 'wp-red-pen' ); ?>">
 						<button type="button" class="wprp-tab is-active" id="wprp-tab-open" role="tab" aria-selected="true" aria-controls="wprp-list"><?php esc_html_e( 'Open', 'wp-red-pen' ); ?></button>
