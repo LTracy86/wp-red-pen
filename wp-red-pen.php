@@ -2146,10 +2146,12 @@ add_action(
 	'admin_menu',
 	function () {
 		// Lives under Tools (not a top-level menu) to keep the main admin sidebar uncluttered.
+		// The menu title carries a red pen dashicon (the brand accent), mirroring how Smooth Moves badges its Tools item.
+		$wprp_menu_title = '<span class="dashicons dashicons-edit" style="font-size:16px;width:16px;height:16px;vertical-align:-3px;margin-right:5px;color:#D32F2F"></span>' . esc_html__( 'Red Pen', 'wp-red-pen' );
 		add_submenu_page(
 			'tools.php',
 			__( 'Red Pen', 'wp-red-pen' ),
-			__( 'Red Pen', 'wp-red-pen' ),
+			$wprp_menu_title,
 			WPRP_CAP,
 			'wp-red-pen',
 			'wprp_render_repo_page'
