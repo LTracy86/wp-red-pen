@@ -1341,6 +1341,11 @@ function wprp_print_frontend_assets() {
 			// The current view's contexts (key/label/target) the server computed for this page.
 			function ctxForLevel(lvl) { return (lvl === 'template' && cfg.template && cfg.template.key) ? cfg.template : cfg.page; }
 		var countEl = document.getElementById('wprp-fab-count');
+		var tabOpenBtn = document.getElementById('wprp-tab-open');
+		var tabResolvedBtn = document.getElementById('wprp-tab-resolved');
+		var currentTab = 'open';
+		var moreToggle = document.getElementById('wprp-more-toggle');
+		var moreBox = document.getElementById('wprp-more');
 		var shotBtn = document.getElementById('wprp-shot-btn');
 		var shotPrev = document.getElementById('wprp-shot-preview');
 		var shotThumb = document.getElementById('wprp-shot-thumb');
