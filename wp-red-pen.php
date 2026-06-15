@@ -1519,6 +1519,13 @@ function wprp_print_frontend_assets() {
 		if (tabResolvedBtn) { tabResolvedBtn.addEventListener('click', function () { setTab('resolved'); }); }
 		// ---- "More" toggle: reveal priority / assignee / reporting-level for the rare case ----
 		if (moreToggle && moreBox) { moreToggle.addEventListener('click', function () { var o = moreBox.hidden; moreBox.hidden = !o; moreToggle.setAttribute('aria-expanded', o ? 'true' : 'false'); }); }
+		// ---- remember report settings (type / priority / assignee / level) across page loads ----
+		var WPRP_PREFS_KEY = 'wprpReportPrefs';
+		function setSelVal(sel, val) { if (!sel || val == null || val === '') { return; } for (var i = 0; i < sel.options.length; i++) { if (sel.options[i].value === String(val)) { sel.value = String(val); return; } } }
+		function savePrefs() { if (editingId) { return; } try { localStorage.setItem(WPRP_PREFS_KEY, JSON.stringify({ type: typeSel && typeSel.value, priority: prioSel && prioSel.value, assignee: assigneeSel && assigneeSel.value, level: levelSel && levelSel.value })); } catch (e) {} }
+		function applyPrefs() { var p; try { p = JSON.parse(localStorage.getItem(WPRP_PREFS_KEY) || 'null'); } catch (e) { p = null; } if (!p) { return; } setSelVal(typeSel, p.type); setSelVal(prioSel, p.priority); setSelVal(assigneeSel, p.assignee); setSelVal(levelSel, p.level); }
+		[typeSel, prioSel, assigneeSel, levelSel].forEach(function (s) { if (s) { s.addEventListener('change', savePrefs); } });
+		applyPrefs();
 
 		fab.addEventListener('click', function () {
 			var show = panel.hidden;
