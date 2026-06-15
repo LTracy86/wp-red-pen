@@ -1509,6 +1509,13 @@ function wprp_print_frontend_assets() {
 			});
 		}
 
+		// ---- Open / Resolved tabs: switch which notes the panel lists (client-side from lastNotes) ----
+		function setTab(tab) { currentTab = (tab === 'resolved') ? 'resolved' : 'open'; render(); }
+		if (tabOpenBtn) { tabOpenBtn.addEventListener('click', function () { setTab('open'); }); }
+		if (tabResolvedBtn) { tabResolvedBtn.addEventListener('click', function () { setTab('resolved'); }); }
+		// ---- "More" toggle: reveal priority / assignee / reporting-level for the rare case ----
+		if (moreToggle && moreBox) { moreToggle.addEventListener('click', function () { var o = moreBox.hidden; moreBox.hidden = !o; moreToggle.setAttribute('aria-expanded', o ? 'true' : 'false'); }); }
+
 		fab.addEventListener('click', function () {
 			var show = panel.hidden;
 			panel.hidden = !show;
