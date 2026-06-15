@@ -1466,8 +1466,11 @@ function wprp_print_frontend_assets() {
 					'<div class="wprp-reply-body">' + r.body + '</div></div>';
 		}
 
-		function render(notes) {
-			var open = 0;
+		function render() {
+			var openCount = 0, resolvedCount = 0;
+			for (var _i = 0; _i < lastNotes.length; _i++) { if (lastNotes[_i].resolved) { resolvedCount++; } else { openCount++; } }
+			var notes = [];
+			for (var _j = 0; _j < lastNotes.length; _j++) { if ((currentTab === 'resolved') === !!lastNotes[_j].resolved) { notes.push(lastNotes[_j]); } }
 			if (!notes.length) {
 				list.innerHTML = '<p class="wprp-muted"><?php echo esc_js( __( 'No open notes on this page.', 'wp-red-pen' ) ); ?></p>';
 			} else {
