@@ -1688,6 +1688,8 @@ function wprp_print_frontend_assets() {
 			// existing element pin: show the indicator; kept unless replaced or cleared
 			if (n.anchor) { pinLabel.textContent = '<?php echo esc_js( __( 'Pinned to element', 'wp-red-pen' ) ); ?>'; pinInfo.hidden = false; } else { pinInfo.hidden = true; pinLabel.textContent = ''; }
 			editBar.hidden = false;
+			if (moreBox) { moreBox.hidden = false; }
+			if (moreToggle) { moreToggle.setAttribute('aria-expanded', 'true'); }
 			if (submitBtn) { submitBtn.textContent = SAVE_LABEL; }
 			panel.hidden = false;
 			fab.setAttribute('aria-expanded', 'true');
