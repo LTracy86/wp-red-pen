@@ -1394,6 +1394,14 @@ function wprp_print_frontend_assets() {
 				var FAB_LABEL_N = '<?php echo esc_js( __( 'Red Pen notes, %d open', 'wp-red-pen' ) ); ?>';
 				var PIN_PREFIX = '<?php echo esc_js( __( 'Note', 'wp-red-pen' ) ); ?>';
 				var RESOLVED_WORD = '<?php echo esc_js( __( 'resolved', 'wp-red-pen' ) ); ?>';
+				var TAB_OPEN = '<?php echo esc_js( __( 'Open', 'wp-red-pen' ) ); ?>';
+				var TAB_RESOLVED = '<?php echo esc_js( __( 'Resolved', 'wp-red-pen' ) ); ?>';
+				var EMPTY_OPEN = '<?php echo esc_js( __( 'No open notes on this page.', 'wp-red-pen' ) ); ?>';
+				var EMPTY_RESOLVED = '<?php echo esc_js( __( 'No resolved notes on this page.', 'wp-red-pen' ) ); ?>';
+				var RESOLVED_MSG = '<?php echo esc_js( __( 'Note resolved.', 'wp-red-pen' ) ); ?>';
+				var REOPENED_MSG = '<?php echo esc_js( __( 'Note reopened.', 'wp-red-pen' ) ); ?>';
+				var UNDO_LABEL = '<?php echo esc_js( __( 'Undo', 'wp-red-pen' ) ); ?>';
+				var SHOT_UNAVAILABLE = '<?php echo esc_js( __( 'Screenshot tool failed to load - reload the page and try again.', 'wp-red-pen' ) ); ?>';
 				function reduceMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 				function updateFabLabel(open) { fab.setAttribute('aria-label', open > 0 ? FAB_LABEL_N.replace('%d', open) : FAB_LABEL); }
 				// Focus management for the panel (a role=dialog): trap Tab inside it, restore focus on close.
