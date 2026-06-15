@@ -1715,6 +1715,7 @@ function wprp_print_frontend_assets() {
 			body.value = '';
 			typeSel.value = 'note'; prioSel.value = 'normal'; assigneeSel.value = '0';
 			if (levelSel) { levelSel.value = 'page'; }
+			applyPrefs();
 			shotPrev.hidden = true; shotThumb.removeAttribute('src');
 			pinInfo.hidden = true; pinLabel.textContent = '';
 			editBar.hidden = true;
