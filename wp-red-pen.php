@@ -1223,6 +1223,9 @@ function wprp_print_frontend_assets() {
 		.wprp-head{display:flex;align-items:center;gap:.5rem;padding:.6rem .75rem;background:var(--wprp-red);color:#fff}
 		.wprp-head .wprp-page{font-size:.78rem;opacity:.85;margin-left:auto;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 		.wprp-x{background:none;border:none;color:#fff;font-size:20px;line-height:1;cursor:pointer;padding:0 0 0 .25rem}
+		.wprp-repo-link{color:#fff;display:inline-flex;align-items:center;text-decoration:none;opacity:.9;padding:0 .1rem}
+		.wprp-repo-link:hover{opacity:1}
+		.wprp-repo-link .dashicons{font-size:18px;width:18px;height:18px}
 		.wprp-list{padding:.5rem .75rem;overflow-y:auto;flex:1;min-height:60px}
 		.wprp-muted{color:var(--wprp-gray);font-size:.85rem;margin:.4rem 0}
 		.wprp-note{border:1px solid #e6e9ec;border-left:3px solid var(--wprp-red);border-radius:6px;padding:.45rem .6rem;margin-bottom:.5rem;font-size:.86rem}
