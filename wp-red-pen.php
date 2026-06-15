@@ -2145,14 +2145,14 @@ function wprp_render_metabox( $post ) {
 add_action(
 	'admin_menu',
 	function () {
-		add_menu_page(
+		// Lives under Tools (not a top-level menu) to keep the main admin sidebar uncluttered.
+		add_submenu_page(
+			'tools.php',
 			__( 'Red Pen', 'wp-red-pen' ),
 			__( 'Red Pen', 'wp-red-pen' ),
 			WPRP_CAP,
 			'wp-red-pen',
-			'wprp_render_repo_page',
-			'dashicons-edit',
-			58
+			'wprp_render_repo_page'
 		);
 	}
 );
