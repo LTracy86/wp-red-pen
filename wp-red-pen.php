@@ -1721,7 +1721,7 @@ function wprp_print_frontend_assets() {
 					if (pendingShot) { payload.shot = pendingShot; } else if (shotRemove) { payload.shot_remove = 1; }
 					if (pendingAnchor) { payload.anchor = JSON.stringify(pendingAnchor); } else if (anchorRemove) { payload.anchor_remove = 1; }
 				api('/notes/' + editingId, { method: 'POST', body: JSON.stringify(payload) })
-					.then(function () { exitEdit(); submit.disabled = false; load(); })
+					.then(function (data) { exitEdit(); submit.disabled = false; patchNoteInPlace(data); })
 					.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
 				return;
 			}
