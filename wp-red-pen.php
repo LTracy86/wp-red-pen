@@ -2197,7 +2197,7 @@ function wprp_render_repo_page() {
 	$types = wprp_note_types();
 	$prios = wprp_priorities();
 
-	echo '<div class="wrap"><h1 style="display:flex;align-items:center;gap:.5rem"><span class="dashicons dashicons-edit"></span>' . esc_html__( 'Red Pen - Notes Repository', 'wp-red-pen' ) . '</h1>';
+	echo '<div class="wrap"><h1 style="display:flex;align-items:center;gap:.5rem"><span class="dashicons dashicons-edit" style="color:#D32F2F"></span>' . esc_html__( 'Red Pen - Notes Repository', 'wp-red-pen' ) . '</h1>';
 	echo '<p>' . esc_html__( 'Every note, flag, and suggested edit dropped across the site. Shared with all editors and admins.', 'wp-red-pen' ) . '</p>';
 
 	// Visibility settings: which front-end views show the Red Pen widget (global).
