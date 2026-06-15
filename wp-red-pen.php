@@ -1627,6 +1627,12 @@ function wprp_print_frontend_assets() {
 				}).catch(function () { btn.disabled = false; toast(SAVE_FAILED); });
 		});
 
+		// Reply boxes grow with their content (up to a cap) instead of staying a sliver.
+		list.addEventListener('input', function (e) {
+			var t = e.target;
+			if (t && t.classList && t.classList.contains('wprp-replytext')) { t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140) + 'px'; }
+		});
+
 		// Reply forms live inside each note; submit bubbles up to the list container.
 		list.addEventListener('submit', function (e) {
 			var rform = e.target.closest('.wprp-replyform');
