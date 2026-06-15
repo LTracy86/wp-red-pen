@@ -1294,7 +1294,7 @@ function wprp_print_frontend_assets() {
 			/* element-pin: the placed markers */
 			#wprp-pinlayer{position:fixed;inset:0;z-index:99988;pointer-events:none}
 			.wprp-pin{position:fixed;transform:translate(-50%,-50%);min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:var(--wprp-accent);color:#fff;border:2px solid #fff;box-shadow:0 2px 6px rgba(30,34,37,.4);font-size:11px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;box-sizing:border-box}
-			.wprp-pin:hover{background:var(--wprp-red-dark)}
+			.wprp-pin:hover{background:var(--wprp-red)}
 			.wprp-pin.is-resolved{background:var(--wprp-gray);opacity:.65}
 			.wprp-note.wprp-flash{animation:wprp-flash 1.3s ease}
 			@keyframes wprp-flash{0%{background:rgba(211,47,47,.20)}100%{background:transparent}}
