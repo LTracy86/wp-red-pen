@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.7.5 =
+* Red Pen now lives under the Tools menu instead of taking its own top-level spot in the admin sidebar, keeping the main dashboard menu uncluttered. (Same page, same permissions - just Tools > Red Pen.)
+
 = 0.7.4 =
 * Resolving, reopening, replying to, adding, and editing a note now update just that one note in the panel instead of reloading the whole list. A half-typed reply in another note is no longer wiped, and the panel no longer jumps back to the top after an action.
 
