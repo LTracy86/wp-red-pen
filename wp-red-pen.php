@@ -1680,7 +1680,7 @@ function wprp_print_frontend_assets() {
 			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: resolved }) })
 				.then(function () {
 					toast(resolved ? RESOLVED_MSG : REOPENED_MSG, UNDO_LABEL, function () {
-						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: !resolved }) }).then(load).catch(function () { toast(SAVE_FAILED); });
+						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: !resolved }) }).then(function () { applyStatusLocally(id, !resolved); }).catch(function () { toast(SAVE_FAILED); });
 					});
 					load();
 				}).catch(function () { btn.disabled = false; toast(SAVE_FAILED); });
