@@ -2220,7 +2220,7 @@ function wprp_render_repo_page() {
 	echo '<ul class="subsubsub">';
 	$i = 0;
 	foreach ( $tabs as $key => $label ) {
-		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $key, 'assignee' => $who ), admin_url( 'admin.php' ) ) );
+		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $key, 'assignee' => $who ), admin_url( 'tools.php' ) ) );
 		echo ( $i++ ? ' | ' : '' ) . '<li><a href="' . $url . '"' . ( $filter === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
 	}
 	echo '</ul><div style="clear:both"></div>';
