@@ -2234,7 +2234,7 @@ function wprp_render_repo_page() {
 	echo '<ul class="subsubsub">';
 	$i = 0;
 	foreach ( $who_tabs as $key => $label ) {
-		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $key ), admin_url( 'admin.php' ) ) );
+		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $key ), admin_url( 'tools.php' ) ) );
 		echo ( $i++ ? ' | ' : '' ) . '<li><a href="' . $url . '"' . ( $who === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
 	}
 	echo '</ul><div style="clear:both"></div>';
