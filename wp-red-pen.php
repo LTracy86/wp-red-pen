@@ -1392,7 +1392,7 @@ function wprp_print_frontend_assets() {
 					}
 				toastEl.style.display = 'block';
 				if (toastTimer) { clearTimeout(toastTimer); }
-				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, 4000);
+				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, actionLabel ? 6000 : 4000);
 			}
 			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save - check your connection and try again.', 'wp-red-pen' ) ); ?>';
 				// a11y strings + reduced-motion check (built once).
