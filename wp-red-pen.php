@@ -1301,6 +1301,21 @@ function wprp_print_frontend_assets() {
 			#wprp-root :focus-visible{outline:2px solid var(--wprp-red);outline-offset:2px}
 			#wprp-fab:focus-visible,.wprp-pin:focus-visible{outline:none;box-shadow:0 0 0 2px #fff,0 0 0 5px var(--wprp-red)}
 			.wprp-resize:focus-visible{outline:2px solid var(--wprp-red);outline-offset:-2px}
+			/* Open / Resolved tab strip */
+			.wprp-tabs{display:flex;gap:.25rem;padding:.4rem .75rem 0;background:#fff;border-bottom:1px solid #e6e9ec}
+			.wprp-tab{flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--wprp-gray);font:inherit;font-size:.8rem;font-weight:600;padding:.4rem .25rem;margin-bottom:-1px;cursor:pointer}
+			.wprp-tab:hover{color:var(--wprp-red)}
+			.wprp-tab.is-active{color:var(--wprp-red);border-bottom-color:var(--wprp-red)}
+			/* on the Resolved tab the notes are the content, so don't dim them */
+			.wprp-list-resolved .wprp-note.is-resolved{opacity:1}
+			/* collapsible advanced fields in the add-note form */
+			.wprp-more-toggle{background:#fff;border:1px solid #cfd4d8;border-radius:5px;color:var(--wprp-gray);font:inherit;font-size:.82rem;padding:.35rem .6rem;cursor:pointer;white-space:nowrap}
+			.wprp-more-toggle:hover{border-color:var(--wprp-red);color:var(--wprp-red)}
+			.wprp-more{display:flex;flex-direction:column;gap:.4rem}
+			/* the Undo action inside a toast */
+			.wprp-toast-action{background:none;border:1px solid rgba(255,255,255,.55);color:#fff;border-radius:4px;font:inherit;font-size:.78rem;font-weight:600;padding:.12rem .5rem;margin-left:.6rem;cursor:pointer}
+			.wprp-toast-action:hover{background:rgba(255,255,255,.18)}
+			.wprp-replytext{min-height:2.4em}
 			/* Respect the user's reduced-motion preference: kill transitions, the flash, and the resize accent grow. */
 			@media (prefers-reduced-motion: reduce){
 				#wprp-fab,#wprp-fab:hover{transition:none;transform:none}
