@@ -1074,7 +1074,7 @@ add_action(
 				'parent' => 'wprp-toggle',
 				'id'     => 'wprp-repo',
 				'title'  => __( 'Open the notes repository', 'wp-red-pen' ),
-				'href'   => esc_url( admin_url( 'admin.php?page=wp-red-pen' ) ),
+				'href'   => esc_url( admin_url( 'tools.php?page=wp-red-pen' ) ),
 			)
 		);
 	},
@@ -1156,7 +1156,7 @@ add_action(
 				<header class="wprp-head">
 					<strong><?php esc_html_e( 'Red Pen', 'wp-red-pen' ); ?></strong>
 					<span class="wprp-page"><?php echo esc_html( $ctx['page']['label'] ); ?></span>
-					<a class="wprp-repo-link" href="<?php echo esc_url( admin_url( 'admin.php?page=wp-red-pen' ) ); ?>" target="_blank" rel="noopener" title="<?php esc_attr_e( 'Open the notes repository', 'wp-red-pen' ); ?>" aria-label="<?php esc_attr_e( 'Open the notes repository', 'wp-red-pen' ); ?>"><span class="dashicons dashicons-list-view" aria-hidden="true"></span></a>
+					<a class="wprp-repo-link" href="<?php echo esc_url( admin_url( 'tools.php?page=wp-red-pen' ) ); ?>" target="_blank" rel="noopener" title="<?php esc_attr_e( 'Open the notes repository', 'wp-red-pen' ); ?>" aria-label="<?php esc_attr_e( 'Open the notes repository', 'wp-red-pen' ); ?>"><span class="dashicons dashicons-list-view" aria-hidden="true"></span></a>
 						<button type="button" class="wprp-x" id="wprp-close" aria-label="<?php esc_attr_e( 'Close', 'wp-red-pen' ); ?>">&times;</button>
 				</header>
 				<div class="wprp-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Filter notes', 'wp-red-pen' ); ?>">
@@ -2136,7 +2136,7 @@ function wprp_render_metabox( $post ) {
 		}
 		echo '</ul>';
 	}
-	echo '<p style="margin:.4rem 0 0"><a href="' . esc_url( admin_url( 'admin.php?page=wp-red-pen' ) ) . '">' . esc_html__( 'Open the notes repository &rarr;', 'wp-red-pen' ) . '</a></p>';
+	echo '<p style="margin:.4rem 0 0"><a href="' . esc_url( admin_url( 'tools.php?page=wp-red-pen' ) ) . '">' . esc_html__( 'Open the notes repository &rarr;', 'wp-red-pen' ) . '</a></p>';
 }
 
 // ---------------------------------------------------------------------------
@@ -2332,7 +2332,7 @@ add_action(
 		}
 		$to = isset( $_GET['to'] ) && 'done' === $_GET['to'] ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN;
 		wprp_set_status( $note, $to );
-		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url( 'admin.php?page=wp-red-pen' ) );
+		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
 	}
 );
@@ -2352,7 +2352,7 @@ add_action(
 		if ( WPRP_CPT === get_post_type( $note ) ) {
 			wp_delete_post( $note, true );
 		}
-		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url( 'admin.php?page=wp-red-pen' ) );
+		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
 	}
 );
@@ -2370,7 +2370,7 @@ add_action(
 		$submitted = isset( $_POST['scopes'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['scopes'] ) ) : array();
 		$scopes   = array_values( array_intersect( $submitted, $valid ) );
 		update_option( WPRP_SHOW_OPT, $scopes ); // empty array = show nowhere (a valid choice)
-		wp_safe_redirect( admin_url( 'admin.php?page=wp-red-pen' ) );
+		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
 	}
 );
