@@ -1476,9 +1476,17 @@ function wprp_print_frontend_assets() {
 			} else {
 				list.innerHTML = notes.map(noteHtml).join('');
 			}
-			notes.forEach(function (n) { if (!n.resolved) { open++; } });
-			if (open > 0) { countEl.textContent = open; countEl.hidden = false; } else { countEl.hidden = true; }
-				updateFabLabel(open);
+			if (tabOpenBtn && tabResolvedBtn) {
+				tabOpenBtn.textContent = TAB_OPEN + ' (' + openCount + ')';
+				tabResolvedBtn.textContent = TAB_RESOLVED + ' (' + resolvedCount + ')';
+				tabOpenBtn.classList.toggle('is-active', currentTab === 'open');
+				tabResolvedBtn.classList.toggle('is-active', currentTab === 'resolved');
+				tabOpenBtn.setAttribute('aria-selected', currentTab === 'open' ? 'true' : 'false');
+				tabResolvedBtn.setAttribute('aria-selected', currentTab === 'resolved' ? 'true' : 'false');
+			}
+			list.classList.toggle('wprp-list-resolved', currentTab === 'resolved');
+			if (openCount > 0) { countEl.textContent = openCount; countEl.hidden = false; } else { countEl.hidden = true; }
+				updateFabLabel(openCount);
 				list.setAttribute('aria-busy', 'false');
 			if (focusId) {
 				var fel = list.querySelector('.wprp-note[data-id="' + focusId + '"]');
