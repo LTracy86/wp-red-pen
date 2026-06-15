@@ -1500,7 +1500,7 @@ function wprp_print_frontend_assets() {
 			list.setAttribute('aria-busy', 'true');
 				return api('/notes?keys=' + encodeURIComponent(keys)).then(function (notes) {
 				lastNotes = notes;
-				render(notes);
+				render();
 				buildPins(notes);
 				return notes;
 			}).catch(function () {
