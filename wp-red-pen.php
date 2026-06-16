@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.10.0
+ * Version:           0.10.1
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.10.0' );
+define( 'WPRP_VERSION',     '0.10.1' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -2712,10 +2712,11 @@ function wprp_render_repo_page() {
 	// Display settings: which front-end views show the widget + the pin colour (global).
 	$show_on   = wprp_show_on();
 	$pin_color = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) );
-	$save_url = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_save_visibility' ), 'wprp_save_visibility' );
+	$save_url = admin_url( 'admin-post.php?action=wprp_save_visibility' );
 	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:640px">';
 	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Display settings', 'wp-red-pen' ) . '</summary>';
 	echo '<form method="post" action="' . esc_url( $save_url ) . '" style="margin-top:.6rem">';
+	wp_nonce_field( 'wprp_save_visibility' ); // nonce in the POST body (the form posts; the handler reads $_POST['_wpnonce'])
 	echo '<p style="margin:.2rem 0 .6rem;color:#646970">' . esc_html__( 'Choose which front-end views show the floating button for users in Dev Mode.', 'wp-red-pen' ) . '</p>';
 	foreach ( wprp_view_scopes() as $key => $label ) {
 		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="scopes[]" value="' . esc_attr( $key ) . '"' . checked( in_array( $key, $show_on, true ), true, false ) . '> ' . wp_kses_post( $label ) . '</label>';
