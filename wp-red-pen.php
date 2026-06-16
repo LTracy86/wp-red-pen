@@ -1868,9 +1868,9 @@ function wprp_print_frontend_assets() {
 			refreshCounts(); buildPins(lastNotes);
 		}
 		// Flip a note's status locally (resolve / reopen / undo) and move it on/off the active tab.
-		function applyStatusLocally(nid, resolvedBool) {
+		function applyStatusLocally(nid, statusKey) {
 			var idx = lastNotesIndex(nid);
-			if (idx >= 0) { lastNotes[idx].resolved = resolvedBool; lastNotes[idx].status = resolvedBool ? 'wprp_resolved' : 'wprp_open'; }
+			if (idx >= 0) { lastNotes[idx].statusKey = statusKey; lastNotes[idx].resolved = (statusKey === 'resolved'); lastNotes[idx].status = (statusKey === 'resolved' ? 'wprp_resolved' : (statusKey === 'progress' ? 'wprp_progress' : 'wprp_open')); lastNotes[idx].statusLabel = STATUS_LABELS[statusKey] || ''; }
 			var n = (idx >= 0) ? lastNotes[idx] : null;
 			var node = noteNodeById(nid);
 			if (n && noteBelongsToTab(n)) {
