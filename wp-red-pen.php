@@ -1348,7 +1348,9 @@ add_action(
 								'level' => (string) $req->get_param( 'level' ),
 								'key'   => (string) $req->get_param( 'ctx_key' ),
 								'label' => (string) $req->get_param( 'ctx_label' ),
-							)
+							),
+							(string) $req->get_param( 'agent' ),
+							(string) $req->get_param( 'codescope' )
 						);
 						if ( is_wp_error( $id ) ) {
 							return $id;
