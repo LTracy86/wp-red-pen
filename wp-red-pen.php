@@ -1591,6 +1591,12 @@ add_action(
 						<label class="wprp-levellabel"><?php esc_html_e( 'Reporting level', 'wp-red-pen' ); ?>
 							<select id="wprp-level" aria-label="<?php esc_attr_e( 'Reporting level', 'wp-red-pen' ); ?>"><?php echo $level_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
 						</label>
+						<?php if ( $agents ) : ?>
+						<label class="wprp-levellabel"><?php esc_html_e( 'Assign to agent (isolated queue)', 'wp-red-pen' ); ?>
+							<select id="wprp-agent" aria-label="<?php esc_attr_e( 'Assign to agent', 'wp-red-pen' ); ?>"><?php echo $agent_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
+						</label>
+						<input type="text" id="wprp-codescope" maxlength="300" placeholder="<?php esc_attr_e( 'Code scope (optional) e.g. includes/foo.php:42', 'wp-red-pen' ); ?>" aria-label="<?php esc_attr_e( 'Code scope', 'wp-red-pen' ); ?>">
+						<?php endif; ?>
 					</div>
 					<textarea id="wprp-body" rows="3" placeholder="<?php esc_attr_e( 'Add a note, flag, or suggested edit...', 'wp-red-pen' ); ?>" required></textarea>
 					<div class="wprp-shotrow">
