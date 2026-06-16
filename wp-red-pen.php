@@ -717,7 +717,10 @@ function wprp_update_note( $note_id, $args ) {
 		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
 	}
 
-	$body = trim( wp_kses_post( (string) ( isset( $args['body'] ) ? $args['body'] : '' ) ) );
+	if ( (int) $note->post_author !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
+		return new WP_Error( 'wprp_forbidden', __( 'You can only edit your own notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
+	}
+	$body = trim( wprp_kses_note( isset( $args['body'] ) ? $args['body'] : '' ) );
 	if ( '' === $body ) {
 		return new WP_Error( 'wprp_empty', __( 'The note is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
 	}
