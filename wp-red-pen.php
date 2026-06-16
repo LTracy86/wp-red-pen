@@ -1424,6 +1424,7 @@ add_action(
 						$target = (int) $req->get_param( 'target' );
 						$status = (string) $req->get_param( 'status' );
 						$keys   = (string) $req->get_param( 'keys' );
+							$agent  = (string) $req->get_param( 'agent' );
 							$notes  = ( '' !== $keys )
 								? wprp_get_notes_for_context( explode( ',', $keys ), $status ? $status : 'any' )
 								: wprp_get_notes_for( $target, $status ? $status : 'any' );
