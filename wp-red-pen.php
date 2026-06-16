@@ -2283,8 +2283,8 @@ function wprp_print_frontend_assets() {
 
 		function positionPins() {
 			for (var k = 0; k < pins.length; k++) {
-				var p = pins[k], t = null;
-				try { t = document.querySelector(p.sel); } catch (e) { t = null; }
+				var p = pins[k], t = p.target;
+				if (!t || !document.body.contains(t)) { try { t = document.querySelector(p.sel); } catch (e) { t = null; } p.target = t; }
 				if (!t) { p.el.style.display = 'none'; continue; }
 				var r = t.getBoundingClientRect();
 				if (r.width === 0 && r.height === 0) { p.el.style.display = 'none'; continue; }
