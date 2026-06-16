@@ -949,6 +949,10 @@ function wprp_get_notes_for_context( $keys, $status = 'any' ) {
 
 /** Count of open notes across the whole site (for the admin-bar badge). */
 function wprp_open_count() {
+	$cached = get_transient( 'wprp_open_count' );
+	if ( false !== $cached ) {
+		return (int) $cached;
+	}
 	$q = new WP_Query(
 		array(
 			'post_type'      => WPRP_CPT,
@@ -959,7 +963,14 @@ function wprp_open_count() {
 			'no_found_rows'  => false,
 		)
 	);
-	return (int) $q->found_posts;
+	$count = (int) $q->found_posts;
+	set_transient( 'wprp_open_count', $count, MINUTE_IN_SECONDS );
+	return $count;
+}
+
+/** Bust the cached open-note count - called on every create / status-change / delete. */
+function wprp_flush_counts() {
+	delete_transient( 'wprp_open_count' );
 }
 
 /** Shape a note post into the plain array the JS + REST consume. */
