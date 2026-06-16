@@ -1796,6 +1796,10 @@ add_action(
 
 /** Inline CSS + JS for the floating widget (single-file family pattern). */
 function wprp_print_frontend_assets() {
+	// Custom pin colour ('' = use the theme red default). Emitted as a rule on #wprp-pinlayer
+	// below, because the pin layer is appended to <body>, OUTSIDE #wprp-root - so a custom
+	// property set on the root never cascades to the markers.
+	$wprp_pin_color = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) );
 	?>
 	<style id="wprp-css">
 		#wprp-root{--wprp-red:#D32F2F;--wprp-red-dark:#B71C1C;--wprp-accent:#FF5252;--wprp-ink:#1E2225;--wprp-gray:#3A3A3C;position:fixed;right:20px;bottom:20px;z-index:99990;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
