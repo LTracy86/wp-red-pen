@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.9.2 =
+* You can now pick a custom colour for the numbered element pins (Tools > Red Pen > Display settings). The pins default to the app red; choose a colour that stands out if red blends into a particular site. (In-progress pins stay amber so you can still tell statuses apart.)
+
 = 0.9.1 =
 * The notes repository (Tools > Red Pen) gained bulk actions: tick notes and Reopen / Mark In Progress / Resolve / Delete them all at once.
 * Assignee and Priority can now be changed right in the repository table from a dropdown, no need to open each note.
