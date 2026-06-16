@@ -1535,20 +1535,24 @@ add_action(
 		foreach ( wprp_priorities() as $key => $label ) {
 			$prio_opts .= '<option value="' . esc_attr( $key ) . '"' . selected( $key, 'normal', false ) . '>' . esc_html( $label ) . '</option>';
 		}
+		// Assignee options: Unassigned + humans, plus (when agent feedback is on) an Agents group.
+		// Agent options use value "agent:<slug>"; human options are the numeric user id.
+		$agents    = wprp_enabled_agents();
 		$user_opts = '<option value="0">' . esc_html__( 'Unassigned', 'wp-red-pen' ) . '</option>';
 		foreach ( wprp_assignable_users() as $uid => $uname ) {
 			$user_opts .= '<option value="' . (int) $uid . '">' . esc_html( $uname ) . '</option>';
+		}
+		if ( $agents ) {
+			$user_opts .= '<optgroup label="' . esc_attr__( 'Agents', 'wp-red-pen' ) . '">';
+			foreach ( $agents as $aslug => $alabel ) {
+				$user_opts .= '<option value="agent:' . esc_attr( $aslug ) . '">' . esc_html( $alabel ) . '</option>';
+			}
+			$user_opts .= '</optgroup>';
 		}
 		// Level options built from the current view: This page + (when distinct) This template.
 		$level_opts = '<option value="page">' . esc_html( $ctx['page']['label'] ) . '</option>';
 		if ( '' !== $ctx['template']['key'] ) {
 			$level_opts .= '<option value="template">' . esc_html( $ctx['template']['label'] ) . '</option>';
-		}
-		// Agent feedback: target options (empty when the feature is dormant).
-		$agents     = wprp_enabled_agents();
-		$agent_opts = '<option value="">' . esc_html__( 'No (human note)', 'wp-red-pen' ) . '</option>';
-		foreach ( $agents as $aslug => $alabel ) {
-			$agent_opts .= '<option value="' . esc_attr( $aslug ) . '">' . esc_html( $alabel ) . '</option>';
 		}
 		$cfg = wp_json_encode(
 			array(
