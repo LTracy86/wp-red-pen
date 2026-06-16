@@ -62,6 +62,15 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.7.7 =
+Security + correctness hardening (from the round-2 audit).
+* Note and reply text is now sanitized with a fixed safe-tag list instead of the default filter, so even an administrator cannot plant script that would run in another reviewer's browser when they open the panel or repository.
+* Screenshots are no longer served from a public URL. They now stream through a permission-checked reader and the folder is locked down, so captures of private or draft pages can't be opened by anyone without access.
+* Replies can no longer be accidentally flipped to resolved/open (only top-level notes have a status).
+* Permanently deleting a note, and editing someone else's note, now require higher permissions; anyone can still add, resolve, and reply.
+* CSV export hardening: the spreadsheet-formula guard now catches leading-space tricks and covers the URL column too.
+* The notes panel ignores a stale server response that arrives out of order, so a slow request can't overwrite newer state.
+
 = 0.7.6 =
 * The Tools > Red Pen menu item now has a red pen icon (like Smooth Moves), and the pen icon in the admin bar and on the repository page is now the brand accent red.
 
