@@ -1636,6 +1636,7 @@ function wprp_print_frontend_assets() {
 			}
 		}
 
+		var wprpLoadSeq = 0;
 		function load() {
 			var keys = [cfg.page && cfg.page.key, cfg.template && cfg.template.key].filter(Boolean).join(',');
 			list.setAttribute('aria-busy', 'true');
