@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.10.2 =
+* Agents now appear directly in the "Assigned" dropdown (under an "Agents" group), in the panel and in the repository table - so you can assign any note, including ones created earlier, to an agent the same way you assign it to a person. Assigning to an agent clears the human assignee and vice-versa. (The separate "Assign to agent" control is gone, replaced by this.) The optional code-scope field remains.
+
 = 0.10.1 =
 * Fixed: saving the Display settings (agent platforms, pin colour, where Red Pen appears) returned "Invalid request" - the form's security token was sent in the wrong place. Settings now save correctly.
 
