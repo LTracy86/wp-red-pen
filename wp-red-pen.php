@@ -1760,7 +1760,8 @@ function wprp_print_frontend_assets() {
 			}
 
 		function noteHtml(n) {
-			return '<div class="wprp-note ' + (n.resolved ? 'is-resolved' : '') + '" data-id="' + n.id + '">' +
+			var sk = statusKeyOf(n);
+			return '<div class="wprp-note wprp-st-' + sk + (sk === 'resolved' ? ' is-resolved' : '') + '" data-id="' + n.id + '">' +
 				'<div class="wprp-meta"><span class="wprp-tag">' + esc(n.typeLabel) + '</span>' +
 				'<span class="wprp-prio wprp-prio-' + esc(n.priority || 'normal') + '">' + esc(n.priorityLabel) + '</span>' +
 				(n.level === 'template' ? '<span class="wprp-level" title="' + esc(n.ctxLabel || '') + '"><?php echo esc_js( __( 'Template', 'wp-red-pen' ) ); ?></span>' : '') +
