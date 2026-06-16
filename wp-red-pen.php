@@ -1270,8 +1270,11 @@ add_action(
 				'methods'             => 'POST',
 				'permission_callback' => $perm,
 				'callback'            => function ( $req ) {
-					$resolved = (bool) $req->get_param( 'resolved' );
-					$res      = wprp_set_status( (int) $req['id'], $resolved ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN );
+					$status_param = (string) $req->get_param( 'status' );
+					$target       = ( '' !== $status_param )
+						? wprp_status_const( $status_param )
+						: ( $req->get_param( 'resolved' ) ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN );
+					$res          = wprp_set_status( (int) $req['id'], $target );
 					if ( is_wp_error( $res ) ) {
 						return $res;
 					}
