@@ -49,6 +49,42 @@ define( 'WPRP_REST_NS',     'wprp/v1' );
 define( 'WPRP_DBVER_OPT',   'wprp_db_version' ); // schema version (for one-time data migrations)
 define( 'WPRP_SHOW_OPT',    'wprp_show_on' );    // global: which view scopes show the widget
 
+/** Workflow statuses: short key -> human label. Single source of truth for the 3-state model. */
+function wprp_statuses() {
+	return array(
+		'open'     => __( 'Open', 'wp-red-pen' ),
+		'progress' => __( 'In Progress', 'wp-red-pen' ),
+		'resolved' => __( 'Resolved', 'wp-red-pen' ),
+	);
+}
+
+/** All note post-status constants (for "any status" queries). */
+function wprp_all_statuses() {
+	return array( WPRP_STATUS_OPEN, WPRP_STATUS_PROGRESS, WPRP_STATUS_DONE );
+}
+
+/** Short status key ('open'|'progress'|'resolved') for a full post-status constant. */
+function wprp_status_key( $post_status ) {
+	if ( WPRP_STATUS_DONE === $post_status ) {
+		return 'resolved';
+	}
+	if ( WPRP_STATUS_PROGRESS === $post_status ) {
+		return 'progress';
+	}
+	return 'open';
+}
+
+/** Full post-status constant for a short status key; defaults to open for anything unknown. */
+function wprp_status_const( $key ) {
+	if ( 'resolved' === $key ) {
+		return WPRP_STATUS_DONE;
+	}
+	if ( 'progress' === $key ) {
+		return WPRP_STATUS_PROGRESS;
+	}
+	return WPRP_STATUS_OPEN;
+}
+
 /** Note types -> human labels. The single source of truth for the dropdowns. */
 function wprp_note_types() {
 	return array(
