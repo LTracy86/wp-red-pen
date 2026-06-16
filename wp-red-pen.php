@@ -2575,6 +2575,9 @@ function wprp_render_repo_page() {
 	foreach ( wprp_view_scopes() as $key => $label ) {
 		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="scopes[]" value="' . esc_attr( $key ) . '"' . checked( in_array( $key, $show_on, true ), true, false ) . '> ' . wp_kses_post( $label ) . '</label>';
 	}
+	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+	echo '<p style="margin:.2rem 0 .4rem;color:#646970">' . esc_html__( 'Colour of the numbered element pins on the front end. The app red is used by default; pick a custom colour if it does not stand out on a particular site.', 'wp-red-pen' ) . '</p>';
+	echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="pin_custom" value="1"' . checked( '' !== $pin_color, true, false ) . '> ' . esc_html__( 'Use a custom pin colour:', 'wp-red-pen' ) . ' <input type="color" name="pin_color" value="' . esc_attr( '' !== $pin_color ? $pin_color : '#D32F2F' ) . '" style="vertical-align:middle"></label>';
 	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
 	echo '</form></details>';
 
