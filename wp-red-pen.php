@@ -655,7 +655,8 @@ function wprp_set_status( $note_id, $status ) {
 		return new WP_Error( 'wprp_forbidden', __( 'Not allowed.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
 	$note = get_post( $note_id );
-	if ( ! $note || WPRP_CPT !== $note->post_type ) {
+	if ( ! $note || WPRP_CPT !== $note->post_type || 0 !== (int) $note->post_parent ) {
+		// post_parent != 0 means this is a reply - replies have no open/resolved status of their own.
 		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
 	}
 	$status = ( WPRP_STATUS_DONE === $status ) ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN;
