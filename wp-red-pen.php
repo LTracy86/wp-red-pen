@@ -2197,7 +2197,7 @@ function wprp_print_frontend_assets() {
 			}
 			var lvl = levelSel ? levelSel.value : 'page';
 			var lctx = ctxForLevel(lvl);
-			api('/notes', { method: 'POST', body: JSON.stringify({ body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, assignee: assigneeSel.value, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '', level: lvl, ctx_key: lctx.key, ctx_label: lctx.label, target: (lvl === 'page' ? (cfg.page.target || 0) : 0) }) })
+			api('/notes', { method: 'POST', body: JSON.stringify({ body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, assignee: assigneeSel.value, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '', level: lvl, ctx_key: lctx.key, ctx_label: lctx.label, target: (lvl === 'page' ? (cfg.page.target || 0) : 0), agent: agentSel ? agentSel.value : '', codescope: codeScopeInput ? codeScopeInput.value : '' }) })
 				.then(function (data) { body.value = ''; clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
 				.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
 		});
