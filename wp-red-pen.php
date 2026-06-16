@@ -1071,8 +1071,9 @@ add_action( 'save_post_' . WPRP_CPT, 'wprp_flush_counts' );
  * Only OPEN top-level notes for this view are counted; only anchored ones become pins.
  */
 function wprp_priming_data( $keys ) {
-	$notes = wprp_get_notes_for_context( $keys, 'open' );
+	$notes = wprp_get_notes_for_context( $keys, 'any' );
 	$types = wprp_note_types();
+	$open  = 0;
 	$pins  = array();
 	foreach ( $notes as $n ) {
 		$anchor = (string) get_post_meta( $n->ID, WPRP_META_ANCHOR, true );
