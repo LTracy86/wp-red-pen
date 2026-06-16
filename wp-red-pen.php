@@ -2187,6 +2187,7 @@ function wprp_print_frontend_assets() {
 				var elvl = levelSel ? levelSel.value : 'page';
 					var ectx = ctxForLevel(elvl);
 					var payload = { body: text, type: typeSel.value, priority: prioSel.value, assignee: assigneeSel.value, level: elvl, ctx_key: ectx.key, ctx_label: ectx.label, target: (elvl === 'page' ? (cfg.page.target || 0) : 0) };
+					if (agentSel) { payload.agent = agentSel.value; payload.codescope = codeScopeInput ? codeScopeInput.value : ''; }
 					if (pendingShot) { payload.shot = pendingShot; } else if (shotRemove) { payload.shot_remove = 1; }
 					if (pendingAnchor) { payload.anchor = JSON.stringify(pendingAnchor); } else if (anchorRemove) { payload.anchor_remove = 1; }
 				api('/notes/' + editingId, { method: 'POST', body: JSON.stringify(payload) })
