@@ -972,6 +972,8 @@ function wprp_open_count() {
 function wprp_flush_counts() {
 	delete_transient( 'wprp_open_count' );
 }
+// Any insert/update of a note (create, status flip, edit) busts the count; delete is handled in before_delete_post.
+add_action( 'save_post_' . WPRP_CPT, 'wprp_flush_counts' );
 
 /** Shape a note post into the plain array the JS + REST consume. */
 function wprp_note_to_array( $note ) {
