@@ -2849,6 +2849,10 @@ add_action(
 		$submitted = isset( $_POST['scopes'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['scopes'] ) ) : array();
 		$scopes   = array_values( array_intersect( $submitted, $valid ) );
 		update_option( WPRP_SHOW_OPT, $scopes, false ); // empty array = show nowhere (a valid choice); not autoloaded
+
+		// Custom pin colour: only stored when the box is ticked AND it's a valid hex, else cleared (use the app default).
+		$pin = ( ! empty( $_POST['pin_custom'] ) && isset( $_POST['pin_color'] ) ) ? sanitize_hex_color( sanitize_text_field( wp_unslash( $_POST['pin_color'] ) ) ) : '';
+		update_option( WPRP_PINCOLOR_OPT, $pin ? $pin : '', false );
 		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
 	}
