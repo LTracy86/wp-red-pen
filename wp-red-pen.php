@@ -2686,7 +2686,12 @@ function wprp_render_repo_page() {
 		}
 		$lvl_badge = '<div style="margin-top:.25rem"><span style="font-size:.68rem;font-weight:600;color:#3A3A3C;border:1px solid #dfe3e6;border-radius:3px;padding:0 .3rem">' . esc_html( 'template' === $level ? __( 'Template', 'wp-red-pen' ) : __( 'Page', 'wp-red-pen' ) ) . '</span></div>';
 		echo '<td>' . $where . $lvl_badge . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_* above
-		echo '<td>' . ( $au ? esc_html( $au->display_name ) : '<span style="color:#9aa1a7">&mdash;</span>' ) . '</td>';
+		echo '<td><select class="wprp-qe" onchange="if(this.value)location.href=this.value">';
+		echo '<option value="' . $qe_url( 'assignee', '0' ) . '"' . selected( 0, $assignee, false ) . '>' . esc_html__( 'Unassigned', 'wp-red-pen' ) . '</option>';
+		foreach ( wprp_assignable_users() as $uid => $uname ) {
+			echo '<option value="' . $qe_url( 'assignee', $uid ) . '"' . selected( $uid, $assignee, false ) . '>' . esc_html( $uname ) . '</option>';
+		}
+		echo '</select></td>';
 		echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
 		echo '<td>' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</td>';
 		$statuses_lbl = wprp_statuses();
