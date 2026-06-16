@@ -2161,7 +2161,7 @@ function wprp_render_metabox( $post ) {
 			$assignee = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
 			$au       = $assignee ? get_userdata( $assignee ) : false;
 			echo '<small>' . esc_html( $author ? $author->display_name : '' ) . ' &middot; ' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . ( $au ? ' &middot; &rarr; ' . esc_html( $au->display_name ) : '' ) . '</small>';
-			echo '<div style="font-size:.85rem;margin-top:.2rem">' . wp_kses_post( wpautop( $n->post_content ) ) . '</div>';
+			echo '<div style="font-size:.85rem;margin-top:.2rem">' . wprp_kses_note( wpautop( $n->post_content ) ) . '</div>';
 			$ctx = (string) get_post_meta( $n->ID, WPRP_META_CTX, true );
 			if ( $ctx ) {
 				echo '<div style="font-size:.7rem;color:#3A3A3C;font-family:monospace;margin-top:.2rem">' . esc_html( $ctx ) . '</div>';
@@ -2346,7 +2346,7 @@ function wprp_render_repo_page() {
 		/* translators: %d: number of replies */
 		$reply_html = $reply_n ? '<div style="font-size:.72rem;color:#3A3A3C;margin-top:.35rem">' . esc_html( sprintf( _n( '%d reply', '%d replies', $reply_n, 'wp-red-pen' ), $reply_n ) ) . '</div>' : '';
 		$anchor_html = get_post_meta( $n->ID, WPRP_META_ANCHOR, true ) ? '<div style="font-size:.72rem;color:#D32F2F;margin-top:.35rem"><span class="dashicons dashicons-location" style="font-size:14px;width:14px;height:14px;vertical-align:text-top"></span> ' . esc_html__( 'Pinned to an element', 'wp-red-pen' ) . '</div>' : '';
-		echo '<td>' . wp_kses_post( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
+		echo '<td>' . wprp_kses_note( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
 		$ctx_label = (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true );
 		$level     = ( 'template' === (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true ) ) ? 'template' : 'page';
 		if ( $target ) {
