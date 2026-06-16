@@ -2964,6 +2964,14 @@ add_action(
 		// Custom pin colour: only stored when the box is ticked AND it's a valid hex, else cleared (use the app default).
 		$pin = ( ! empty( $_POST['pin_custom'] ) && isset( $_POST['pin_color'] ) ) ? sanitize_hex_color( sanitize_text_field( wp_unslash( $_POST['pin_color'] ) ) ) : '';
 		update_option( WPRP_PINCOLOR_OPT, $pin ? $pin : '', false );
+
+		// Agent feedback: enabled platforms (intersected with the known set) + one optional custom agent label.
+		$known_agents = array_keys( wprp_agent_platforms() );
+		$sub_agents   = isset( $_POST['agents'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['agents'] ) ) : array();
+		update_option( WPRP_AGENTS_OPT, array_values( array_intersect( $sub_agents, $known_agents ) ), false );
+		$custom_agent = isset( $_POST['agent_custom'] ) ? sanitize_text_field( wp_unslash( $_POST['agent_custom'] ) ) : '';
+		update_option( WPRP_AGENT_CUSTOM_OPT, mb_substr( $custom_agent, 0, 40 ), false );
+
 		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
 	}
