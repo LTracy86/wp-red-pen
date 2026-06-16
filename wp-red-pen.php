@@ -3216,6 +3216,11 @@ add_action(
 		$custom_agent = isset( $_POST['agent_custom'] ) ? sanitize_text_field( wp_unslash( $_POST['agent_custom'] ) ) : '';
 		update_option( WPRP_AGENT_CUSTOM_OPT, mb_substr( $custom_agent, 0, 40 ), false );
 
+		// Rebuild every enabled agent's JSON brief so enabling/renaming/reassigning is reflected at once.
+		foreach ( array_keys( wprp_enabled_agents() ) as $brief_slug ) {
+			wprp_write_agent_brief( $brief_slug );
+		}
+
 		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
 	}
