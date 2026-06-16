@@ -2486,7 +2486,12 @@ add_action(
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wprp_delete_' . $note ) ) {
 			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
 		}
-		// Only ever delete our own note CPT. Force-delete fires before_delete_post, which
+		// Permanent delete is destructive + irreversible, so it needs more than the broad
+			// edit_posts cap that gates add/resolve/reply - require the delete-others capability.
+			if ( ! current_user_can( 'delete_others_posts' ) ) {
+				wp_die( esc_html__( 'You do not have permission to delete notes.', 'wp-red-pen' ) );
+			}
+			// Only ever delete our own note CPT. Force-delete fires before_delete_post, which
 		// sweeps the screenshot file and any child replies.
 		if ( WPRP_CPT === get_post_type( $note ) ) {
 			wp_delete_post( $note, true );
