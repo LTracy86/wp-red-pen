@@ -1278,6 +1278,26 @@ function wprp_flush_counts() {
 // Any insert/update of a note (create, status flip, edit) busts the count; delete is handled in before_delete_post.
 add_action( 'save_post_' . WPRP_CPT, 'wprp_flush_counts' );
 
+// When an agent-targeted note (or a reply to one) changes, refresh that agent's JSON brief.
+add_action(
+	'save_post_' . WPRP_CPT,
+	function ( $post_id ) {
+		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return;
+		}
+		// A reply (post_parent != 0) belongs to its parent note; the brief embeds replies.
+		$owner = ( (int) $post->post_parent !== 0 ) ? (int) $post->post_parent : (int) $post_id;
+		$slug  = (string) get_post_meta( $owner, WPRP_META_AGENT, true );
+		if ( '' !== $slug ) {
+			wprp_write_agent_brief( $slug );
+		}
+	}
+);
+
 /**
  * Lightweight priming payload embedded in data-cfg so a Dev-Mode page load can set the FAB
  * badge + place element pins WITHOUT fetching the full notes payload (bodies, replies,
