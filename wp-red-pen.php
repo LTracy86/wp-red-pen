@@ -2252,7 +2252,6 @@ function wprp_print_frontend_assets() {
 			body.value = '';
 			typeSel.value = 'note'; prioSel.value = 'normal'; assigneeSel.value = '0';
 			if (levelSel) { levelSel.value = 'page'; }
-			if (agentSel) { agentSel.value = ''; }
 			if (codeScopeInput) { codeScopeInput.value = ''; }
 			applyPrefs();
 			shotPrev.hidden = true; shotThumb.removeAttribute('src');
