@@ -2677,6 +2677,18 @@ function wprp_render_repo_page() {
 	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
 	echo '<p style="margin:.2rem 0 .4rem;color:#646970">' . esc_html__( 'Colour of the numbered element pins on the front end. The app red is used by default; pick a custom colour if it does not stand out on a particular site.', 'wp-red-pen' ) . '</p>';
 	echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="pin_custom" value="1"' . checked( '' !== $pin_color, true, false ) . '> ' . esc_html__( 'Use a custom pin colour:', 'wp-red-pen' ) . ' <input type="color" name="pin_color" value="' . esc_attr( '' !== $pin_color ? $pin_color : '#D32F2F' ) . '" style="vertical-align:middle"></label>';
+
+	// Agent feedback: pick which AI agents/platforms notes can be targeted at.
+	$enabled_agents = get_option( WPRP_AGENTS_OPT, array() );
+	$enabled_agents = is_array( $enabled_agents ) ? $enabled_agents : array();
+	$custom_agent   = (string) get_option( WPRP_AGENT_CUSTOM_OPT, '' );
+	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Agent feedback', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'enable the AI agents/platforms you use. Notes can then be targeted at an agent (kept in a separate "For agents" queue, below) for it to work on via the REST API or wp-cli.', 'wp-red-pen' ) . '</p>';
+	foreach ( wprp_agent_platforms() as $slug => $label ) {
+		echo '<label style="display:inline-block;margin:.1rem 1rem .1rem 0"><input type="checkbox" name="agents[]" value="' . esc_attr( $slug ) . '"' . checked( in_array( $slug, $enabled_agents, true ), true, false ) . '> ' . esc_html( $label ) . '</label>';
+	}
+	echo '<p style="margin:.4rem 0 .2rem"><label>' . esc_html__( 'Custom agent name (optional):', 'wp-red-pen' ) . ' <input type="text" name="agent_custom" value="' . esc_attr( $custom_agent ) . '" maxlength="40" style="width:14rem"></label></p>';
+
 	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
 	echo '</form></details>';
 
