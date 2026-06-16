@@ -1420,6 +1420,8 @@ add_action(
 								'ctx_key'       => $req->get_param( 'ctx_key' ),
 								'ctx_label'     => $req->get_param( 'ctx_label' ),
 								'target'        => $req->get_param( 'target' ),
+								'agent'         => $req->get_param( 'agent' ),
+								'codescope'     => $req->get_param( 'codescope' ),
 						)
 					);
 					if ( is_wp_error( $res ) ) {
