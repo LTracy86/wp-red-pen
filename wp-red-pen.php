@@ -2303,8 +2303,16 @@ function wprp_print_frontend_assets() {
 		window.addEventListener('scroll', repositionSoon, true);
 		window.addEventListener('resize', repositionSoon);
 
-		// Prime the badge without opening the panel.
-		load();
+		// Prime the FAB badge + element pins from the server-embedded data (cfg.priming);
+		// the full notes payload (bodies, replies, screenshots) is fetched only when the panel opens.
+		function primeFromCfg() {
+			var p = cfg.priming || {};
+			var oc = p.openCount || 0;
+			if (oc > 0) { countEl.textContent = oc; countEl.hidden = false; } else { countEl.hidden = true; }
+			updateFabLabel(oc);
+			buildPins(p.pins || []);
+		}
+		primeFromCfg();
 	})();
 	</script>
 	<?php
