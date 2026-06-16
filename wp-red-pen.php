@@ -49,6 +49,10 @@ define( 'WPRP_REST_NS',     'wprp/v1' );
 define( 'WPRP_DBVER_OPT',   'wprp_db_version' ); // schema version (for one-time data migrations)
 define( 'WPRP_SHOW_OPT',    'wprp_show_on' );    // global: which view scopes show the widget
 define( 'WPRP_PINCOLOR_OPT', 'wprp_pin_color' ); // global: custom hex for the numbered element pins ('' = app accent)
+define( 'WPRP_META_AGENT',     '_wprp_agent' );     // agent feedback: target agent slug ('' = a human note)
+define( 'WPRP_META_CODESCOPE', '_wprp_codescope' ); // agent feedback: optional code scope / file reference (free text)
+define( 'WPRP_AGENTS_OPT',     'wprp_agents' );      // global: enabled agent platform slugs (agent feedback dormant when empty)
+define( 'WPRP_AGENT_CUSTOM_OPT', 'wprp_agent_custom' ); // global: one optional custom agent label
 
 /** Workflow statuses: short key -> human label. Single source of truth for the 3-state model. */
 function wprp_statuses() {
