@@ -1735,7 +1735,7 @@ add_action(
 			)
 		);
 		?>
-		<div id="wprp-root" data-cfg='<?php echo esc_attr( $cfg ); ?>'<?php $wprp_pin = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) ); echo $wprp_pin ? ' style="--wprp-pin:' . esc_attr( $wprp_pin ) . '"' : ''; ?>>
+		<div id="wprp-root" data-cfg='<?php echo esc_attr( $cfg ); ?>'>
 			<button type="button" id="wprp-fab" aria-expanded="false" aria-haspopup="dialog" aria-controls="wprp-panel" aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>" title="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
 				<span class="dashicons dashicons-edit" aria-hidden="true"></span>
 				<span id="wprp-fab-count" class="wprp-count" aria-hidden="true" hidden></span>
