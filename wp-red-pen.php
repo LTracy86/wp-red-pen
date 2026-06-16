@@ -1803,12 +1803,15 @@ function wprp_print_frontend_assets() {
 			} else {
 				list.innerHTML = notes.map(noteHtml).join('');
 			}
-			if (tabOpenBtn && tabResolvedBtn) {
+			if (tabOpenBtn && tabResolvedBtn && tabProgressBtn) {
 				tabOpenBtn.textContent = TAB_OPEN + ' (' + openCount + ')';
+				tabProgressBtn.textContent = TAB_PROGRESS + ' (' + progressCount + ')';
 				tabResolvedBtn.textContent = TAB_RESOLVED + ' (' + resolvedCount + ')';
 				tabOpenBtn.classList.toggle('is-active', currentTab === 'open');
+				tabProgressBtn.classList.toggle('is-active', currentTab === 'progress');
 				tabResolvedBtn.classList.toggle('is-active', currentTab === 'resolved');
 				tabOpenBtn.setAttribute('aria-selected', currentTab === 'open' ? 'true' : 'false');
+				tabProgressBtn.setAttribute('aria-selected', currentTab === 'progress' ? 'true' : 'false');
 				tabResolvedBtn.setAttribute('aria-selected', currentTab === 'resolved' ? 'true' : 'false');
 			}
 			list.classList.toggle('wprp-list-resolved', currentTab === 'resolved');
