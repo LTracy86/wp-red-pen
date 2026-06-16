@@ -2487,8 +2487,8 @@ function wprp_render_repo_page() {
 	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only filter state
 	$filter = isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : 'open';
 	// phpcs:enable WordPress.Security.NonceVerification.Recommended
-	$filter   = in_array( $filter, array( 'open', 'resolved', 'all' ), true ) ? $filter : 'open';
-	$statuses = 'all' === $filter ? array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE ) : array( 'resolved' === $filter ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN );
+	$filter   = in_array( $filter, array( 'open', 'progress', 'resolved', 'all' ), true ) ? $filter : 'open';
+	$statuses = 'all' === $filter ? wprp_all_statuses() : ( 'resolved' === $filter ? array( WPRP_STATUS_DONE ) : ( 'progress' === $filter ? array( WPRP_STATUS_PROGRESS ) : array( WPRP_STATUS_OPEN ) ) );
 
 	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only filter state
 	$who = isset( $_GET['assignee'] ) ? sanitize_key( wp_unslash( $_GET['assignee'] ) ) : '';
