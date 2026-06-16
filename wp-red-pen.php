@@ -2564,8 +2564,9 @@ function wprp_render_repo_page() {
 	echo '<div class="wrap"><h1 style="display:flex;align-items:center;gap:.5rem"><span class="dashicons dashicons-edit" style="color:#D32F2F"></span>' . esc_html__( 'Red Pen - Notes Repository', 'wp-red-pen' ) . '</h1>';
 	echo '<p>' . esc_html__( 'Every note, flag, and suggested edit dropped across the site. Shared with all editors and admins.', 'wp-red-pen' ) . '</p>';
 
-	// Visibility settings: which front-end views show the Red Pen widget (global).
-	$show_on  = wprp_show_on();
+	// Display settings: which front-end views show the widget + the pin colour (global).
+	$show_on   = wprp_show_on();
+	$pin_color = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) );
 	$save_url = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_save_visibility' ), 'wprp_save_visibility' );
 	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:640px">';
 	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Where Red Pen appears', 'wp-red-pen' ) . '</summary>';
