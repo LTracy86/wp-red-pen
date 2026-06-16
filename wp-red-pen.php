@@ -1982,6 +1982,14 @@ function wprp_print_frontend_assets() {
 		}
 		// Replace a single note's node in place (reply / edit) - leaves every other note untouched.
 		function patchNoteInPlace(data) {
+			if (data.agent) {
+				// the note became an agent note -> it leaves the human panel entirely (isolated queue)
+				var ax = lastNotesIndex(data.id); if (ax >= 0) { lastNotes.splice(ax, 1); }
+				var an = noteNodeById(data.id); if (an) { an.parentNode.removeChild(an); }
+				toast(MARKED_AGENT_MSG.split('%s').join(data.agentLabel || data.agent));
+				showEmptyIfNeeded(); refreshCounts(); buildPins(lastNotes);
+				return;
+			}
 			var idx = lastNotesIndex(data.id);
 			if (idx >= 0) { lastNotes[idx] = data; } else { lastNotes.unshift(data); }
 			var node = noteNodeById(data.id);
