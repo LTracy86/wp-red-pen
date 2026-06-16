@@ -2017,6 +2017,24 @@ function wprp_print_frontend_assets() {
 				}).catch(function () { btn.disabled = false; toast(SAVE_FAILED); });
 		});
 
+		// Status dropdown on each note: change moves it between Open / In Progress / Resolved (with Undo).
+		list.addEventListener('change', function (e) {
+			var sel = e.target.closest('.wprp-status');
+			if (!sel) { return; }
+			var id = sel.closest('.wprp-note').getAttribute('data-id');
+			var to = sel.value, from = 'open';
+			for (var i = 0; i < lastNotes.length; i++) { if (String(lastNotes[i].id) === String(id)) { from = statusKeyOf(lastNotes[i]); break; } }
+			if (to === from) { return; }
+			sel.disabled = true;
+			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ status: to }) })
+				.then(function () {
+					toast(MARKED_MSG.replace('%s', STATUS_LABELS[to] || to), UNDO_LABEL, function () {
+						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ status: from }) }).then(function () { applyStatusLocally(id, from); }).catch(function () { toast(SAVE_FAILED); });
+					});
+					applyStatusLocally(id, to);
+				}).catch(function () { sel.disabled = false; toast(SAVE_FAILED); });
+		});
+
 		// Reply boxes grow with their content (up to a cap) instead of staying a sliver.
 		list.addEventListener('input', function (e) {
 			var t = e.target;
