@@ -1098,7 +1098,7 @@ function wprp_priming_data( $keys ) {
 		);
 	}
 	return array(
-		'openCount' => count( $notes ),
+		'openCount' => $open,
 		'pins'      => $pins,
 	);
 }
