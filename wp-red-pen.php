@@ -2598,7 +2598,7 @@ add_action(
 					WPRP_STATUS_DONE === $n->post_status ? 'Resolved' : 'Open',
 					wprp_csv_cell( wp_strip_all_tags( $n->post_content ) ),
 					wprp_csv_cell( '' !== $ctx_label ? $ctx_label : ( $target ? get_the_title( $target ) : '' ) ),
-					$target ? get_permalink( $target ) : (string) get_post_meta( $n->ID, WPRP_META_URL, true ),
+					wprp_csv_cell( $target ? get_permalink( $target ) : (string) get_post_meta( $n->ID, WPRP_META_URL, true ) ),
 					wprp_csv_cell( $au ? $au->display_name : '' ),
 					wprp_csv_cell( $author ? $author->display_name : '' ),
 					wprp_csv_cell( (string) get_post_meta( $n->ID, WPRP_META_CTX, true ) ),
