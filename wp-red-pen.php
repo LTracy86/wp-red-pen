@@ -2011,6 +2011,11 @@ function wprp_print_frontend_assets() {
 		}
 		// Drop a freshly created note straight into the list (newest first) without a refetch.
 		function applyNewNote(data) {
+			if (data.agent) {
+				// agent-targeted note: isolated to the agent queue, never shown in the human panel
+				toast(MARKED_AGENT_MSG.split('%s').join(data.agentLabel || data.agent));
+				return;
+			}
 			lastNotes.unshift(data);
 			if (noteBelongsToTab(data)) {
 				clearPlaceholder();
