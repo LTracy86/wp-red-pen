@@ -534,7 +534,7 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	if ( ! wprp_user_can() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
-	$body = trim( wp_kses_post( (string) $body ) );
+	$body = trim( wprp_kses_note( $body ) );
 	if ( '' === $body ) {
 		return new WP_Error( 'wprp_empty', __( 'The note is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
 	}
@@ -603,7 +603,7 @@ function wprp_create_reply( $parent_id, $body ) {
 	if ( ! $parent || WPRP_CPT !== $parent->post_type || (int) $parent->post_parent !== 0 ) {
 		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
 	}
-	$body = trim( wp_kses_post( (string) $body ) );
+	$body = trim( wprp_kses_note( $body ) );
 	if ( '' === $body ) {
 		return new WP_Error( 'wprp_empty', __( 'The reply is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
 	}
