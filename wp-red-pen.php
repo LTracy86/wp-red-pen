@@ -1096,10 +1096,17 @@ function wprp_get_notes_for_context( $keys, $status = 'any' ) {
 			'order'          => 'DESC',
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 			'meta_query'     => array(
+				'relation' => 'AND',
 				array(
 					'key'     => WPRP_META_CTXKEY,
 					'value'   => $keys,
 					'compare' => 'IN',
+				),
+				// Human surfaces exclude agent-targeted notes (those live in the repo's "For agents" view).
+				array(
+					'relation' => 'OR',
+					array( 'key' => WPRP_META_AGENT, 'compare' => 'NOT EXISTS' ),
+					array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '=' ),
 				),
 			),
 		)
