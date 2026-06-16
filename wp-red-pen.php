@@ -1108,7 +1108,28 @@ add_action(
 							$notes  = ( '' !== $keys )
 								? wprp_get_notes_for_context( explode( ',', $keys ), $status ? $status : 'any' )
 								: wprp_get_notes_for( $target, $status ? $status : 'any' );
-						return rest_ensure_response( array_map( 'wprp_note_to_array', $notes ) );
+						// Batch the replies (one query for all notes, not one per note) and prime
+							// the user cache so author/assignee lookups don't each hit the DB.
+							$rep_map = wprp_get_replies_for( wp_list_pluck( $notes, 'ID' ) );
+							$uids    = array();
+							foreach ( $notes as $gnote ) {
+								$uids[] = (int) $gnote->post_author;
+								$uids[] = (int) get_post_meta( $gnote->ID, WPRP_META_ASSIGNEE, true );
+							}
+							foreach ( $rep_map as $rep_list ) {
+								foreach ( $rep_list as $rep ) {
+									$uids[] = (int) $rep->post_author;
+								}
+							}
+							$uids = array_values( array_filter( array_unique( $uids ) ) );
+							if ( $uids ) {
+								cache_users( $uids );
+							}
+							$out = array();
+							foreach ( $notes as $gnote ) {
+								$out[] = wprp_note_to_array( $gnote, isset( $rep_map[ $gnote->ID ] ) ? $rep_map[ $gnote->ID ] : array() );
+							}
+							return rest_ensure_response( $out );
 					},
 				),
 				array(
