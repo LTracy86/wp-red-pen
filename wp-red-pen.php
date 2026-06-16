@@ -973,7 +973,7 @@ function wprp_update_note( $note_id, $args ) {
  * @return WP_Post[]
  */
 function wprp_get_notes_for( $target_id, $status = 'any' ) {
-	$statuses = array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE );
+	$statuses = wprp_all_statuses();
 	if ( 'open' === $status ) {
 		$statuses = array( WPRP_STATUS_OPEN );
 	} elseif ( 'resolved' === $status ) {
@@ -1006,7 +1006,7 @@ function wprp_get_notes_for_context( $keys, $status = 'any' ) {
 	if ( ! $keys ) {
 		return array();
 	}
-	$statuses = array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE );
+	$statuses = wprp_all_statuses();
 	if ( 'open' === $status ) {
 		$statuses = array( WPRP_STATUS_OPEN );
 	} elseif ( 'resolved' === $status ) {
