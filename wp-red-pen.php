@@ -315,18 +315,107 @@ function wprp_shot_dir( $create = false ) {
 	$dir = trailingslashit( $up['basedir'] ) . WPRP_SHOT_DIR;
 	if ( $create ) {
 		wp_mkdir_p( $dir );
+		wprp_write_shot_guards( $dir );
 	}
 	return $dir;
 }
 
-/** Public URL for a stored screenshot filename. */
+/**
+ * Drop a deny-by-default .htaccess + blank index.php into the screenshots folder so the
+ * captures (which can show private/draft/admin-only pages) cannot be fetched or listed
+ * directly over the web. They are served ONLY through the capability-gated reader
+ * (admin-post wprp_shot) - defence in depth alongside the unguessable filename token.
+ */
+function wprp_write_shot_guards( $dir ) {
+	if ( ! is_dir( $dir ) ) {
+		return;
+	}
+	$ht = $dir . '/.htaccess';
+	if ( ! file_exists( $ht ) ) {
+		$rules = "# WP Red Pen - deny direct web access; screenshots are served via the gated reader.\n"
+			. "<IfModule mod_authz_core.c>\n\tRequire all denied\n</IfModule>\n"
+			. "<IfModule !mod_authz_core.c>\n\tOrder allow,deny\n\tDeny from all\n</IfModule>\n";
+		@file_put_contents( $ht, $rules ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents, WordPress.PHP.NoSilencedErrors.Discouraged
+	}
+	$idx = $dir . '/index.php';
+	if ( ! file_exists( $idx ) ) {
+		@file_put_contents( $idx, "<?php // Silence is golden.\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents, WordPress.PHP.NoSilencedErrors.Discouraged
+	}
+}
+
+/**
+ * URL for a stored screenshot - points at the capability-gated reader (admin-post
+ * wprp_shot), NOT the raw public uploads path, so captures of private pages aren't
+ * world-readable. The nonce is fresh per request and only meaningful for a logged-in user.
+ */
 function wprp_shot_url( $file ) {
 	if ( ! $file ) {
 		return '';
 	}
-	$up = wp_upload_dir();
-	return trailingslashit( $up['baseurl'] ) . WPRP_SHOT_DIR . '/' . rawurlencode( basename( $file ) );
+	return add_query_arg(
+		array(
+			'action'   => 'wprp_shot',
+			'file'     => rawurlencode( basename( $file ) ),
+			'_wpnonce' => wp_create_nonce( 'wprp_shot' ),
+		),
+		admin_url( 'admin-post.php' )
+	);
 }
+
+/**
+ * Capability-gated screenshot reader. The <img> URLs from wprp_shot_url() resolve here;
+ * verify the Red Pen capability + nonce, then stream the file from uploads/wp-red-pen.
+ * Logged-out / nonce-less / out-of-folder requests get 403/404, so captures never leak.
+ */
+function wprp_serve_shot() {
+	if ( ! wprp_user_can() ) {
+		status_header( 403 );
+		exit;
+	}
+	$file = isset( $_GET['file'] ) ? basename( sanitize_file_name( wp_unslash( $_GET['file'] ) ) ) : '';
+	if ( '' === $file
+		|| ! isset( $_GET['_wpnonce'] )
+		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wprp_shot' )
+		|| ! preg_match( '/\.(webp|png|jpg)$/i', $file ) ) {
+		status_header( 403 );
+		exit;
+	}
+	$path = wprp_shot_dir() . '/' . $file;
+	if ( ! is_file( $path ) ) {
+		status_header( 404 );
+		exit;
+	}
+	$ext   = strtolower( pathinfo( $file, PATHINFO_EXTENSION ) );
+	$types = array(
+		'webp' => 'image/webp',
+		'png'  => 'image/png',
+		'jpg'  => 'image/jpeg',
+	);
+	nocache_headers();
+	header( 'Content-Type: ' . ( isset( $types[ $ext ] ) ? $types[ $ext ] : 'application/octet-stream' ) );
+	header( 'Content-Length: ' . filesize( $path ) );
+	header( 'X-Content-Type-Options: nosniff' );
+	header( 'Content-Disposition: inline; filename="' . $file . '"' );
+	readfile( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
+	exit;
+}
+add_action( 'admin_post_wprp_shot', 'wprp_serve_shot' );
+add_action( 'admin_post_nopriv_wprp_shot', 'wprp_serve_shot' );
+
+/** One-time: drop the deny guards into an EXISTING screenshots folder (installs predating the gated reader). */
+add_action(
+	'admin_init',
+	function () {
+		if ( ! wprp_user_can() || get_option( 'wprp_shot_guarded' ) ) {
+			return;
+		}
+		$dir = wprp_shot_dir( false );
+		if ( is_dir( $dir ) ) {
+			wprp_write_shot_guards( $dir );
+		}
+		update_option( 'wprp_shot_guarded', 1, false );
+	}
+);
 
 /**
  * Decode a base64 image data URL from the browser (a WebP region grab, with
