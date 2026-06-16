@@ -978,6 +978,8 @@ function wprp_get_notes_for( $target_id, $status = 'any' ) {
 		$statuses = array( WPRP_STATUS_OPEN );
 	} elseif ( 'resolved' === $status ) {
 		$statuses = array( WPRP_STATUS_DONE );
+	} elseif ( 'progress' === $status ) {
+		$statuses = array( WPRP_STATUS_PROGRESS );
 	}
 	return get_posts(
 		array(
@@ -1011,6 +1013,8 @@ function wprp_get_notes_for_context( $keys, $status = 'any' ) {
 		$statuses = array( WPRP_STATUS_OPEN );
 	} elseif ( 'resolved' === $status ) {
 		$statuses = array( WPRP_STATUS_DONE );
+	} elseif ( 'progress' === $status ) {
+		$statuses = array( WPRP_STATUS_PROGRESS );
 	}
 	return get_posts(
 		array(
