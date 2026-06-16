@@ -1429,7 +1429,7 @@ add_action(
 									? wprp_get_notes_for_agent( $agent, $status ? $status : 'any' )
 									: ( ( '' !== $keys )
 								? wprp_get_notes_for_context( explode( ',', $keys ), $status ? $status : 'any' )
-								: wprp_get_notes_for( $target, $status ? $status : 'any' );
+								: wprp_get_notes_for( $target, $status ? $status : 'any' ) );
 						// Batch the replies (one query for all notes, not one per note) and prime
 							// the user cache so author/assignee lookups don't each hit the DB.
 							$rep_map = wprp_get_replies_for( wp_list_pluck( $notes, 'ID' ) );
