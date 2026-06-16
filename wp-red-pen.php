@@ -1119,7 +1119,7 @@ add_action(
 				update_post_meta( $nid, WPRP_META_CTXLABEL, mb_substr( (string) get_the_title( $t ), 0, 200 ) );
 			}
 		}
-		update_option( WPRP_DBVER_OPT, '0.5.0' );
+		update_option( WPRP_DBVER_OPT, '0.5.0', false ); // tiny option, no need to autoload on every request
 	},
 	20
 );
