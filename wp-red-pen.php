@@ -1136,6 +1136,13 @@ function wprp_open_count() {
 			'posts_per_page' => 1,
 			'fields'         => 'ids',
 			'no_found_rows'  => false,
+			// The badge counts human open notes; agent-targeted notes are excluded.
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query'     => array(
+				'relation' => 'OR',
+				array( 'key' => WPRP_META_AGENT, 'compare' => 'NOT EXISTS' ),
+				array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '=' ),
+			),
 		)
 	);
 	$count = (int) $q->found_posts;
