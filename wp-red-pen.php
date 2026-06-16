@@ -2668,7 +2668,8 @@ add_action(
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wprp_resolve_' . $note ) ) {
 			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
 		}
-		$to = isset( $_GET['to'] ) && 'done' === $_GET['to'] ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN;
+		$to_param = isset( $_GET['to'] ) ? sanitize_key( wp_unslash( $_GET['to'] ) ) : 'open';
+		$to       = ( 'done' === $to_param ) ? WPRP_STATUS_DONE : ( 'progress' === $to_param ? WPRP_STATUS_PROGRESS : WPRP_STATUS_OPEN );
 		wprp_set_status( $note, $to );
 		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
