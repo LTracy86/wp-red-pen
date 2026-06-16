@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.10.4 =
+* Agent consumption layer: an agent can now pull its own queue two ways, both local with no keys. (1) Live REST - GET the notes endpoint with `?agent=<slug>` returns every open/in-progress note delegated to that agent, site-wide, read with the caller's own credentials. (2) JSON brief - a plain-data file (note bodies, code scope, where each lives, replies) is written to the deny-protected uploads folder and kept current automatically as agent notes change; a local agent reads it straight off disk. The repository's per-agent "Audience" view now shows both paths.
+
 = 0.10.3 =
 * Added a "?" help tooltip next to Agent feedback in the settings, explaining how to turn it on and delegate notes to an AI agent.
 
