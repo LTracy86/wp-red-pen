@@ -2937,6 +2937,20 @@ function wprp_render_repo_page() {
 			echo '<li>' . ( $i++ ? ' | ' : '' ) . '<a href="' . $url . '"' . ( $audience === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
 		}
 		echo '</ul><div style="clear:both"></div>';
+
+		// When a single agent is in focus, surface its two consumption paths (live REST + on-disk JSON brief).
+		if ( '' !== $audience && 'agents' !== $audience && isset( $enabled_agents[ $audience ] ) ) {
+			$brief_path = wprp_agent_brief_path( $audience );
+			$rest_url   = rest_url( WPRP_REST_NS . '/notes?agent=' . rawurlencode( $audience ) . '&status=open' );
+			$exists     = file_exists( $brief_path );
+			/* translators: %s: agent name. */
+			echo '<div class="notice notice-info inline" style="margin:.5rem 0;max-width:760px"><p style="margin:.4rem 0"><strong>' . esc_html( sprintf( __( 'Feeding %s', 'wp-red-pen' ), $enabled_agents[ $audience ] ) ) . '</strong></p>';
+			echo '<p style="margin:.2rem 0;color:#646970">' . esc_html__( 'Two local ways for the agent to pull this queue - no keys, nothing leaves your site:', 'wp-red-pen' ) . '</p>';
+			echo '<p style="margin:.2rem 0"><strong>' . esc_html__( 'Live REST', 'wp-red-pen' ) . '</strong> ' . esc_html__( '(reads with the caller\'s own credentials):', 'wp-red-pen' ) . ' <code style="user-select:all">' . esc_html( $rest_url ) . '</code></p>';
+			echo '<p style="margin:.2rem 0"><strong>' . esc_html__( 'JSON brief', 'wp-red-pen' ) . '</strong> ' . esc_html__( '(read straight off disk):', 'wp-red-pen' ) . ' <code style="user-select:all">' . esc_html( $brief_path ) . '</code>';
+			echo $exists ? ' <span style="color:#197b30">' . esc_html__( '(kept up to date automatically)', 'wp-red-pen' ) . '</span>' : ' <span style="color:#996800">' . esc_html__( '(written once this agent has open notes)', 'wp-red-pen' ) . '</span>';
+			echo '</p></div>';
+		}
 	}
 
 	// Local CSV export of the current filter (no external service - the user imports it wherever).
