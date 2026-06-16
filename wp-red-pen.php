@@ -2178,7 +2178,7 @@ function wprp_render_metabox( $post ) {
 				$ra = get_userdata( $r->post_author );
 				echo '<div style="margin:.3rem 0 0 .5rem;padding:.2rem .4rem;background:#fff;border-left:2px solid #cfd4d8;font-size:.8rem">';
 				echo '<small style="color:#3A3A3C">' . esc_html( $ra ? $ra->display_name : '' ) . ' &middot; ' . esc_html( get_the_time( get_option( 'date_format' ), $r ) ) . '</small>';
-				echo '<div>' . wp_kses_post( wpautop( $r->post_content ) ) . '</div></div>';
+				echo '<div>' . wprp_kses_note( wpautop( $r->post_content ) ) . '</div></div>';
 			}
 			echo '</li>';
 		}
