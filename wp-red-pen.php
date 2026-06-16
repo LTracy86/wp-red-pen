@@ -1717,6 +1717,13 @@ function wprp_print_frontend_assets() {
 				var TAB_RESOLVED = '<?php echo esc_js( __( 'Resolved', 'wp-red-pen' ) ); ?>';
 				var EMPTY_OPEN = '<?php echo esc_js( __( 'No open notes on this page.', 'wp-red-pen' ) ); ?>';
 				var EMPTY_RESOLVED = '<?php echo esc_js( __( 'No resolved notes on this page.', 'wp-red-pen' ) ); ?>';
+				var TAB_PROGRESS = '<?php echo esc_js( __( 'In Progress', 'wp-red-pen' ) ); ?>';
+				var EMPTY_PROGRESS = '<?php echo esc_js( __( 'No in-progress notes on this page.', 'wp-red-pen' ) ); ?>';
+				var STATUS_LABELS = { open: TAB_OPEN, progress: TAB_PROGRESS, resolved: TAB_RESOLVED };
+				/* translators: %s: a status label (Open / In Progress / Resolved) */
+				var MARKED_MSG = '<?php echo esc_js( __( 'Marked %s.', 'wp-red-pen' ) ); ?>';
+				function emptyMsgFor(tab) { return tab === 'resolved' ? EMPTY_RESOLVED : (tab === 'progress' ? EMPTY_PROGRESS : EMPTY_OPEN); }
+				function statusKeyOf(n) { return n.statusKey || (n.resolved ? 'resolved' : 'open'); }
 				var RESOLVED_MSG = '<?php echo esc_js( __( 'Note resolved.', 'wp-red-pen' ) ); ?>';
 				var REOPENED_MSG = '<?php echo esc_js( __( 'Note reopened.', 'wp-red-pen' ) ); ?>';
 				var UNDO_LABEL = '<?php echo esc_js( __( 'Undo', 'wp-red-pen' ) ); ?>';
