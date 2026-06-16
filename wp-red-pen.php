@@ -48,6 +48,7 @@ define( 'WPRP_SHOT_DIR',    'wp-red-pen' );     // uploads subfolder for screens
 define( 'WPRP_REST_NS',     'wprp/v1' );
 define( 'WPRP_DBVER_OPT',   'wprp_db_version' ); // schema version (for one-time data migrations)
 define( 'WPRP_SHOW_OPT',    'wprp_show_on' );    // global: which view scopes show the widget
+define( 'WPRP_PINCOLOR_OPT', 'wprp_pin_color' ); // global: custom hex for the numbered element pins ('' = app accent)
 
 /** Workflow statuses: short key -> human label. Single source of truth for the 3-state model. */
 function wprp_statuses() {
