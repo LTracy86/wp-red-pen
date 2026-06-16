@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.10.1 =
+* Fixed: saving the Display settings (agent platforms, pin colour, where Red Pen appears) returned "Invalid request" - the form's security token was sent in the wrong place. Settings now save correctly.
+
 = 0.10.0 =
 * Agent Feedback (new): leave notes specifically for an AI coding agent. Enable the platforms you use (Claude, Codex, Cursor, GitHub Copilot, Gemini, LM Studio, or a custom name) under Tools > Red Pen > Display settings, then assign a note to an agent from the floating panel - with an optional "code scope" hint (e.g. a file path). Agent-targeted notes are kept in a separate "For agents" queue (filterable per agent in the repository) and stay out of the human worklist, so you can point a specific scope at a specific agent. The agent works on them like any note (open -> in progress -> resolved). Everything stays local - no AI keys, no external calls. (Consumption via a JSON brief + a REST filter lands next, in 0.10.1.)
 
