@@ -1076,6 +1076,13 @@ function wprp_priming_data( $keys ) {
 	$open  = 0;
 	$pins  = array();
 	foreach ( $notes as $n ) {
+		$key = wprp_status_key( $n->post_status );
+		if ( 'resolved' === $key ) {
+			continue; // resolved notes: no pin, not in the open count
+		}
+		if ( 'open' === $key ) {
+			$open++;
+		}
 		$anchor = (string) get_post_meta( $n->ID, WPRP_META_ANCHOR, true );
 		if ( '' === $anchor ) {
 			continue;
