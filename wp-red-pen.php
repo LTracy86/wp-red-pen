@@ -667,7 +667,7 @@ function wprp_reply_to_array( $reply ) {
 	$author = get_userdata( $reply->post_author );
 	return array(
 		'id'     => (int) $reply->ID,
-		'body'   => wpautop( wp_kses_post( $reply->post_content ) ),
+		'body'   => wpautop( wprp_kses_note( $reply->post_content ) ),
 		'author' => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
 		'date'   => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $reply ),
 	);
