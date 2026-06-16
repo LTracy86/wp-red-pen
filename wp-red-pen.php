@@ -2723,7 +2723,7 @@ function wprp_render_repo_page() {
 		echo '<a class="button button-small button-link-delete" style="color:#b32d2e" href="' . esc_url( $delete_url ) . '" onclick="return confirm(\'' . esc_js( __( 'Delete this note permanently, including its replies and screenshot? This cannot be undone.', 'wp-red-pen' ) ) . '\');">' . esc_html__( 'Delete', 'wp-red-pen' ) . '</a></td>';
 		echo '</tr>';
 	}
-	echo '</tbody></table></div>';
+	echo '</tbody></table></form></div>';
 }
 
 /** admin-post handler: bulk Resolve / In Progress / Reopen / Delete on the selected notes. */
