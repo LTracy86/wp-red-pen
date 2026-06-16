@@ -2621,7 +2621,7 @@ function wprp_render_repo_page() {
 	}
 
 	echo '<table class="wp-list-table widefat fixed striped"><thead><tr>';
-	echo '<th>' . esc_html__( 'Type', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Priority', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Note', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Where', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Assigned', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'By', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'When', 'wp-red-pen' ) . '</th><th></th></tr></thead><tbody>';
+	echo '<td class="manage-column check-column"><input type="checkbox" onclick="var c=document.getElementsByClassName(\'wprp-cb\');for(var i=0;i<c.length;i++){c[i].checked=this.checked;}"></td><th>' . esc_html__( 'Type', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Priority', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Note', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Where', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Assigned', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'By', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'When', 'wp-red-pen' ) . '</th><th></th></tr></thead><tbody>';
 
 	$reply_counts = wprp_reply_counts( wp_list_pluck( $notes, 'ID' ) ); // one query, not one-per-row
 
