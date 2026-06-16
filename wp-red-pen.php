@@ -2732,7 +2732,7 @@ function wprp_render_repo_page() {
 	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
 	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Agent feedback', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'enable the AI agents/platforms you use. Notes can then be targeted at an agent (kept in a separate "For agents" queue, below) for it to work on via the REST API or wp-cli.', 'wp-red-pen' ) . '</p>';
 	foreach ( wprp_agent_platforms() as $slug => $label ) {
-		echo '<label style="display:inline-block;margin:.1rem 1rem .1rem 0"><input type="checkbox" name="agents[]" value="' . esc_attr( $slug ) . '"' . checked( in_array( $slug, $enabled_agents, true ), true, false ) . '> ' . esc_html( $label ) . '</label>';
+		echo '<label style="display:inline-block;margin:.1rem 1rem .1rem 0"><input type="checkbox" name="agents[]" value="' . esc_attr( $slug ) . '"' . checked( in_array( $slug, $enabled_agent_slugs, true ), true, false ) . '> ' . esc_html( $label ) . '</label>';
 	}
 	echo '<p style="margin:.4rem 0 .2rem"><label>' . esc_html__( 'Custom agent name (optional):', 'wp-red-pen' ) . ' <input type="text" name="agent_custom" value="' . esc_attr( $custom_agent ) . '" maxlength="40" style="width:14rem"></label></p>';
 
