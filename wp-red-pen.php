@@ -1630,6 +1630,12 @@ function wprp_print_frontend_assets() {
 			.wprp-toast-action{background:none;border:1px solid rgba(255,255,255,.55);color:#fff;border-radius:4px;font:inherit;font-size:.78rem;font-weight:600;padding:.12rem .5rem;margin-left:.6rem;cursor:pointer}
 			.wprp-toast-action:hover{background:rgba(255,255,255,.18)}
 			.wprp-replytext{min-height:2.4em}
+			/* 3-state status: per-note dropdown + In Progress accent (amber) */
+			.wprp-status{background:#fff;border:1px solid #cfd4d8;border-radius:4px;color:var(--wprp-gray);font:inherit;font-size:.72rem;padding:.05rem .2rem;cursor:pointer;max-width:9.5em}
+			.wprp-status:hover{border-color:var(--wprp-red)}
+			.wprp-note.wprp-st-progress{border-left-color:#E8A100}
+			.wprp-pin-progress{background:#E8A100}
+			.wprp-pin-progress:hover{background:#C98A00}
 			/* Respect the user's reduced-motion preference: kill transitions, the flash, and the resize accent grow. */
 			@media (prefers-reduced-motion: reduce){
 				#wprp-fab,#wprp-fab:hover{transition:none;transform:none}
