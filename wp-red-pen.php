@@ -1014,6 +1014,36 @@ function wprp_flush_counts() {
 add_action( 'save_post_' . WPRP_CPT, 'wprp_flush_counts' );
 
 /**
+ * Lightweight priming payload embedded in data-cfg so a Dev-Mode page load can set the FAB
+ * badge + place element pins WITHOUT fetching the full notes payload (bodies, replies,
+ * screenshots, the reply N+1). The heavy GET /notes is deferred to the first panel open.
+ * Only OPEN top-level notes for this view are counted; only anchored ones become pins.
+ */
+function wprp_priming_data( $keys ) {
+	$notes = wprp_get_notes_for_context( $keys, 'open' );
+	$types = wprp_note_types();
+	$pins  = array();
+	foreach ( $notes as $n ) {
+		$anchor = (string) get_post_meta( $n->ID, WPRP_META_ANCHOR, true );
+		if ( '' === $anchor ) {
+			continue;
+		}
+		$type   = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
+		$pins[] = array(
+			'id'        => (int) $n->ID,
+			'anchor'    => $anchor,
+			'resolved'  => false,
+			'typeLabel' => isset( $types[ $type ] ) ? $types[ $type ] : $types['note'],
+			'body'      => wp_trim_words( wp_strip_all_tags( $n->post_content ), 14, '...' ),
+		);
+	}
+	return array(
+		'openCount' => count( $notes ),
+		'pins'      => $pins,
+	);
+}
+
+/**
  * Shape a note post into the plain array the JS + REST consume. Pass $replies (a WP_Post[]
  * from wprp_get_replies_for()) when shaping many notes to avoid a per-note reply query;
  * leave it null for a single note (falls back to wprp_get_replies()).
