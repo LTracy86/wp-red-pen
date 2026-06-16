@@ -1386,6 +1386,7 @@ add_action(
 				'url'      => esc_url_raw( home_url( add_query_arg( array() ) ) ),
 				'page'     => $ctx['page'],     // { key, label, target }
 				'template' => $ctx['template'], // { key, label }
+				'priming'  => wprp_priming_data( array_values( array_filter( array( $ctx['page']['key'], $ctx['template']['key'] ) ) ) ),
 			)
 		);
 		?>
