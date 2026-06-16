@@ -2659,7 +2659,11 @@ function wprp_render_repo_page() {
 		echo '<tr' . ( $resolved ? ' style="opacity:.55"' : '' ) . '>';
 		echo '<th scope="row" class="check-column"><input type="checkbox" class="wprp-cb" name="ids[]" value="' . (int) $n->ID . '"></th>';
 		echo '<td><span style="background:#D32F2F;color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.72rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span></td>';
-		echo '<td><span style="background:' . esc_attr( $prio_bg ) . ';color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.72rem;font-weight:600">' . esc_html( isset( $prios[ $priority ] ) ? $prios[ $priority ] : $prios['normal'] ) . '</span></td>';
+		echo '<td><select class="wprp-qe" onchange="if(this.value)location.href=this.value">';
+		foreach ( wprp_priorities() as $pk => $plabel ) {
+			echo '<option value="' . $qe_url( 'priority', $pk ) . '"' . selected( $pk, ( '' !== $priority ? $priority : 'normal' ), false ) . '>' . esc_html( $plabel ) . '</option>';
+		}
+		echo '</select></td>';
 		$shot      = wprp_shot_url( (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ) );
 		$shot_html = $shot ? '<a href="' . esc_url( $shot ) . '" target="_blank" rel="noopener"><img src="' . esc_url( $shot ) . '" alt="" style="max-width:180px;height:auto;margin-top:.35rem;border:1px solid #e0e0e0;border-radius:4px;display:block"></a>' : '';
 		$ctx       = (string) get_post_meta( $n->ID, WPRP_META_CTX, true );
