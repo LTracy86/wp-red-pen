@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.10.5 =
+* Fixed: the custom pin colour had no effect on the front end, and pins used a brighter red than the app accent. The numbered element pins live in a layer attached to the page body, outside the widget root where the colour variable was being set, so it never reached them. The colour is now applied to the pin layer directly. Pins default to the app red (#D32F2F) and honour a custom colour when one is set.
+
 = 0.10.4 =
 * Agent consumption layer: an agent can now pull its own queue two ways, both local with no keys. (1) Live REST - GET the notes endpoint with `?agent=<slug>` returns every open/in-progress note delegated to that agent, site-wide, read with the caller's own credentials. (2) JSON brief - a plain-data file (note bodies, code scope, where each lives, replies) is written to the deny-protected uploads folder and kept current automatically as agent notes change; a local agent reads it straight off disk. The repository's per-agent "Audience" view now shows both paths.
 
