@@ -1122,6 +1122,127 @@ function wprp_get_notes_for_context( $keys, $status = 'any' ) {
 	);
 }
 
+/**
+ * Every top-level note targeted at one agent, across the whole site - the agent's queue.
+ * Unlike the human surfaces, this INCLUDES agent notes and keys on the agent slug.
+ *
+ * @param string $slug    Agent slug.
+ * @param string $status  'open' | 'progress' | 'resolved' | 'any'.
+ * @param int    $exclude Optional note ID to leave out (used while a note is mid-deletion).
+ * @return WP_Post[]
+ */
+function wprp_get_notes_for_agent( $slug, $status = 'any', $exclude = 0 ) {
+	$slug = (string) $slug;
+	if ( '' === $slug ) {
+		return array();
+	}
+	$statuses = wprp_all_statuses();
+	if ( 'open' === $status ) {
+		$statuses = array( WPRP_STATUS_OPEN );
+	} elseif ( 'resolved' === $status ) {
+		$statuses = array( WPRP_STATUS_DONE );
+	} elseif ( 'progress' === $status ) {
+		$statuses = array( WPRP_STATUS_PROGRESS );
+	}
+	$args = array(
+		'post_type'      => WPRP_CPT,
+		'post_status'    => $statuses,
+		'post_parent'    => 0,
+		'posts_per_page' => 500,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		'meta_query'     => array(
+			array( 'key' => WPRP_META_AGENT, 'value' => $slug ),
+		),
+	);
+	if ( $exclude > 0 ) {
+		$args['post__not_in'] = array( (int) $exclude );
+	}
+	return get_posts( $args );
+}
+
+/** Filesystem path of an agent's JSON brief inside the deny-protected screenshots folder. */
+function wprp_agent_brief_path( $slug ) {
+	return trailingslashit( wprp_shot_dir() ) . 'agent-' . sanitize_file_name( (string) $slug ) . '.json';
+}
+
+/**
+ * Build the portable JSON brief for one agent: its actionable queue (open + in-progress),
+ * bodies as plain text, replies, code scope, and where each note lives. Pure data - no
+ * markup, no nonces - so a local agent can read the file straight off disk.
+ */
+function wprp_build_agent_brief( $slug, $exclude = 0 ) {
+	$slug  = (string) $slug;
+	$notes = wprp_get_notes_for_agent( $slug, 'any', $exclude );
+	$types = wprp_note_types();
+	$prios = wprp_priorities();
+	$out   = array();
+	foreach ( $notes as $n ) {
+		$sk = wprp_status_key( $n->post_status );
+		if ( 'resolved' === $sk ) {
+			continue; // the brief is the actionable queue (open + in-progress)
+		}
+		$priority = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
+		$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
+		$type     = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
+		$replies  = array();
+		foreach ( wprp_get_replies( $n->ID ) as $r ) {
+			$ra        = get_userdata( $r->post_author );
+			$replies[] = array(
+				'author' => $ra ? $ra->display_name : '',
+				'body'   => wp_strip_all_tags( $r->post_content ),
+				'date'   => get_the_time( 'c', $r ),
+			);
+		}
+		$out[] = array(
+			'id'         => (int) $n->ID,
+			'status'     => $sk,
+			'type'       => isset( $types[ $type ] ) ? $type : 'note',
+			'priority'   => $priority,
+			'body'       => wp_strip_all_tags( $n->post_content ),
+			'codeScope'  => (string) get_post_meta( $n->ID, WPRP_META_CODESCOPE, true ),
+			'url'        => (string) get_post_meta( $n->ID, WPRP_META_URL, true ),
+			'where'      => (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true ),
+			'anchor'     => (string) get_post_meta( $n->ID, WPRP_META_ANCHOR, true ),
+			'screenshot' => (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ),
+			'replies'    => $replies,
+		);
+	}
+	return array(
+		'agent'      => $slug,
+		'agentLabel' => wprp_agent_label( $slug ),
+		'generated'  => gmdate( 'c' ),
+		'site'       => home_url( '/' ),
+		'count'      => count( $out ),
+		'notes'      => $out,
+	);
+}
+
+/**
+ * Write (or, when the queue is empty, remove) an agent's JSON brief file. Called whenever an
+ * agent note changes. The file lives in the deny-protected uploads folder, so it is readable
+ * from the filesystem by a local agent but not fetchable over the web (briefs can describe
+ * private pages).
+ */
+function wprp_write_agent_brief( $slug, $exclude = 0 ) {
+	$slug = (string) $slug;
+	if ( '' === $slug ) {
+		return;
+	}
+	wprp_shot_dir( true ); // ensure the folder + deny guards exist
+	$path  = wprp_agent_brief_path( $slug );
+	$brief = wprp_build_agent_brief( $slug, $exclude );
+	if ( empty( $brief['notes'] ) ) {
+		if ( file_exists( $path ) ) {
+			@unlink( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_unlink, WordPress.PHP.NoSilencedErrors.Discouraged
+		}
+		return;
+	}
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents, WordPress.PHP.NoSilencedErrors.Discouraged
+	@file_put_contents( $path, wp_json_encode( $brief, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
+}
+
 /** Count of open notes across the whole site (for the admin-bar badge). */
 function wprp_open_count() {
 	$cached = get_transient( 'wprp_open_count' );
