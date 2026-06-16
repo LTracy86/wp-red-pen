@@ -1113,6 +1113,8 @@ function wprp_note_to_array( $note, $replies = null ) {
 		'type'       => $type,
 		'typeLabel'  => isset( $types[ $type ] ) ? $types[ $type ] : $types['note'],
 		'status'     => $note->post_status,
+		'statusKey'  => wprp_status_key( $note->post_status ),
+		'statusLabel' => wprp_statuses()[ wprp_status_key( $note->post_status ) ],
 		'resolved'   => WPRP_STATUS_DONE === $note->post_status,
 		'author'     => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
 		'date'       => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
