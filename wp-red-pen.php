@@ -1794,12 +1794,12 @@ function wprp_print_frontend_assets() {
 		}
 
 		function render() {
-			var openCount = 0, resolvedCount = 0;
-			for (var _i = 0; _i < lastNotes.length; _i++) { if (lastNotes[_i].resolved) { resolvedCount++; } else { openCount++; } }
+			var openCount = 0, progressCount = 0, resolvedCount = 0;
+			for (var _i = 0; _i < lastNotes.length; _i++) { var _k = statusKeyOf(lastNotes[_i]); if (_k === 'resolved') { resolvedCount++; } else if (_k === 'progress') { progressCount++; } else { openCount++; } }
 			var notes = [];
-			for (var _j = 0; _j < lastNotes.length; _j++) { if ((currentTab === 'resolved') === !!lastNotes[_j].resolved) { notes.push(lastNotes[_j]); } }
+			for (var _j = 0; _j < lastNotes.length; _j++) { if (statusKeyOf(lastNotes[_j]) === currentTab) { notes.push(lastNotes[_j]); } }
 			if (!notes.length) {
-				list.innerHTML = '<p class="wprp-muted">' + (currentTab === 'resolved' ? EMPTY_RESOLVED : EMPTY_OPEN) + '</p>';
+				list.innerHTML = '<p class="wprp-muted">' + emptyMsgFor(currentTab) + '</p>';
 			} else {
 				list.innerHTML = notes.map(noteHtml).join('');
 			}
