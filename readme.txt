@@ -62,6 +62,10 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.9.0 =
+* New three-state workflow: notes can now be Open, In Progress, or Resolved. The floating panel has an Open / In Progress / Resolved tab set, and each note has a status dropdown to move it between them (with Undo). In-progress notes keep their pin on the page (in amber) so work-in-progress stays visible.
+* The notes repository (Tools > Red Pen) gained an In Progress filter and a Start / Resolve / Reopen action per note, and shows each note's status.
+
 = 0.8.0 =
 Performance (from the round-2 audit) - lighter on every editor page load.
 * Dev Mode pages no longer fetch the whole notes list just to show the button badge and place pins. That data is now embedded in the page, and the full list (with replies and screenshots) loads only when you actually open the panel.
