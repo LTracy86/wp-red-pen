@@ -1656,6 +1656,7 @@ function wprp_print_frontend_assets() {
 			function ctxForLevel(lvl) { return (lvl === 'template' && cfg.template && cfg.template.key) ? cfg.template : cfg.page; }
 		var countEl = document.getElementById('wprp-fab-count');
 		var tabOpenBtn = document.getElementById('wprp-tab-open');
+		var tabProgressBtn = document.getElementById('wprp-tab-progress');
 		var tabResolvedBtn = document.getElementById('wprp-tab-resolved');
 		var currentTab = 'open';
 		var moreToggle = document.getElementById('wprp-more-toggle');
