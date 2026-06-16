@@ -62,6 +62,14 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.8.0 =
+Performance (from the round-2 audit) - lighter on every editor page load.
+* Dev Mode pages no longer fetch the whole notes list just to show the button badge and place pins. That data is now embedded in the page, and the full list (with replies and screenshots) loads only when you actually open the panel.
+* Loading the panel now pulls all replies in a single query instead of one query per note, and warms the author cache - much fewer database queries on busy pages.
+* The open-note count (admin bar) and the assignable-users list are cached briefly and refreshed on change, instead of running a query on every page.
+* Element pins reuse their resolved page element while scrolling instead of re-finding it every frame.
+* Two internal settings no longer load on every request.
+
 = 0.7.7 =
 Security + correctness hardening (from the round-2 audit).
 * Note and reply text is now sanitized with a fixed safe-tag list instead of the default filter, so even an administrator cannot plant script that would run in another reviewer's browser when they open the panel or repository.
