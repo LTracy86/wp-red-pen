@@ -501,6 +501,35 @@ function wprp_save_context( $note_id, $context, $target_id = 0 ) {
 	}
 }
 
+/**
+ * Sanitize a note/reply body for safe storage AND display. Uses an EXPLICIT reduced
+ * allowed-tags set, NOT wp_kses_post(): wp_kses_post is a no-op for users who hold the
+ * unfiltered_html capability (admins / super admins), so on a shared review surface that
+ * is re-rendered to every other editor via innerHTML it would let a privileged author
+ * plant stored XSS. An explicit wp_kses() allow-list cannot be widened by any capability.
+ */
+function wprp_kses_note( $content ) {
+	return wp_kses(
+		(string) $content,
+		array(
+			'a'          => array( 'href' => true, 'title' => true, 'rel' => true ),
+			'strong'     => array(),
+			'b'          => array(),
+			'em'         => array(),
+			'i'          => array(),
+			'u'          => array(),
+			'code'       => array(),
+			'pre'        => array(),
+			'br'         => array(),
+			'p'          => array(),
+			'ul'         => array(),
+			'ol'         => array(),
+			'li'         => array(),
+			'blockquote' => array(),
+		)
+	);
+}
+
 function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array() ) {
 	if ( ! wprp_user_can() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
