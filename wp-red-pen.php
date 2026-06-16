@@ -2620,6 +2620,17 @@ function wprp_render_repo_page() {
 		return;
 	}
 
+	echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+	wp_nonce_field( 'wprp_bulk' );
+	echo '<input type="hidden" name="action" value="wprp_bulk">';
+	echo '<div class="tablenav top"><div class="alignleft actions bulkactions">';
+	echo '<select name="bulk"><option value="">' . esc_html__( 'Bulk actions', 'wp-red-pen' ) . '</option>';
+	echo '<option value="open">' . esc_html__( 'Reopen', 'wp-red-pen' ) . '</option>';
+	echo '<option value="progress">' . esc_html__( 'Mark In Progress', 'wp-red-pen' ) . '</option>';
+	echo '<option value="done">' . esc_html__( 'Resolve', 'wp-red-pen' ) . '</option>';
+	echo '<option value="delete">' . esc_html__( 'Delete', 'wp-red-pen' ) . '</option>';
+	echo '</select> <button type="submit" class="button" onclick="return this.form.bulk.value!=\'delete\'||confirm(\'' . esc_js( __( 'Permanently delete the selected notes? This cannot be undone.', 'wp-red-pen' ) ) . '\')">' . esc_html__( 'Apply', 'wp-red-pen' ) . '</button>';
+	echo '</div></div>';
 	echo '<table class="wp-list-table widefat fixed striped"><thead><tr>';
 	echo '<td class="manage-column check-column"><input type="checkbox" onclick="var c=document.getElementsByClassName(\'wprp-cb\');for(var i=0;i<c.length;i++){c[i].checked=this.checked;}"></td><th>' . esc_html__( 'Type', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Priority', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Note', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Where', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Assigned', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'By', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'When', 'wp-red-pen' ) . '</th><th></th></tr></thead><tbody>';
 
