@@ -720,7 +720,7 @@ function wprp_kses_note( $content ) {
 	);
 }
 
-function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array() ) {
+function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array(), $agent = '', $codescope = '' ) {
 	if ( ! wprp_user_can() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
