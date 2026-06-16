@@ -265,8 +265,14 @@ function wprp_assignable_users() {
 	foreach ( $users as $u ) {
 		$out[ (int) $u->ID ] = $u->display_name;
 	}
+	set_transient( 'wprp_assignable_users', $out, HOUR_IN_SECONDS );
 	return $out;
 }
+// Bust the assignable-users cache when the user base / roles / names change.
+add_action( 'set_user_role', function () { delete_transient( 'wprp_assignable_users' ); } );
+add_action( 'profile_update', function () { delete_transient( 'wprp_assignable_users' ); } );
+add_action( 'user_register', function () { delete_transient( 'wprp_assignable_users' ); } );
+add_action( 'deleted_user', function () { delete_transient( 'wprp_assignable_users' ); } );
 
 /**
  * Validate + normalise an element-pin anchor payload into a compact JSON string
