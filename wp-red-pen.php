@@ -1091,6 +1091,7 @@ function wprp_priming_data( $keys ) {
 		$pins[] = array(
 			'id'        => (int) $n->ID,
 			'anchor'    => $anchor,
+			'statusKey' => $key,
 			'resolved'  => false,
 			'typeLabel' => isset( $types[ $type ] ) ? $types[ $type ] : $types['note'],
 			'body'      => wp_trim_words( wp_strip_all_tags( $n->post_content ), 14, '...' ),
