@@ -2324,7 +2324,7 @@ function wprp_print_frontend_assets() {
 			pins = [];
 			var i = 0;
 			notes.forEach(function (n) {
-				if (n.resolved) { return; } // resolved notes drop off the active list, so their pin marker goes too
+				if (statusKeyOf(n) === 'resolved') { return; } // resolved notes drop off the active list, so their pin marker goes too (open + in-progress keep pins)
 				if (!n.anchor) { return; }
 				var a; try { a = JSON.parse(n.anchor); } catch (e) { return; }
 				if (!a || !a.sel) { return; }
