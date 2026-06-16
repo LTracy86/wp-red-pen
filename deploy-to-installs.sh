@@ -20,16 +20,18 @@ echo "Deploying WP Red Pen $VERSION to all installs under $PROJECTS_ROOT"
 TAR="$(mktemp)"
 git -C "$REPO_DIR" archive --format=tar HEAD -o "$TAR"
 
-for wpload in $(find "$PROJECTS_ROOT" -maxdepth 3 -name wp-load.php 2>/dev/null); do
+# NUL-delimited read so install paths containing spaces ("Claude Code Projects") are
+# handled correctly - an unquoted $(find ...) in a for-loop word-splits on the spaces.
+while IFS= read -r -d '' wpload; do
 	install="$(dirname "$wpload")"
 	dest="$install/wp-content/plugins/wp-red-pen"
 	mkdir -p "$dest"
 	tar -xf "$TAR" -C "$dest"
 	live="$(grep -m1 "WPRP_VERSION" "$dest/wp-red-pen.php" | grep -o '0\.[0-9.]*' | head -1)"
 	act="$("$WP" --path="$install" plugin activate wp-red-pen --skip-plugins --skip-themes 2>&1 || true)"
-	if echo "$act" | grep -qi "Success\|already active"; then state="active"; else state="present (not activated)"; fi
+	if echo "$act" | grep -qi "Success\|already active"; then state="active"; else state="present (activation: ${act%%$'\n'*})"; fi
 	echo "  $install -> $live, $state"
-done
+done < <(find "$PROJECTS_ROOT" -maxdepth 3 -name wp-load.php -print0 2>/dev/null)
 
 rm -f "$TAR"
 echo "Done."
