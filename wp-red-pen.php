@@ -472,6 +472,7 @@ add_action(
 		if ( WPRP_CPT !== get_post_type( $post_id ) ) {
 			return;
 		}
+		wprp_flush_counts(); // a deleted note may change the open count
 		wprp_delete_shot( (string) get_post_meta( $post_id, WPRP_META_SHOT, true ) );
 
 		// Non-hierarchical CPT: WP won't cascade child replies, so delete them here
