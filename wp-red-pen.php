@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.10.2
+ * Version:           0.10.3
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.10.2' );
+define( 'WPRP_VERSION',     '0.10.3' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -2732,7 +2732,8 @@ function wprp_render_repo_page() {
 	$enabled_agent_slugs = is_array( $enabled_agent_slugs ) ? $enabled_agent_slugs : array();
 	$custom_agent        = (string) get_option( WPRP_AGENT_CUSTOM_OPT, '' );
 	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Agent feedback', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'enable the AI agents/platforms you use. Notes can then be targeted at an agent (kept in a separate "For agents" queue, below) for it to work on via the REST API or wp-cli.', 'wp-red-pen' ) . '</p>';
+	$agent_help = __( 'Delegate feedback to an AI coding agent such as Claude or Codex. Tick the agents you use and Save, then choose an agent from any note Assigned menu (new or existing notes). The note moves to the For agents queue for that agent to work on via the REST API or wp-cli. Everything stays local - no AI keys, nothing leaves your site.', 'wp-red-pen' );
+	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Agent feedback', 'wp-red-pen' ) . '</strong> <span class="dashicons dashicons-editor-help" style="cursor:help;color:#787c82;vertical-align:text-bottom" tabindex="0" role="img" aria-label="' . esc_attr( $agent_help ) . '" title="' . esc_attr( $agent_help ) . '"></span> &mdash; ' . esc_html__( 'enable the AI agents/platforms you use.', 'wp-red-pen' ) . '</p>';
 	foreach ( wprp_agent_platforms() as $slug => $label ) {
 		echo '<label style="display:inline-block;margin:.1rem 1rem .1rem 0"><input type="checkbox" name="agents[]" value="' . esc_attr( $slug ) . '"' . checked( in_array( $slug, $enabled_agent_slugs, true ), true, false ) . '> ' . esc_html( $label ) . '</label>';
 	}
