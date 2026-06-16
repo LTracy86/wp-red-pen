@@ -1284,6 +1284,20 @@ function wprp_flush_counts() {
 // Any insert/update of a note (create, status flip, edit) busts the count; delete is handled in before_delete_post.
 add_action( 'save_post_' . WPRP_CPT, 'wprp_flush_counts' );
 
+// Assigning/reassigning a note to an agent happens via post meta AFTER the post is inserted, so
+// save_post alone misses the initial create. Catch the meta write itself to (re)build the brief.
+function wprp_brief_on_agent_meta( $meta_id, $post_id, $meta_key, $meta_value ) {
+	if ( WPRP_META_AGENT !== $meta_key || WPRP_CPT !== get_post_type( $post_id ) ) {
+		return;
+	}
+	$slug = (string) $meta_value;
+	if ( '' !== $slug ) {
+		wprp_write_agent_brief( $slug );
+	}
+}
+add_action( 'added_post_meta', 'wprp_brief_on_agent_meta', 10, 4 );
+add_action( 'updated_post_meta', 'wprp_brief_on_agent_meta', 10, 4 );
+
 // When an agent-targeted note (or a reply to one) changes, refresh that agent's JSON brief.
 add_action(
 	'save_post_' . WPRP_CPT,
