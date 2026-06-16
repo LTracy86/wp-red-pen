@@ -29,6 +29,7 @@ define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
 define( 'WPRP_STATUS_OPEN', 'wprp_open' );      // custom post statuses
+define( 'WPRP_STATUS_PROGRESS', 'wprp_progress' ); // 3-state workflow: open -> in progress -> resolved
 define( 'WPRP_STATUS_DONE', 'wprp_resolved' );
 define( 'WPRP_CAP',         'edit_posts' );     // who may use Red Pen
 define( 'WPRP_USERMETA',    'wprp_devmode' );   // per-user Dev Mode toggle
