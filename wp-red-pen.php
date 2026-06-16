@@ -2331,7 +2331,7 @@ function wprp_print_frontend_assets() {
 				i++;
 				var marker = document.createElement('button');
 				marker.type = 'button';
-				marker.className = 'wprp-pin' + (n.resolved ? ' is-resolved' : '');
+				marker.className = 'wprp-pin' + (statusKeyOf(n) === 'progress' ? ' wprp-pin-progress' : '');
 				marker.textContent = i;
 				var pinSnippet = (n.typeLabel ? n.typeLabel + ': ' : '') + (n.body ? n.body.replace(/<[^>]*>/g, '').slice(0, 80) : '');
 				marker.title = pinSnippet;
