@@ -1640,6 +1640,7 @@ function wprp_print_frontend_assets() {
 		function load() {
 			var keys = [cfg.page && cfg.page.key, cfg.template && cfg.template.key].filter(Boolean).join(',');
 			list.setAttribute('aria-busy', 'true');
+				var wprpSeq = ++wprpLoadSeq;
 				return api('/notes?keys=' + encodeURIComponent(keys)).then(function (notes) {
 				lastNotes = notes;
 				render();
