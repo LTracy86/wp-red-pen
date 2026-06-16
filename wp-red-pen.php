@@ -110,6 +110,44 @@ function wprp_priorities() {
 }
 
 /** View scopes the widget can be shown on (for the global visibility setting). */
+/** Known agent platforms for the Agent Feedback feature: slug => label. */
+function wprp_agent_platforms() {
+	return array(
+		'claude'   => __( 'Claude', 'wp-red-pen' ),
+		'codex'    => __( 'Codex', 'wp-red-pen' ),
+		'cursor'   => __( 'Cursor', 'wp-red-pen' ),
+		'copilot'  => __( 'GitHub Copilot', 'wp-red-pen' ),
+		'gemini'   => __( 'Gemini', 'wp-red-pen' ),
+		'lmstudio' => __( 'LM Studio', 'wp-red-pen' ),
+	);
+}
+
+/**
+ * Assignable agents: slug => label. The enabled known platforms plus one optional custom
+ * agent (slug 'custom'). An empty array means the Agent Feedback feature is dormant.
+ */
+function wprp_enabled_agents() {
+	$enabled = get_option( WPRP_AGENTS_OPT, array() );
+	$enabled = is_array( $enabled ) ? $enabled : array();
+	$out     = array();
+	foreach ( wprp_agent_platforms() as $slug => $label ) {
+		if ( in_array( $slug, $enabled, true ) ) {
+			$out[ $slug ] = $label;
+		}
+	}
+	$custom = trim( (string) get_option( WPRP_AGENT_CUSTOM_OPT, '' ) );
+	if ( '' !== $custom ) {
+		$out['custom'] = $custom;
+	}
+	return $out;
+}
+
+/** Human label for an agent slug, or '' if it isn't a currently-enabled agent. */
+function wprp_agent_label( $slug ) {
+	$agents = wprp_enabled_agents();
+	return isset( $agents[ $slug ] ) ? $agents[ $slug ] : '';
+}
+
 function wprp_view_scopes() {
 	return array(
 		'singular' => __( 'Posts &amp; pages (singular)', 'wp-red-pen' ),
