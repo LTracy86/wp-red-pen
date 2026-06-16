@@ -1470,6 +1470,7 @@ add_action(
 				</header>
 				<div class="wprp-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Filter notes', 'wp-red-pen' ); ?>">
 						<button type="button" class="wprp-tab is-active" id="wprp-tab-open" role="tab" aria-selected="true" aria-controls="wprp-list"><?php esc_html_e( 'Open', 'wp-red-pen' ); ?></button>
+						<button type="button" class="wprp-tab" id="wprp-tab-progress" role="tab" aria-selected="false" aria-controls="wprp-list"><?php esc_html_e( 'In Progress', 'wp-red-pen' ); ?></button>
 						<button type="button" class="wprp-tab" id="wprp-tab-resolved" role="tab" aria-selected="false" aria-controls="wprp-list"><?php esc_html_e( 'Resolved', 'wp-red-pen' ); ?></button>
 					</div>
 					<div id="wprp-list" class="wprp-list" role="tabpanel" aria-live="polite" aria-busy="true"><p class="wprp-muted"><?php esc_html_e( 'Loading notes...', 'wp-red-pen' ); ?></p></div>
