@@ -2637,7 +2637,21 @@ function wprp_render_repo_page() {
 		echo '<td>' . ( $au ? esc_html( $au->display_name ) : '<span style="color:#9aa1a7">&mdash;</span>' ) . '</td>';
 		echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
 		echo '<td>' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</td>';
-		echo '<td><a class="button button-small" href="' . esc_url( $resolve_url ) . '">' . esc_html( $resolved ? __( 'Reopen', 'wp-red-pen' ) : __( 'Resolve', 'wp-red-pen' ) ) . '</a> ';
+		$statuses_lbl = wprp_statuses();
+		$rs_nonce     = wp_create_nonce( 'wprp_resolve_' . $n->ID );
+		$mk_status    = function ( $to ) use ( $n, $rs_nonce ) {
+			return esc_url( add_query_arg( array( 'action' => 'wprp_resolve', 'note' => $n->ID, 'to' => $to, '_wpnonce' => $rs_nonce ), admin_url( 'admin-post.php' ) ) );
+		};
+		echo '<td><span style="display:inline-block;margin-bottom:.25rem;font-size:.7rem;font-weight:600;color:#3A3A3C">' . esc_html( $statuses_lbl[ $sk ] ) . '</span><br>';
+		if ( 'open' === $sk ) {
+			echo '<a class="button button-small" href="' . $mk_status( 'progress' ) . '">' . esc_html__( 'Start', 'wp-red-pen' ) . '</a> ';
+			echo '<a class="button button-small" href="' . $mk_status( 'done' ) . '">' . esc_html__( 'Resolve', 'wp-red-pen' ) . '</a> ';
+		} elseif ( 'progress' === $sk ) {
+			echo '<a class="button button-small" href="' . $mk_status( 'done' ) . '">' . esc_html__( 'Resolve', 'wp-red-pen' ) . '</a> ';
+			echo '<a class="button button-small" href="' . $mk_status( 'open' ) . '">' . esc_html__( 'Reopen', 'wp-red-pen' ) . '</a> ';
+		} else {
+			echo '<a class="button button-small" href="' . $mk_status( 'open' ) . '">' . esc_html__( 'Reopen', 'wp-red-pen' ) . '</a> ';
+		}
 		echo '<a class="button button-small button-link-delete" style="color:#b32d2e" href="' . esc_url( $delete_url ) . '" onclick="return confirm(\'' . esc_js( __( 'Delete this note permanently, including its replies and screenshot? This cannot be undone.', 'wp-red-pen' ) ) . '\');">' . esc_html__( 'Delete', 'wp-red-pen' ) . '</a></td>';
 		echo '</tr>';
 	}
