@@ -585,6 +585,16 @@ add_action(
 			)
 		);
 		register_post_status(
+			WPRP_STATUS_PROGRESS,
+			array(
+				'label'                     => _x( 'In Progress', 'red pen note status', 'wp-red-pen' ),
+				'public'                    => false,
+				'internal'                  => true,
+				'show_in_admin_all_list'    => true,
+				'show_in_admin_status_list' => true,
+			)
+		);
+		register_post_status(
 			WPRP_STATUS_DONE,
 			array(
 				'label'                     => _x( 'Resolved', 'red pen note status', 'wp-red-pen' ),
