@@ -2651,8 +2651,13 @@ function wprp_render_repo_page() {
 		$assignee  = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
 		$au        = $assignee ? get_userdata( $assignee ) : false;
 		$prio_bg   = 'high' === $priority ? '#D32F2F' : ( 'low' === $priority ? '#9aa1a7' : '#6b7177' );
+		$qe_nonce  = wp_create_nonce( 'wprp_quickedit_' . $n->ID );
+		$qe_url    = function ( $field, $value ) use ( $n, $qe_nonce ) {
+			return esc_url( add_query_arg( array( 'action' => 'wprp_quickedit', 'note' => $n->ID, 'field' => $field, 'value' => $value, '_wpnonce' => $qe_nonce ), admin_url( 'admin-post.php' ) ) );
+		};
 
 		echo '<tr' . ( $resolved ? ' style="opacity:.55"' : '' ) . '>';
+		echo '<th scope="row" class="check-column"><input type="checkbox" class="wprp-cb" name="ids[]" value="' . (int) $n->ID . '"></th>';
 		echo '<td><span style="background:#D32F2F;color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.72rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span></td>';
 		echo '<td><span style="background:' . esc_attr( $prio_bg ) . ';color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.72rem;font-weight:600">' . esc_html( isset( $prios[ $priority ] ) ? $prios[ $priority ] : $prios['normal'] ) . '</span></td>';
 		$shot      = wprp_shot_url( (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ) );
