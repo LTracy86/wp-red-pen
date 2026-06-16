@@ -2829,7 +2829,11 @@ function wprp_render_repo_page() {
 		/* translators: %d: number of replies */
 		$reply_html = $reply_n ? '<div style="font-size:.72rem;color:#3A3A3C;margin-top:.35rem">' . esc_html( sprintf( _n( '%d reply', '%d replies', $reply_n, 'wp-red-pen' ), $reply_n ) ) . '</div>' : '';
 		$anchor_html = get_post_meta( $n->ID, WPRP_META_ANCHOR, true ) ? '<div style="font-size:.72rem;color:#D32F2F;margin-top:.35rem"><span class="dashicons dashicons-location" style="font-size:14px;width:14px;height:14px;vertical-align:text-top"></span> ' . esc_html__( 'Pinned to an element', 'wp-red-pen' ) . '</div>' : '';
-		echo '<td>' . wprp_kses_note( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
+		$agent_slug = (string) get_post_meta( $n->ID, WPRP_META_AGENT, true );
+		$agent_html = '' !== $agent_slug ? '<div style="font-size:.72rem;color:#7a4ad6;font-weight:600;margin-top:.35rem"><span class="dashicons dashicons-superhero-alt" style="font-size:14px;width:14px;height:14px;vertical-align:text-top"></span> ' . esc_html( wprp_agent_label( $agent_slug ) ? wprp_agent_label( $agent_slug ) : $agent_slug ) . '</div>' : '';
+		$cs         = (string) get_post_meta( $n->ID, WPRP_META_CODESCOPE, true );
+		$cs_html    = '' !== $cs ? '<div style="font-size:.72rem;color:#3A3A3C;margin-top:.2rem;font-family:monospace">' . esc_html__( 'Code:', 'wp-red-pen' ) . ' ' . esc_html( $cs ) . '</div>' : '';
+		echo '<td>' . wprp_kses_note( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . $agent_html . $cs_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
 		$ctx_label = (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true );
 		$level     = ( 'template' === (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true ) ) ? 'template' : 'page';
 		if ( $target ) {
