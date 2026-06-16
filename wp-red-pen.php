@@ -2631,7 +2631,7 @@ add_action(
 		$valid    = array_keys( wprp_view_scopes() );
 		$submitted = isset( $_POST['scopes'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['scopes'] ) ) : array();
 		$scopes   = array_values( array_intersect( $submitted, $valid ) );
-		update_option( WPRP_SHOW_OPT, $scopes ); // empty array = show nowhere (a valid choice)
+		update_option( WPRP_SHOW_OPT, $scopes, false ); // empty array = show nowhere (a valid choice); not autoloaded
 		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
 	}
