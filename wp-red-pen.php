@@ -2646,16 +2646,28 @@ function wprp_render_repo_page() {
 		'orderby'        => 'date',
 		'order'          => 'DESC',
 	);
+	// Audience filter: '' = humans (agent notes excluded), 'agents' = any agent, or a specific agent slug.
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only filter state
+	$audience = isset( $_GET['audience'] ) ? sanitize_key( wp_unslash( $_GET['audience'] ) ) : '';
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	$enabled_agents = wprp_enabled_agents();
+	$audience = ( 'agents' === $audience || isset( $enabled_agents[ $audience ] ) ) ? $audience : '';
+
+	$meta = array( 'relation' => 'AND' );
 	if ( 'me' === $who ) {
-		$query_args['meta_key']   = WPRP_META_ASSIGNEE; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-		$query_args['meta_value'] = (int) get_current_user_id(); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		$meta[] = array( 'key' => WPRP_META_ASSIGNEE, 'value' => (int) get_current_user_id() );
 	} elseif ( 'none' === $who ) {
-		$query_args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-			'relation' => 'OR',
-			array( 'key' => WPRP_META_ASSIGNEE, 'compare' => 'NOT EXISTS' ),
-			array( 'key' => WPRP_META_ASSIGNEE, 'value' => 0 ),
-		);
+		$meta[] = array( 'relation' => 'OR', array( 'key' => WPRP_META_ASSIGNEE, 'compare' => 'NOT EXISTS' ), array( 'key' => WPRP_META_ASSIGNEE, 'value' => 0 ) );
 	}
+	if ( 'agents' === $audience ) {
+		$meta[] = array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '!=' );
+	} elseif ( '' !== $audience ) {
+		$meta[] = array( 'key' => WPRP_META_AGENT, 'value' => $audience );
+	} else {
+		$meta[] = array( 'relation' => 'OR', array( 'key' => WPRP_META_AGENT, 'compare' => 'NOT EXISTS' ), array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '=' ) );
+	}
+	$query_args['meta_query'] = $meta; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+
 	$notes = get_posts( $query_args );
 	$types = wprp_note_types();
 	$prios = wprp_priorities();
