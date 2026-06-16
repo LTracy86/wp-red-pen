@@ -1003,8 +1003,12 @@ function wprp_flush_counts() {
 // Any insert/update of a note (create, status flip, edit) busts the count; delete is handled in before_delete_post.
 add_action( 'save_post_' . WPRP_CPT, 'wprp_flush_counts' );
 
-/** Shape a note post into the plain array the JS + REST consume. */
-function wprp_note_to_array( $note ) {
+/**
+ * Shape a note post into the plain array the JS + REST consume. Pass $replies (a WP_Post[]
+ * from wprp_get_replies_for()) when shaping many notes to avoid a per-note reply query;
+ * leave it null for a single note (falls back to wprp_get_replies()).
+ */
+function wprp_note_to_array( $note, $replies = null ) {
 	$type     = (string) get_post_meta( $note->ID, WPRP_META_TYPE, true );
 	$types    = wprp_note_types();
 	$author   = get_userdata( $note->post_author );
