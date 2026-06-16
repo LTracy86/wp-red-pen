@@ -240,6 +240,10 @@ function wprp_current_context() {
  * capability (edit_posts). Returned as id => display_name, capped at 200.
  */
 function wprp_assignable_users() {
+	$cached = get_transient( 'wprp_assignable_users' );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
 	$roles = array();
 	foreach ( wp_roles()->roles as $slug => $role ) {
 		if ( ! empty( $role['capabilities'][ WPRP_CAP ] ) ) {
