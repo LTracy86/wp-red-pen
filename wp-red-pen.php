@@ -2227,9 +2227,8 @@ function wprp_print_frontend_assets() {
 			pendingShot = null; pendingAnchor = null;
 			typeSel.value = n.type || 'note';
 			prioSel.value = n.priority || 'normal';
-			assigneeSel.value = String(n.assignee || 0);
+			assigneeSel.value = n.agent ? ('agent:' + n.agent) : String(n.assignee || 0);
 			if (levelSel) { levelSel.value = (n.level === 'template' && cfg.template && cfg.template.key) ? 'template' : 'page'; }
-			if (agentSel) { agentSel.value = n.agent || ''; }
 			if (codeScopeInput) { codeScopeInput.value = n.codeScope || ''; }
 			body.value = (n.raw != null ? n.raw : '').trim();
 			// existing screenshot: show it; kept unless the user replaces or clears it
