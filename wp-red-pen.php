@@ -1425,7 +1425,9 @@ add_action(
 						$status = (string) $req->get_param( 'status' );
 						$keys   = (string) $req->get_param( 'keys' );
 							$agent  = (string) $req->get_param( 'agent' );
-							$notes  = ( '' !== $keys )
+							$notes  = ( '' !== $agent )
+									? wprp_get_notes_for_agent( $agent, $status ? $status : 'any' )
+									: ( ( '' !== $keys )
 								? wprp_get_notes_for_context( explode( ',', $keys ), $status ? $status : 'any' )
 								: wprp_get_notes_for( $target, $status ? $status : 'any' );
 						// Batch the replies (one query for all notes, not one per note) and prime
