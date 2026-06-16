@@ -2728,10 +2728,28 @@ function wprp_render_repo_page() {
 	echo '<ul class="subsubsub">';
 	$i = 0;
 	foreach ( $who_tabs as $key => $label ) {
-		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $key ), admin_url( 'tools.php' ) ) );
+		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $key, 'audience' => $audience ), admin_url( 'tools.php' ) ) );
 		echo ( $i++ ? ' | ' : '' ) . '<li><a href="' . $url . '"' . ( $who === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
 	}
 	echo '</ul><div style="clear:both"></div>';
+
+	// Audience filter (only when agent feedback is enabled): Humans / all agents / per-agent.
+	if ( $enabled_agents ) {
+		$aud_tabs = array(
+			''       => __( 'Humans', 'wp-red-pen' ),
+			'agents' => __( 'For agents (all)', 'wp-red-pen' ),
+		);
+		foreach ( $enabled_agents as $aslug => $alabel ) {
+			$aud_tabs[ $aslug ] = $alabel;
+		}
+		echo '<ul class="subsubsub"><li style="font-weight:600;margin-right:.3rem">' . esc_html__( 'Audience:', 'wp-red-pen' ) . '</li>';
+		$i = 0;
+		foreach ( $aud_tabs as $key => $label ) {
+			$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $who, 'audience' => $key ), admin_url( 'tools.php' ) ) );
+			echo '<li>' . ( $i++ ? ' | ' : '' ) . '<a href="' . $url . '"' . ( $audience === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
+		}
+		echo '</ul><div style="clear:both"></div>';
+	}
 
 	// Local CSV export of the current filter (no external service - the user imports it wherever).
 	$export_url = wp_nonce_url(
