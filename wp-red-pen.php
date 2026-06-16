@@ -2569,7 +2569,7 @@ function wprp_render_repo_page() {
 	$pin_color = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) );
 	$save_url = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_save_visibility' ), 'wprp_save_visibility' );
 	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:640px">';
-	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Where Red Pen appears', 'wp-red-pen' ) . '</summary>';
+	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Display settings', 'wp-red-pen' ) . '</summary>';
 	echo '<form method="post" action="' . esc_url( $save_url ) . '" style="margin-top:.6rem">';
 	echo '<p style="margin:.2rem 0 .6rem;color:#646970">' . esc_html__( 'Choose which front-end views show the floating button for users in Dev Mode.', 'wp-red-pen' ) . '</p>';
 	foreach ( wprp_view_scopes() as $key => $label ) {
