@@ -62,6 +62,10 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.9.1 =
+* The notes repository (Tools > Red Pen) gained bulk actions: tick notes and Reopen / Mark In Progress / Resolve / Delete them all at once.
+* Assignee and Priority can now be changed right in the repository table from a dropdown, no need to open each note.
+
 = 0.9.0 =
 * New three-state workflow: notes can now be Open, In Progress, or Resolved. The floating panel has an Open / In Progress / Resolved tab set, and each note has a status dropdown to move it between them (with Undo). In-progress notes keep their pin on the page (in amber) so work-in-progress stays visible.
 * The notes repository (Tools > Red Pen) gained an In Progress filter and a Start / Resolve / Reopen action per note, and shows each note's status.
