@@ -2586,6 +2586,7 @@ function wprp_render_repo_page() {
 		$type     = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
 		$target   = (int) get_post_meta( $n->ID, WPRP_META_TARGET, true );
 		$resolved = WPRP_STATUS_DONE === $n->post_status;
+		$sk       = wprp_status_key( $n->post_status );
 		$author   = get_userdata( $n->post_author );
 
 		$resolve_url = wp_nonce_url(
