@@ -725,6 +725,33 @@ function wprp_get_replies( $parent_id ) {
 }
 
 /**
+ * Replies for MANY notes in a single query: array( parent_id => WP_Post[] ), oldest first.
+ * Kills the N+1 where wprp_note_to_array() fired a wprp_get_replies() query per note when
+ * shaping a whole GET /notes payload.
+ */
+function wprp_get_replies_for( $parent_ids ) {
+	$parent_ids = array_values( array_unique( array_filter( array_map( 'intval', (array) $parent_ids ) ) ) );
+	if ( ! $parent_ids ) {
+		return array();
+	}
+	$replies = get_posts(
+		array(
+			'post_type'       => WPRP_CPT,
+			'post_status'     => array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE ),
+			'post_parent__in' => $parent_ids,
+			'posts_per_page'  => -1,
+			'orderby'         => 'date',
+			'order'           => 'ASC',
+		)
+	);
+	$map = array();
+	foreach ( $replies as $r ) {
+		$map[ (int) $r->post_parent ][] = $r;
+	}
+	return $map;
+}
+
+/**
  * Reply counts for many notes in a single query: array( parent_id => count ).
  * Avoids the N+1 of calling wprp_get_replies() per row in the repository table just
  * to count children.
