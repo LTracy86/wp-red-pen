@@ -2525,8 +2525,9 @@ add_action(
  * single quote so it imports as literal text. Applied to every user-supplied cell.
  */
 function wprp_csv_cell( $value ) {
-	$value = (string) $value;
-	if ( '' !== $value && false !== strpos( "=+-@\t\r", $value[0] ) ) {
+	$value   = (string) $value;
+	$trimmed = ltrim( $value ); // a leading space before =/+/-/@ still triggers the formula parser
+	if ( '' !== $trimmed && false !== strpos( "=+-@\t\r", $trimmed[0] ) ) {
 		return "'" . $value;
 	}
 	return $value;
