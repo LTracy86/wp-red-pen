@@ -1058,8 +1058,17 @@ function wprp_get_notes_for( $target_id, $status = 'any' ) {
 			'posts_per_page' => 200,
 			'orderby'        => 'date',
 			'order'          => 'DESC',
-			'meta_key'       => WPRP_META_TARGET, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-			'meta_value'     => (int) $target_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query'     => array(
+				'relation' => 'AND',
+				array( 'key' => WPRP_META_TARGET, 'value' => (int) $target_id ),
+				// Exclude agent-targeted notes from this human (meta-box) surface.
+				array(
+					'relation' => 'OR',
+					array( 'key' => WPRP_META_AGENT, 'compare' => 'NOT EXISTS' ),
+					array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '=' ),
+				),
+			),
 		)
 	);
 }
