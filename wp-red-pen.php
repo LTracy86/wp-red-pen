@@ -1838,7 +1838,7 @@ function wprp_print_frontend_assets() {
 		function noteNodeById(nid) { return list.querySelector('.wprp-note[data-id="' + nid + '"]'); }
 		function htmlToNode(html) { var d = document.createElement('div'); d.innerHTML = html; return d.firstChild; }
 		function lastNotesIndex(nid) { for (var i = 0; i < lastNotes.length; i++) { if (String(lastNotes[i].id) === String(nid)) { return i; } } return -1; }
-		function noteBelongsToTab(n) { return (currentTab === 'resolved') === !!n.resolved; }
+		function noteBelongsToTab(n) { return statusKeyOf(n) === currentTab; }
 		function clearPlaceholder() { if (!list.querySelector('.wprp-note')) { list.innerHTML = ''; } }
 		function showEmptyIfNeeded() { if (!list.querySelector('.wprp-note')) { list.innerHTML = '<p class="wprp-muted">' + (currentTab === 'resolved' ? EMPTY_RESOLVED : EMPTY_OPEN) + '</p>'; } }
 		function refreshCounts() {
