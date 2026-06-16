@@ -1642,6 +1642,7 @@ function wprp_print_frontend_assets() {
 			list.setAttribute('aria-busy', 'true');
 				var wprpSeq = ++wprpLoadSeq;
 				return api('/notes?keys=' + encodeURIComponent(keys)).then(function (notes) {
+				if (wprpSeq !== wprpLoadSeq) { return notes; }
 				lastNotes = notes;
 				render();
 				buildPins(notes);
