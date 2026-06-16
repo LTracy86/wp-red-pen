@@ -565,6 +565,12 @@ add_action(
 		wprp_flush_counts(); // a deleted note may change the open count
 		wprp_delete_shot( (string) get_post_meta( $post_id, WPRP_META_SHOT, true ) );
 
+		// If this was an agent-targeted note, refresh that agent's brief (excluding the note being removed).
+		$wprp_del_agent = (string) get_post_meta( $post_id, WPRP_META_AGENT, true );
+		if ( '' !== $wprp_del_agent ) {
+			wprp_write_agent_brief( $wprp_del_agent, (int) $post_id );
+		}
+
 		// Non-hierarchical CPT: WP won't cascade child replies, so delete them here
 		// (only for top-level notes; replies have no children of their own). Fetch ALL
 		// children unbounded - wprp_get_replies caps at 200, which would orphan the rest.
