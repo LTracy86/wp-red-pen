@@ -2701,6 +2701,68 @@ function wprp_render_repo_page() {
 	echo '</tbody></table></div>';
 }
 
+/** admin-post handler: bulk Resolve / In Progress / Reopen / Delete on the selected notes. */
+add_action(
+	'admin_post_wprp_bulk',
+	function () {
+		if ( ! wprp_user_can()
+			|| ! isset( $_POST['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_bulk' ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+		$bulk = isset( $_POST['bulk'] ) ? sanitize_key( wp_unslash( $_POST['bulk'] ) ) : '';
+		$ids  = isset( $_POST['ids'] ) ? array_filter( array_map( 'intval', (array) wp_unslash( $_POST['ids'] ) ) ) : array();
+		if ( $ids && $bulk ) {
+			$delete = ( 'delete' === $bulk );
+			if ( $delete && ! current_user_can( 'delete_others_posts' ) ) {
+				wp_die( esc_html__( 'You do not have permission to delete notes.', 'wp-red-pen' ) );
+			}
+			$status = ( 'done' === $bulk ) ? WPRP_STATUS_DONE : ( 'progress' === $bulk ? WPRP_STATUS_PROGRESS : ( 'open' === $bulk ? WPRP_STATUS_OPEN : '' ) );
+			foreach ( $ids as $id ) {
+				if ( WPRP_CPT !== get_post_type( $id ) ) {
+					continue;
+				}
+				if ( $delete ) {
+					wp_delete_post( $id, true );
+				} elseif ( '' !== $status ) {
+					wprp_set_status( $id, $status );
+				}
+			}
+		}
+		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url( 'tools.php?page=wp-red-pen' ) );
+		exit;
+	}
+);
+
+/** admin-post handler: inline quick-edit of a single note's assignee or priority from the repo table. */
+add_action(
+	'admin_post_wprp_quickedit',
+	function () {
+		$note = isset( $_GET['note'] ) ? (int) $_GET['note'] : 0;
+		if ( ! $note || ! wprp_user_can()
+			|| ! isset( $_GET['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wprp_quickedit_' . $note )
+			|| WPRP_CPT !== get_post_type( $note ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+		$field = isset( $_GET['field'] ) ? sanitize_key( wp_unslash( $_GET['field'] ) ) : '';
+		$value = isset( $_GET['value'] ) ? sanitize_text_field( wp_unslash( $_GET['value'] ) ) : '';
+		if ( 'assignee' === $field ) {
+			$uid = (int) $value;
+			if ( $uid > 0 && user_can( $uid, WPRP_CAP ) ) {
+				update_post_meta( $note, WPRP_META_ASSIGNEE, $uid );
+			} else {
+				delete_post_meta( $note, WPRP_META_ASSIGNEE );
+			}
+		} elseif ( 'priority' === $field ) {
+			$prios = wprp_priorities();
+			update_post_meta( $note, WPRP_META_PRIORITY, isset( $prios[ $value ] ) ? $value : 'normal' );
+		}
+		wp_safe_redirect( wp_get_referer() ? wp_get_referer() : admin_url( 'tools.php?page=wp-red-pen' ) );
+		exit;
+	}
+);
+
 /** admin-post handler for the repository Resolve/Reopen buttons. */
 add_action(
 	'admin_post_wprp_resolve',
