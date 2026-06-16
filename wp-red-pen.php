@@ -1544,6 +1544,12 @@ add_action(
 		if ( '' !== $ctx['template']['key'] ) {
 			$level_opts .= '<option value="template">' . esc_html( $ctx['template']['label'] ) . '</option>';
 		}
+		// Agent feedback: target options (empty when the feature is dormant).
+		$agents     = wprp_enabled_agents();
+		$agent_opts = '<option value="">' . esc_html__( 'No (human note)', 'wp-red-pen' ) . '</option>';
+		foreach ( $agents as $aslug => $alabel ) {
+			$agent_opts .= '<option value="' . esc_attr( $aslug ) . '">' . esc_html( $alabel ) . '</option>';
+		}
 		$cfg = wp_json_encode(
 			array(
 				'root'     => esc_url_raw( rest_url( WPRP_REST_NS ) ),
