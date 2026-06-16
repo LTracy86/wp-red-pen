@@ -2536,6 +2536,7 @@ function wprp_render_repo_page() {
 	// Status filter tabs.
 	$tabs = array(
 		'open'     => __( 'Open', 'wp-red-pen' ),
+		'progress' => __( 'In Progress', 'wp-red-pen' ),
 		'resolved' => __( 'Resolved', 'wp-red-pen' ),
 		'all'      => __( 'All', 'wp-red-pen' ),
 	);
