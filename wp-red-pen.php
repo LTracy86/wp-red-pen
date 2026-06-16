@@ -994,6 +994,24 @@ function wprp_update_note( $note_id, $args ) {
 		}
 	}
 
+	if ( isset( $args['agent'] ) ) {
+		$agent = (string) $args['agent'];
+		if ( '' !== $agent && '' !== wprp_agent_label( $agent ) ) {
+			update_post_meta( $note_id, WPRP_META_AGENT, $agent );
+		} else {
+			delete_post_meta( $note_id, WPRP_META_AGENT );
+		}
+	}
+
+	if ( isset( $args['codescope'] ) ) {
+		$cs = sanitize_text_field( (string) $args['codescope'] );
+		if ( '' !== $cs ) {
+			update_post_meta( $note_id, WPRP_META_CODESCOPE, mb_substr( $cs, 0, 300 ) );
+		} else {
+			delete_post_meta( $note_id, WPRP_META_CODESCOPE );
+		}
+	}
+
 	if ( ! empty( $args['anchor_remove'] ) ) {
 		delete_post_meta( $note_id, WPRP_META_ANCHOR );
 	} elseif ( '' !== (string) ( isset( $args['anchor'] ) ? $args['anchor'] : '' ) ) {
