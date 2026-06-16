@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.10.1
+ * Version:           0.10.2
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.10.1' );
+define( 'WPRP_VERSION',     '0.10.2' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -2971,11 +2971,22 @@ add_action(
 		$field = isset( $_GET['field'] ) ? sanitize_key( wp_unslash( $_GET['field'] ) ) : '';
 		$value = isset( $_GET['value'] ) ? sanitize_text_field( wp_unslash( $_GET['value'] ) ) : '';
 		if ( 'assignee' === $field ) {
-			$uid = (int) $value;
-			if ( $uid > 0 && user_can( $uid, WPRP_CAP ) ) {
-				update_post_meta( $note, WPRP_META_ASSIGNEE, $uid );
+			if ( 0 === strpos( $value, 'agent:' ) ) {
+				// assigning to an agent: set the agent, clear the human assignee (mutually exclusive)
+				$slug = substr( $value, 6 );
+				if ( '' !== wprp_agent_label( $slug ) ) {
+					update_post_meta( $note, WPRP_META_AGENT, $slug );
+					delete_post_meta( $note, WPRP_META_ASSIGNEE );
+				}
 			} else {
-				delete_post_meta( $note, WPRP_META_ASSIGNEE );
+				// assigning to a human (or unassigning): clear any agent
+				$uid = (int) $value;
+				delete_post_meta( $note, WPRP_META_AGENT );
+				if ( $uid > 0 && user_can( $uid, WPRP_CAP ) ) {
+					update_post_meta( $note, WPRP_META_ASSIGNEE, $uid );
+				} else {
+					delete_post_meta( $note, WPRP_META_ASSIGNEE );
+				}
 			}
 		} elseif ( 'priority' === $field ) {
 			$prios = wprp_priorities();
