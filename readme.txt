@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.10.8 =
+* Dark mode fixes: the front-end Open / In Progress / Resolved tab bar, the per-note status dropdown, and the More/screenshot controls now darken too (they had stayed light). In the dashboard repository, the Display settings box (and its text, labels, and dividers) is now properly dark and legible.
+
 = 0.10.7 =
 * Dark mode now also applies to the notes repository page in the WordPress dashboard (Tools > Red Pen), not just the front-end panel. The same Display-settings toggle controls both; the styling is scoped to Red Pen's own page and does not touch the rest of wp-admin.
 
