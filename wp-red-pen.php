@@ -2834,7 +2834,7 @@ function wprp_render_metabox( $post ) {
 			$resolved = WPRP_STATUS_DONE === $n->post_status;
 			$author   = get_userdata( $n->post_author );
 			echo '<li style="border-left:3px solid ' . ( $resolved ? '#3A3A3C' : '#D32F2F' ) . ';padding:.25rem .5rem;margin:0 0 .5rem;background:#f7f9fa;' . ( $resolved ? 'opacity:.6' : '' ) . '">';
-			echo '<span style="background:#D32F2F;color:#fff;border-radius:3px;padding:0 .3rem;font-size:.7rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span> ';
+			$tc = wprp_note_type_color( $type ); echo '<span style="background:' . esc_attr( $tc ? $tc : '#D32F2F' ) . ';color:#fff;border-radius:3px;padding:0 .3rem;font-size:.7rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span> ';
 			$priority = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
 			$prios    = wprp_priorities();
 			if ( isset( $prios[ $priority ] ) && 'normal' !== $priority ) {
