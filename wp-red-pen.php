@@ -2911,6 +2911,8 @@ function wprp_render_repo_page() {
 	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
 	echo '<p style="margin:.2rem 0 .4rem;color:#646970">' . esc_html__( 'Colour of the numbered element pins on the front end. The app red is used by default; pick a custom colour if it does not stand out on a particular site.', 'wp-red-pen' ) . '</p>';
 	echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="pin_custom" value="1"' . checked( '' !== $pin_color, true, false ) . '> ' . esc_html__( 'Use a custom pin colour:', 'wp-red-pen' ) . ' <input type="color" name="pin_color" value="' . esc_attr( '' !== $pin_color ? $pin_color : '#D32F2F' ) . '" style="vertical-align:middle"></label>';
+	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+	echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="dark_mode" value="1"' . checked( (bool) get_option( WPRP_DARK_OPT ), true, false ) . '> ' . esc_html__( 'Dark mode (front-end notes panel)', 'wp-red-pen' ) . '</label>';
 
 	// Agent feedback: pick which AI agents/platforms notes can be targeted at.
 	// NOTE: a distinct var from $enabled_agents (the slug=>label map used by the audience filter) - this is the raw enabled-slug list for the checkboxes.
