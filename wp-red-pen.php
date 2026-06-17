@@ -3319,6 +3319,10 @@ add_action(
 		// Dark mode for the front-end panel (global toggle).
 		update_option( WPRP_DARK_OPT, ! empty( $_POST['dark_mode'] ) ? 1 : 0, false );
 
+		// Custom note types: raw "Label|#color" lines, parsed by wprp_custom_note_types() on read.
+		$custom_types = isset( $_POST['custom_types'] ) ? sanitize_textarea_field( wp_unslash( $_POST['custom_types'] ) ) : '';
+		update_option( WPRP_CUSTOM_TYPES_OPT, $custom_types, false );
+
 		// Agent feedback: enabled platforms (intersected with the known set) + one optional custom agent label.
 		$known_agents = array_keys( wprp_agent_platforms() );
 		$sub_agents   = isset( $_POST['agents'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['agents'] ) ) : array();
