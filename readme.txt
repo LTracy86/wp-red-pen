@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.10.6 =
+* Dark mode: a new toggle in Tools > Red Pen > Display settings switches the front-end notes panel to a dark theme. Off by default; the red accent is unchanged.
+
 = 0.10.5 =
 * Fixed: the custom pin colour had no effect on the front end, and pins used a brighter red than the app accent. The numbered element pins live in a layer attached to the page body, outside the widget root where the colour variable was being set, so it never reached them. The colour is now applied to the pin layer directly. Pins default to the app red (#D32F2F) and honour a custom colour when one is set.
 
