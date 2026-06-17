@@ -92,14 +92,54 @@ function wprp_status_const( $key ) {
 	return WPRP_STATUS_OPEN;
 }
 
-/** Note types -> human labels. The single source of truth for the dropdowns. */
+/** Note types -> human labels. The single source of truth for the dropdowns (built-in + custom). */
 function wprp_note_types() {
-	return array(
+	$types = array(
 		'note'       => __( 'Note', 'wp-red-pen' ),
 		'suggestion' => __( 'Suggested edit', 'wp-red-pen' ),
 		'bug'        => __( 'Bug / problem', 'wp-red-pen' ),
 		'question'   => __( 'Question', 'wp-red-pen' ),
 	);
+	foreach ( wprp_custom_note_types() as $key => $ct ) {
+		$types[ $key ] = $ct['label'];
+	}
+	return $types;
+}
+
+/**
+ * User-defined custom note types. Stored as one "Label|#hexcolor" per line in
+ * WPRP_CUSTOM_TYPES_OPT (the colour is optional). Returns key => [label, color],
+ * where key is a stable slug derived from the label, prefixed "ct_" so it can
+ * never collide with the built-ins. (Renaming a label yields a new type; existing
+ * notes keep their stored key and just show that key as the label.)
+ */
+function wprp_custom_note_types() {
+	$raw = (string) get_option( WPRP_CUSTOM_TYPES_OPT, '' );
+	$out = array();
+	if ( '' === trim( $raw ) ) {
+		return $out;
+	}
+	foreach ( preg_split( '/\r\n|\r|\n/', $raw ) as $line ) {
+		$line = trim( $line );
+		if ( '' === $line ) {
+			continue;
+		}
+		$parts = explode( '|', $line, 2 );
+		$label = trim( $parts[0] );
+		$slug  = sanitize_title( $label );
+		if ( '' === $label || '' === $slug ) {
+			continue;
+		}
+		$color = isset( $parts[1] ) ? sanitize_hex_color( trim( $parts[1] ) ) : '';
+		$out[ 'ct_' . $slug ] = array( 'label' => $label, 'color' => $color ? $color : '' );
+	}
+	return $out;
+}
+
+/** Background colour for a note type's flag: a custom type's colour, or '' for the built-ins (which use the app red). */
+function wprp_note_type_color( $type ) {
+	$custom = wprp_custom_note_types();
+	return ( isset( $custom[ $type ] ) && $custom[ $type ]['color'] ) ? $custom[ $type ]['color'] : '';
 }
 
 /** Priority keys -> human labels. Single source of truth for the priority dropdown. */
