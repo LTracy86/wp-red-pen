@@ -36,7 +36,7 @@ while IFS= read -r -d '' wpload; do
 	act="$("$WP" --path="$install" plugin activate wp-red-pen --skip-plugins --skip-themes 2>&1 || true)"
 	if echo "$act" | grep -qi "Success\|already active"; then state="active"; else state="present (activation: ${act%%$'\n'*})"; fi
 	echo "  $install -> $live, $state"
-done < <(find "$PROJECTS_ROOT" -maxdepth 3 -name wp-load.php -print0 2>/dev/null)
+done < <(find "$HTDOCS_ROOT" -maxdepth 5 -name wp-load.php -not -path '*/node_modules/*' -print0 2>/dev/null)
 
 rm -f "$TAR"
 echo "Done."
