@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.11.0 =
+* Custom note types: define your own note types in Tools > Red Pen > Display settings (one "Label" or "Label|#hexcolor" per line). They appear in every note-type dropdown alongside the built-ins (Note / Suggested edit / Bug / Question) and render their colour as the note's flag on the front end and in the repository. Free, core feature.
+
 = 0.10.8 =
 * Dark mode fixes: the front-end Open / In Progress / Resolved tab bar, the per-note status dropdown, and the More/screenshot controls now darken too (they had stayed light). In the dashboard repository, the Display settings box (and its text, labels, and dividers) is now properly dark and legible.
 
