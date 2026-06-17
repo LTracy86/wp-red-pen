@@ -1,8 +1,12 @@
 #!/bin/bash
-# Deploy the current committed WP Red Pen to every local WordPress install under the
-# Claude Code Projects root, then activate it. Red Pen is a default-workflow plugin
-# (like WP Smooth Moves): it lives + stays current on ALL installs so it can be
-# dogfooded while working on any project. Run this after every Red Pen release.
+# Deploy the current committed WP Red Pen to EVERY local WordPress install under the
+# XAMPP htdocs root, then activate it. Red Pen is a default-workflow plugin (like WP
+# Smooth Moves): it lives + stays current on ALL local sites so it can be dogfooded
+# while working on any project. Run this after every Red Pen release.
+#
+# Scope: scans all of htdocs (not just the Claude Code Projects dir) so sites outside
+# the projects folder (e.g. S2S/wordpress) are covered too, and any new local site is
+# picked up automatically on the next run.
 #
 # Usage:  ./deploy-to-installs.sh
 #
@@ -12,10 +16,11 @@ set -e
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECTS_ROOT="$(cd "$REPO_DIR/.." && pwd)"
+HTDOCS_ROOT="$(cd "$PROJECTS_ROOT/../.." && pwd)"   # /c/xampp/htdocs - covers all local sites
 WP="$PROJECTS_ROOT/wp"   # the wp-cli wrapper (php wp-cli.phar)
 
 VERSION="$(grep -m1 "WPRP_VERSION" "$REPO_DIR/wp-red-pen.php" | grep -o '0\.[0-9.]*' | head -1)"
-echo "Deploying WP Red Pen $VERSION to all installs under $PROJECTS_ROOT"
+echo "Deploying WP Red Pen $VERSION to all WordPress installs under $HTDOCS_ROOT"
 
 TAR="$(mktemp)"
 git -C "$REPO_DIR" archive --format=tar HEAD -o "$TAR"
