@@ -1818,6 +1818,10 @@ function wprp_print_frontend_assets() {
 			#wprp-root.wprp-dark .wprp-replies{border-top-color:#3a3f44}
 			#wprp-root.wprp-dark .wprp-resolve,#wprp-root.wprp-dark .wprp-locate,#wprp-root.wprp-dark .wprp-edit,#wprp-root.wprp-dark .wprp-replysend,#wprp-root.wprp-dark .wprp-shotbtn{background:#2a2f34;color:#aeb4ba;border-color:#3a3f44}
 			#wprp-root.wprp-dark .wprp-prio-normal,#wprp-root.wprp-dark .wprp-note .wprp-level{background:#3a3f44;color:#cfd4d8;border-color:#4a4f55}
+			#wprp-root.wprp-dark .wprp-tabs{background:#23272b;border-bottom-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-status,#wprp-root.wprp-dark .wprp-more-toggle,#wprp-root.wprp-dark .wprp-shotbtn{background:#1a1d20;color:#cfd4d8;border-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-pin-info{background:#2a2f34;color:#cfd4d8;border-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-editbar{background:#3a2526;border-color:#6b3a3c;color:#ff8a80}
 		#wprp-fab{width:52px;height:52px;border-radius:50%;border:none;background:var(--wprp-red);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(211,47,47,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .12s,background .12s}
 		#wprp-fab:hover{transform:translateY(-2px);background:var(--wprp-red-dark)}
 		#wprp-fab .dashicons{width:26px;height:26px;font-size:26px}
