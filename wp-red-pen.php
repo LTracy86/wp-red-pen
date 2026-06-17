@@ -3107,7 +3107,7 @@ function wprp_render_repo_page() {
 
 		echo '<tr' . ( $resolved ? ' style="opacity:.55"' : '' ) . '>';
 		echo '<th scope="row" class="check-column"><input type="checkbox" class="wprp-cb" name="ids[]" value="' . (int) $n->ID . '"></th>';
-		echo '<td><span style="background:#D32F2F;color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.72rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span></td>';
+		$tc = wprp_note_type_color( $type ); echo '<td><span style="background:' . esc_attr( $tc ? $tc : '#D32F2F' ) . ';color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.72rem;font-weight:600">' . esc_html( isset( $types[ $type ] ) ? $types[ $type ] : $type ) . '</span></td>';
 		echo '<td><select class="wprp-qe" onchange="if(this.value)location.href=this.value">';
 		foreach ( wprp_priorities() as $pk => $plabel ) {
 			echo '<option value="' . $qe_url( 'priority', $pk ) . '"' . selected( $pk, ( '' !== $priority ? $priority : 'normal' ), false ) . '>' . esc_html( $plabel ) . '</option>';
