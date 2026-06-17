@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.10.7 =
+* Dark mode now also applies to the notes repository page in the WordPress dashboard (Tools > Red Pen), not just the front-end panel. The same Display-settings toggle controls both; the styling is scoped to Red Pen's own page and does not touch the rest of wp-admin.
+
 = 0.10.6 =
 * Dark mode: a new toggle in Tools > Red Pen > Display settings switches the front-end notes panel to a dark theme. Off by default; the red accent is unchanged.
 
