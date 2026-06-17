@@ -3261,6 +3261,9 @@ add_action(
 		$pin = ( ! empty( $_POST['pin_custom'] ) && isset( $_POST['pin_color'] ) ) ? sanitize_hex_color( sanitize_text_field( wp_unslash( $_POST['pin_color'] ) ) ) : '';
 		update_option( WPRP_PINCOLOR_OPT, $pin ? $pin : '', false );
 
+		// Dark mode for the front-end panel (global toggle).
+		update_option( WPRP_DARK_OPT, ! empty( $_POST['dark_mode'] ) ? 1 : 0, false );
+
 		// Agent feedback: enabled platforms (intersected with the known set) + one optional custom agent label.
 		$known_agents = array_keys( wprp_agent_platforms() );
 		$sub_agents   = isset( $_POST['agents'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['agents'] ) ) : array();
