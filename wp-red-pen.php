@@ -1427,6 +1427,7 @@ function wprp_note_to_array( $note, $replies = null ) {
 		'raw'        => $note->post_content, // unformatted, for the edit textarea
 		'type'       => $type,
 		'typeLabel'  => isset( $types[ $type ] ) ? $types[ $type ] : $types['note'],
+		'typeColor'  => wprp_note_type_color( $type ),
 		'status'     => $note->post_status,
 		'statusKey'  => wprp_status_key( $note->post_status ),
 		'statusLabel' => wprp_statuses()[ wprp_status_key( $note->post_status ) ],
