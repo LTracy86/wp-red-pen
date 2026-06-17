@@ -1808,6 +1808,16 @@ function wprp_print_frontend_assets() {
 			   sets display (e.g. #wprp-panel{display:flex}) silently defeats it and the toggle does
 			   nothing. This rule (specificity 1,1,0) outranks those and keeps [hidden] authoritative. */
 			#wprp-root [hidden]{display:none}
+			/* Dark mode (Display settings toggle) - front-end panel only; scoped to #wprp-root.wprp-dark. */
+			#wprp-root.wprp-dark #wprp-panel{background:#23272b;color:#e6e9ec;border-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-note{background:#2a2f34;border-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-muted,#wprp-root.wprp-dark .wprp-meta,#wprp-root.wprp-dark .wprp-ctx,#wprp-root.wprp-dark .wprp-reply-meta,#wprp-root.wprp-dark .wprp-assignee,#wprp-root.wprp-dark .wprp-levellabel{color:#9aa0a6}
+			#wprp-root.wprp-dark .wprp-form{background:#1f2327;border-top-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-form select,#wprp-root.wprp-dark .wprp-form textarea,#wprp-root.wprp-dark .wprp-replytext{background:#1a1d20;color:#e6e9ec;border-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-reply{background:#1f2327}
+			#wprp-root.wprp-dark .wprp-replies{border-top-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-resolve,#wprp-root.wprp-dark .wprp-locate,#wprp-root.wprp-dark .wprp-edit,#wprp-root.wprp-dark .wprp-replysend,#wprp-root.wprp-dark .wprp-shotbtn{background:#2a2f34;color:#aeb4ba;border-color:#3a3f44}
+			#wprp-root.wprp-dark .wprp-prio-normal,#wprp-root.wprp-dark .wprp-note .wprp-level{background:#3a3f44;color:#cfd4d8;border-color:#4a4f55}
 		#wprp-fab{width:52px;height:52px;border-radius:50%;border:none;background:var(--wprp-red);color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(211,47,47,.45);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .12s,background .12s}
 		#wprp-fab:hover{transform:translateY(-2px);background:var(--wprp-red-dark)}
 		#wprp-fab .dashicons{width:26px;height:26px;font-size:26px}
