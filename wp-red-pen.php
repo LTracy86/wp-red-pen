@@ -3400,6 +3400,15 @@ add_action(
 		$custom_types = isset( $_POST['custom_types'] ) ? sanitize_textarea_field( wp_unslash( $_POST['custom_types'] ) ) : '';
 		update_option( WPRP_CUSTOM_TYPES_OPT, $custom_types, false );
 
+		// Red Pen Hub connection (push target). Saving with both set triggers an immediate sync.
+		$hub_url = isset( $_POST['hub_url'] ) ? esc_url_raw( wp_unslash( $_POST['hub_url'] ) ) : '';
+		update_option( WPRP_HUB_URL_OPT, $hub_url, false );
+		$hub_token = isset( $_POST['hub_token'] ) ? sanitize_text_field( wp_unslash( $_POST['hub_token'] ) ) : '';
+		update_option( WPRP_HUB_TOKEN_OPT, $hub_token, false );
+		if ( $hub_url && $hub_token ) {
+			wprp_push_to_hub();
+		}
+
 		// Agent feedback: enabled platforms (intersected with the known set) + one optional custom agent label.
 		$known_agents = array_keys( wprp_agent_platforms() );
 		$sub_agents   = isset( $_POST['agents'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['agents'] ) ) : array();
