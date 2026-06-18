@@ -1455,6 +1455,76 @@ function wprp_note_to_array( $note, $replies = null ) {
 }
 
 // ---------------------------------------------------------------------------
+// Red Pen Hub - push this site's notes to the local combined board (PRO).
+// Outbound only, non-blocking, dev-only. The Hub stores what we send; this site
+// stays the source of truth. No-op unless a Hub URL + token are configured.
+// ---------------------------------------------------------------------------
+function wprp_push_to_hub() {
+	$url   = trim( (string) get_option( WPRP_HUB_URL_OPT, '' ) );
+	$token = trim( (string) get_option( WPRP_HUB_TOKEN_OPT, '' ) );
+	if ( '' === $url || '' === $token ) {
+		return;
+	}
+	$posts = get_posts(
+		array(
+			'post_type'      => WPRP_CPT,
+			'post_status'    => wprp_all_statuses(),
+			'post_parent'    => 0,
+			'posts_per_page' => -1,
+		)
+	);
+	$notes = array();
+	foreach ( $posts as $p ) {
+		$target    = (int) get_post_meta( $p->ID, WPRP_META_TARGET, true );
+		$type      = (string) get_post_meta( $p->ID, WPRP_META_TYPE, true );
+		$statuskey = wprp_status_key( $p->post_status );
+		$notes[]   = array(
+			'id'        => (int) $p->ID,
+			'body'      => wp_strip_all_tags( $p->post_content ),
+			'type'      => $type,
+			'typeColor' => wprp_note_type_color( $type ),
+			'priority'  => (string) get_post_meta( $p->ID, WPRP_META_PRIORITY, true ),
+			'status'    => ( 'progress' === $statuskey ) ? 'in_progress' : $statuskey,
+			'url'       => $target ? get_permalink( $target ) : home_url( '/' ),
+			'anchor'    => (string) get_post_meta( $p->ID, WPRP_META_ANCHOR, true ),
+			'createdAt' => get_post_time( 'c', true, $p ),
+		);
+	}
+	$project = (string) get_bloginfo( 'name' );
+	if ( '' === $project ) {
+		$project = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+	}
+	wp_remote_post(
+		rtrim( $url, '/' ) . '/api/ingest',
+		array(
+			'timeout'  => 4,
+			'blocking' => false,
+			'headers'  => array( 'Content-Type' => 'application/json' ),
+			'body'     => wp_json_encode(
+				array(
+					'token'   => $token,
+					'project' => $project,
+					'surface' => 'wordpress',
+					'notes'   => $notes,
+				)
+			),
+		)
+	);
+}
+
+// Push once per request (batched on shutdown) whenever notes change.
+function wprp_mark_dirty_for_hub( $post_id = 0 ) {
+	if ( $post_id && ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) ) {
+		return;
+	}
+	$GLOBALS['wprp_hub_dirty'] = true;
+}
+add_action( 'save_post_' . WPRP_CPT, 'wprp_mark_dirty_for_hub' );
+add_action( 'before_delete_post', function ( $pid ) { if ( WPRP_CPT === get_post_type( $pid ) ) { wprp_mark_dirty_for_hub(); } } );
+add_action( 'wp_trash_post', function ( $pid ) { if ( WPRP_CPT === get_post_type( $pid ) ) { wprp_mark_dirty_for_hub(); } } );
+add_action( 'shutdown', function () { if ( ! empty( $GLOBALS['wprp_hub_dirty'] ) ) { wprp_push_to_hub(); } } );
+
+// ---------------------------------------------------------------------------
 // One-time data migration: backfill the page/template context on legacy notes
 // ---------------------------------------------------------------------------
 add_action(
