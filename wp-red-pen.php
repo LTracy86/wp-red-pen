@@ -3041,6 +3041,11 @@ function wprp_render_repo_page() {
 	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Custom note types', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'one per line as "Label" or "Label|#hexcolor". They appear in every note-type dropdown and show their colour as the note flag.', 'wp-red-pen' ) . '</p>';
 	echo '<textarea name="custom_types" rows="3" style="width:100%;max-width:440px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem" placeholder="Design nit|#9C27B0&#10;Content|#2E7D32">' . esc_textarea( (string) get_option( WPRP_CUSTOM_TYPES_OPT, '' ) ) . '</textarea>';
 
+	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Connect to Red Pen Hub', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'push this site\'s notes to your local Red Pen Hub so they show on the combined board. Copy the Hub URL + token from the Hub\'s "Connect a Site" panel. Notes sync automatically whenever they change.', 'wp-red-pen' ) . '</p>';
+	echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Hub URL', 'wp-red-pen' ) . '<br><input type="url" name="hub_url" value="' . esc_attr( (string) get_option( WPRP_HUB_URL_OPT, '' ) ) . '" placeholder="http://localhost:3900" style="width:100%;max-width:360px"></label>';
+	echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Connect token', 'wp-red-pen' ) . '<br><input type="text" name="hub_token" value="' . esc_attr( (string) get_option( WPRP_HUB_TOKEN_OPT, '' ) ) . '" placeholder="' . esc_attr__( 'paste token', 'wp-red-pen' ) . '" style="width:100%;max-width:360px;font-family:ui-monospace,Menlo,Consolas,monospace"></label>';
+
 	// Agent feedback: pick which AI agents/platforms notes can be targeted at.
 	// NOTE: a distinct var from $enabled_agents (the slug=>label map used by the audience filter) - this is the raw enabled-slug list for the checkboxes.
 	$enabled_agent_slugs = get_option( WPRP_AGENTS_OPT, array() );
