@@ -3021,6 +3021,22 @@ function wprp_render_repo_page() {
 	echo '<div class="wrap' . ( $wprp_dark ? ' wprp-dark' : '' ) . '"><h1 style="display:flex;align-items:center;gap:.5rem"><span class="dashicons dashicons-edit" style="color:#D32F2F"></span>' . esc_html__( 'Red Pen - Notes Repository', 'wp-red-pen' ) . '</h1>';
 	echo '<p>' . esc_html__( 'Every note, flag, and suggested edit dropped across the site. Shared with all editors and admins.', 'wp-red-pen' ) . '</p>';
 
+	// Red Pen Hub connection result (set by the save handler after a blocking test push).
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only redirect flag
+	$hub_notice = isset( $_GET['hub'] ) ? sanitize_key( wp_unslash( $_GET['hub'] ) ) : '';
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	if ( $hub_notice ) {
+		$hub_msgs = array(
+			'ok'      => array( 'updated', __( 'Connected to the Red Pen Hub - this site\'s notes were pushed to the combined board.', 'wp-red-pen' ) ),
+			'token'   => array( 'error', __( 'The Hub rejected the connect token (401). Copy the exact token from the Hub\'s "Connect a Site" panel and save again.', 'wp-red-pen' ) ),
+			'err'     => array( 'error', __( 'Could not reach the Red Pen Hub. Check the Hub is running and the Hub URL is correct (for example http://localhost:3900), then save again.', 'wp-red-pen' ) ),
+			'partial' => array( 'error', __( 'The Hub connection needs BOTH a Hub URL and a connect token. Fill in the missing field and save again.', 'wp-red-pen' ) ),
+		);
+		if ( isset( $hub_msgs[ $hub_notice ] ) ) {
+			echo '<div class="notice notice-' . esc_attr( $hub_msgs[ $hub_notice ][0] ) . ' is-dismissible"><p>' . esc_html( $hub_msgs[ $hub_notice ][1] ) . '</p></div>';
+		}
+	}
+
 	// Display settings: which front-end views show the widget + the pin colour (global).
 	$show_on   = wprp_show_on();
 	$pin_color = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) );
