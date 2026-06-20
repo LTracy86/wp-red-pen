@@ -3401,12 +3401,35 @@ add_action(
 		update_option( WPRP_CUSTOM_TYPES_OPT, $custom_types, false );
 
 		// Red Pen Hub connection (push target). Saving with both set triggers an immediate sync.
-		$hub_url = isset( $_POST['hub_url'] ) ? esc_url_raw( wp_unslash( $_POST['hub_url'] ) ) : '';
+		// A schemeless host like "localhost:3900" makes esc_url_raw() read "localhost:" as a
+		// disallowed protocol and return '' - which silently breaks the connection (token saves,
+		// URL blanks, push no-ops forever). Default a missing scheme to http:// before sanitizing.
+		$hub_url_raw = isset( $_POST['hub_url'] ) ? trim( (string) wp_unslash( $_POST['hub_url'] ) ) : '';
+		if ( '' !== $hub_url_raw && ! preg_match( '#^https?://#i', $hub_url_raw ) ) {
+			$hub_url_raw = 'http://' . $hub_url_raw;
+		}
+		$hub_url = esc_url_raw( $hub_url_raw );
 		update_option( WPRP_HUB_URL_OPT, $hub_url, false );
 		$hub_token = isset( $_POST['hub_token'] ) ? sanitize_text_field( wp_unslash( $_POST['hub_token'] ) ) : '';
 		update_option( WPRP_HUB_TOKEN_OPT, $hub_token, false );
+		// Confirm the connection on save with a BLOCKING push so a silent failure is impossible.
+		$hub_status = '';
 		if ( $hub_url && $hub_token ) {
-			wprp_push_to_hub();
+			$res = wprp_push_to_hub( true );
+			if ( is_wp_error( $res ) ) {
+				$hub_status = 'err';
+			} else {
+				$code = (int) wp_remote_retrieve_response_code( $res );
+				if ( 401 === $code ) {
+					$hub_status = 'token';
+				} elseif ( $code >= 200 && $code < 300 ) {
+					$hub_status = 'ok';
+				} else {
+					$hub_status = 'err';
+				}
+			}
+		} elseif ( $hub_url || $hub_token ) {
+			$hub_status = 'partial';
 		}
 
 		// Agent feedback: enabled platforms (intersected with the known set) + one optional custom agent label.
