@@ -1494,11 +1494,11 @@ function wprp_push_to_hub( $blocking = false ) {
 	if ( '' === $project ) {
 		$project = (string) wp_parse_url( home_url(), PHP_URL_HOST );
 	}
-	wp_remote_post(
+	$res = wp_remote_post(
 		rtrim( $url, '/' ) . '/api/ingest',
 		array(
-			'timeout'  => 4,
-			'blocking' => false,
+			'timeout'  => $blocking ? 8 : 4,
+			'blocking' => (bool) $blocking,
 			'headers'  => array( 'Content-Type' => 'application/json' ),
 			'body'     => wp_json_encode(
 				array(
@@ -1510,6 +1510,7 @@ function wprp_push_to_hub( $blocking = false ) {
 			),
 		)
 	);
+	return $blocking ? $res : null;
 }
 
 // Push once per request (batched on shutdown) whenever notes change.
