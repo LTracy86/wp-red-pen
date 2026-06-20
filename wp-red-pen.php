@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.12.0
+ * Version:           0.12.1
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
