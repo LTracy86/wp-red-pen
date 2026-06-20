@@ -1459,11 +1459,11 @@ function wprp_note_to_array( $note, $replies = null ) {
 // Outbound only, non-blocking, dev-only. The Hub stores what we send; this site
 // stays the source of truth. No-op unless a Hub URL + token are configured.
 // ---------------------------------------------------------------------------
-function wprp_push_to_hub() {
+function wprp_push_to_hub( $blocking = false ) {
 	$url   = trim( (string) get_option( WPRP_HUB_URL_OPT, '' ) );
 	$token = trim( (string) get_option( WPRP_HUB_TOKEN_OPT, '' ) );
 	if ( '' === $url || '' === $token ) {
-		return;
+		return $blocking ? new WP_Error( 'wprp_hub_unconfigured', __( 'Hub URL or token is missing.', 'wp-red-pen' ) ) : null;
 	}
 	$posts = get_posts(
 		array(
