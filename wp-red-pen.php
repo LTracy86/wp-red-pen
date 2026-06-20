@@ -3444,7 +3444,11 @@ add_action(
 			wprp_write_agent_brief( $brief_slug );
 		}
 
-		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen' ) );
+		$redirect = admin_url( 'tools.php?page=wp-red-pen' );
+		if ( $hub_status ) {
+			$redirect = add_query_arg( 'hub', $hub_status, $redirect );
+		}
+		wp_safe_redirect( $redirect );
 		exit;
 	}
 );
