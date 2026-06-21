@@ -1864,8 +1864,16 @@ add_action(
 add_action(
 	'rest_api_init',
 	function () {
+		// Dev-only routes (edit / status / delete) keep this strict callback.
 		$perm = function () {
 			return wprp_user_can();
+		};
+		// Create + reply also accept a valid reviewer token (logged-in dev OR token-bearer).
+		// The token is read from the X-WPRP-Review-Token header inside wprp_can_review();
+		// it is NOT a wp_rest nonce, which is why these routes are intentionally nonce-free
+		// for the reviewer path. wprp_create_note / wprp_create_reply force the safe shape.
+		$perm_contribute = function () {
+			return wprp_can_contribute();
 		};
 
 		register_rest_route(
