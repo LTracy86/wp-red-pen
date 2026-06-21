@@ -3419,6 +3419,12 @@ function wprp_render_repo_page() {
 	$enabled_agents = wprp_enabled_agents();
 	$audience = ( 'agents' === $audience || isset( $enabled_agents[ $audience ] ) ) ? $audience : '';
 
+	// Source filter: '' = all, 'review' = client-reviewer notes only, 'dev' = dev notes (exclude reviewer).
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only filter state
+	$source = isset( $_GET['wprp_src'] ) ? sanitize_key( wp_unslash( $_GET['wprp_src'] ) ) : '';
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	$source = in_array( $source, array( 'review', 'dev' ), true ) ? $source : '';
+
 	$meta = array( 'relation' => 'AND' );
 	if ( 'me' === $who ) {
 		$meta[] = array( 'key' => WPRP_META_ASSIGNEE, 'value' => (int) get_current_user_id() );
