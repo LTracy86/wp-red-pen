@@ -1882,17 +1882,28 @@ add_action(
 			array(
 				array(
 					'methods'             => 'GET',
-					'permission_callback' => $perm,
+					'permission_callback' => $perm_contribute,
 					'callback'            => function ( $req ) {
+						// A reviewer (valid token, NOT a logged-in dev) gets a hard-scoped, stripped read:
+						// OPEN notes for the requested page/context only, never the agent view, never a
+						// target/status they pick, and every note shaped by wprp_note_to_array_reviewer().
+						$reviewer = ! wprp_user_can() && wprp_can_review();
 						$target = (int) $req->get_param( 'target' );
 						$status = (string) $req->get_param( 'status' );
 						$keys   = (string) $req->get_param( 'keys' );
 							$agent  = (string) $req->get_param( 'agent' );
+						if ( $reviewer ) {
+							// Force OPEN + context-scoped; ignore target/status/agent params entirely.
+							$notes = ( '' !== $keys )
+								? wprp_get_notes_for_context( explode( ',', $keys ), 'open' )
+								: array();
+						} else {
 							$notes  = ( '' !== $agent )
 									? wprp_get_notes_for_agent( $agent, $status ? $status : 'any' )
 									: ( ( '' !== $keys )
 								? wprp_get_notes_for_context( explode( ',', $keys ), $status ? $status : 'any' )
 								: wprp_get_notes_for( $target, $status ? $status : 'any' ) );
+						}
 						// Batch the replies (one query for all notes, not one per note) and prime
 							// the user cache so author/assignee lookups don't each hit the DB.
 							$rep_map = wprp_get_replies_for( wp_list_pluck( $notes, 'ID' ) );
@@ -1912,14 +1923,17 @@ add_action(
 							}
 							$out = array();
 							foreach ( $notes as $gnote ) {
-								$out[] = wprp_note_to_array( $gnote, isset( $rep_map[ $gnote->ID ] ) ? $rep_map[ $gnote->ID ] : array() );
+								$replies = isset( $rep_map[ $gnote->ID ] ) ? $rep_map[ $gnote->ID ] : array();
+								$out[]   = $reviewer
+									? wprp_note_to_array_reviewer( $gnote, $replies )
+									: wprp_note_to_array( $gnote, $replies );
 							}
 							return rest_ensure_response( $out );
 					},
 				),
 				array(
 					'methods'             => 'POST',
-					'permission_callback' => $perm,
+					'permission_callback' => $perm_contribute,
 					'callback'            => function ( $req ) {
 						$id = wprp_create_note(
 							(int) $req->get_param( 'target' ),
