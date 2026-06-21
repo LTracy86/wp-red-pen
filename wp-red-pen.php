@@ -1951,12 +1951,19 @@ add_action(
 								'label' => (string) $req->get_param( 'ctx_label' ),
 							),
 							(string) $req->get_param( 'agent' ),
-							(string) $req->get_param( 'codescope' )
+							(string) $req->get_param( 'codescope' ),
+							(string) $req->get_param( 'reviewer' )
 						);
 						if ( is_wp_error( $id ) ) {
 							return $id;
 						}
-						return rest_ensure_response( wprp_note_to_array( get_post( $id ) ) );
+						// A reviewer gets the stripped shape back (no dev-only fields ever echoed to them).
+						$reviewer = ! wprp_user_can() && wprp_can_review();
+						return rest_ensure_response(
+							$reviewer
+								? wprp_note_to_array_reviewer( get_post( $id ) )
+								: wprp_note_to_array( get_post( $id ) )
+						);
 					},
 				),
 			)
