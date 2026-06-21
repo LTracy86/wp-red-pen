@@ -973,10 +973,13 @@ function wprp_kses_note( $content ) {
 	);
 }
 
-function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array(), $agent = '', $codescope = '' ) {
-	if ( ! wprp_user_can() ) {
+function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array(), $agent = '', $codescope = '', $reviewer_name = '' ) {
+	if ( ! wprp_can_contribute() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
+	// A reviewer (valid token, NOT a logged-in dev) is hard-constrained: forced open, author 0,
+	// no assignee / agent / code scope / screenshot, and stamped via_review + the reviewer name.
+	$reviewer = ! wprp_user_can() && wprp_can_review();
 	$body = trim( wprp_kses_note( $body ) );
 	if ( '' === $body ) {
 		return new WP_Error( 'wprp_empty', __( 'The note is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
@@ -988,7 +991,7 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 		array(
 			'post_type'    => WPRP_CPT,
 			'post_status'  => WPRP_STATUS_OPEN,
-			'post_author'  => get_current_user_id(),
+			'post_author'  => $reviewer ? 0 : get_current_user_id(),
 			'post_content' => $body,
 			'post_title'   => wp_trim_words( wp_strip_all_tags( $body ), 8, '...' ),
 		),
@@ -1011,18 +1014,27 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
 	update_post_meta( $id, WPRP_META_PRIORITY, $priority );
 
-	$assignee = (int) $assignee;
-	if ( $assignee > 0 && user_can( $assignee, WPRP_CAP ) ) {
-		update_post_meta( $id, WPRP_META_ASSIGNEE, $assignee );
-	}
+	if ( $reviewer ) {
+		// Mark the note as reviewer feedback and attribute it; ignore assignee/agent/codescope/shot.
+		update_post_meta( $id, WPRP_META_VIA_REVIEW, 1 );
+		$reviewer_name = sanitize_text_field( (string) $reviewer_name );
+		if ( '' !== $reviewer_name ) {
+			update_post_meta( $id, WPRP_META_REVIEWER, mb_substr( $reviewer_name, 0, 80 ) );
+		}
+	} else {
+		$assignee = (int) $assignee;
+		if ( $assignee > 0 && user_can( $assignee, WPRP_CAP ) ) {
+			update_post_meta( $id, WPRP_META_ASSIGNEE, $assignee );
+		}
 
-	$agent = (string) $agent;
-	if ( '' !== $agent && '' !== wprp_agent_label( $agent ) ) {
-		update_post_meta( $id, WPRP_META_AGENT, $agent );
-	}
-	$codescope = sanitize_text_field( (string) $codescope );
-	if ( '' !== $codescope ) {
-		update_post_meta( $id, WPRP_META_CODESCOPE, mb_substr( $codescope, 0, 300 ) );
+		$agent = (string) $agent;
+		if ( '' !== $agent && '' !== wprp_agent_label( $agent ) ) {
+			update_post_meta( $id, WPRP_META_AGENT, $agent );
+		}
+		$codescope = sanitize_text_field( (string) $codescope );
+		if ( '' !== $codescope ) {
+			update_post_meta( $id, WPRP_META_CODESCOPE, mb_substr( $codescope, 0, 300 ) );
+		}
 	}
 
 	$anchor = wprp_sanitize_anchor( $anchor );
@@ -1030,7 +1042,9 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 		update_post_meta( $id, WPRP_META_ANCHOR, $anchor );
 	}
 
-	if ( '' !== (string) $shot ) {
+	// Reviewers cannot attach screenshots (the html2canvas asset is never even enqueued for them);
+	// ignore any shot param defensively so a crafted request cannot smuggle a file in.
+	if ( ! $reviewer && '' !== (string) $shot ) {
 		$file = wprp_save_shot( $id, (string) $shot );
 		if ( '' !== $file ) {
 			update_post_meta( $id, WPRP_META_SHOT, $file );
