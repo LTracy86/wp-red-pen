@@ -57,6 +57,10 @@ define( 'WPRP_META_AGENT',     '_wprp_agent' );     // agent feedback: target ag
 define( 'WPRP_META_CODESCOPE', '_wprp_codescope' ); // agent feedback: optional code scope / file reference (free text)
 define( 'WPRP_AGENTS_OPT',     'wprp_agents' );      // global: enabled agent platform slugs (agent feedback dormant when empty)
 define( 'WPRP_AGENT_CUSTOM_OPT', 'wprp_agent_custom' ); // global: one optional custom agent label
+define( 'WPRP_REVIEW_TOKENS_OPT', 'wprp_review_tokens' ); // global: client-reviewer link tokens (array of hash-only records)
+define( 'WPRP_REVIEW_COOKIE',   'wprp_review' );      // reviewer-mode cookie name (persists reviewer mode across navigation; revalidated every hit)
+define( 'WPRP_META_REVIEWER',   '_wprp_reviewer' );   // note meta: the reviewer's typed name/identity for attribution (defined now, consumed in a later phase)
+define( 'WPRP_META_VIA_REVIEW', '_wprp_via_review' ); // note meta: 1 = note created through reviewer mode (defined now, consumed in a later phase)
 
 /** Workflow statuses: short key -> human label. Single source of truth for the 3-state model. */
 function wprp_statuses() {
