@@ -528,9 +528,37 @@ function wprp_find_review_token( $raw ) {
 }
 
 /**
+ * Resolve the RAW reviewer token currently in effect on a FRONT-END request, in
+ * source order: ?wprp_review= query param, the X-WPRP-Review-Token request header
+ * (how reviewer JS authenticates its REST fetches), then the reviewer cookie (auto
+ * sent same-origin). Returns '' in wp-admin or when no token is present. NOT a
+ * validation - just the raw bearer string, sanitized.
+ *
+ * @return string
+ */
+function wprp_current_review_raw() {
+	// Reviewer mode is a strictly front-end door; never honour the token in wp-admin.
+	if ( is_admin() ) {
+		return '';
+	}
+	if ( isset( $_GET[ WPRP_REVIEW_COOKIE ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a bearer token, validated against the store, not a state-changing action
+		return sanitize_text_field( wp_unslash( $_GET[ WPRP_REVIEW_COOKIE ] ) );
+	}
+	// REST calls from reviewer JS carry the token as a header (no wp_rest nonce to send).
+	if ( isset( $_SERVER['HTTP_X_WPRP_REVIEW_TOKEN'] ) ) {
+		return sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WPRP_REVIEW_TOKEN'] ) );
+	}
+	if ( isset( $_COOKIE[ WPRP_REVIEW_COOKIE ] ) ) {
+		return sanitize_text_field( wp_unslash( $_COOKIE[ WPRP_REVIEW_COOKIE ] ) );
+	}
+	return '';
+}
+
+/**
  * On a FRONT-END (non-admin) request, resolve the reviewer token from the query
- * string (?wprp_review=) or the reviewer cookie and validate it against the store.
- * Memoized per request. Returns the matched record or false.
+ * string (?wprp_review=), the X-WPRP-Review-Token header, or the reviewer cookie
+ * and validate it against the store. Memoized per request. Returns the matched
+ * record or false.
  *
  * @return array|false
  */
@@ -544,12 +572,7 @@ function wprp_reviewer_token_valid() {
 		$cached = false;
 		return $cached;
 	}
-	$raw = '';
-	if ( isset( $_GET[ WPRP_REVIEW_COOKIE ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a bearer token, validated below, not a state-changing action
-		$raw = sanitize_text_field( wp_unslash( $_GET[ WPRP_REVIEW_COOKIE ] ) );
-	} elseif ( isset( $_COOKIE[ WPRP_REVIEW_COOKIE ] ) ) {
-		$raw = sanitize_text_field( wp_unslash( $_COOKIE[ WPRP_REVIEW_COOKIE ] ) );
-	}
+	$raw    = wprp_current_review_raw();
 	$cached = $raw ? wprp_find_review_token( $raw ) : false;
 	return $cached;
 }
