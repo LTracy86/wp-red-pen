@@ -3438,6 +3438,11 @@ function wprp_render_repo_page() {
 	} else {
 		$meta[] = array( 'relation' => 'OR', array( 'key' => WPRP_META_AGENT, 'compare' => 'NOT EXISTS' ), array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '=' ) );
 	}
+	if ( 'review' === $source ) {
+		$meta[] = array( 'key' => WPRP_META_VIA_REVIEW, 'value' => '1' );
+	} elseif ( 'dev' === $source ) {
+		$meta[] = array( 'key' => WPRP_META_VIA_REVIEW, 'compare' => 'NOT EXISTS' );
+	}
 	$query_args['meta_query'] = $meta; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 
 	$notes = get_posts( $query_args );
