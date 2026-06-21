@@ -3654,7 +3654,7 @@ function wprp_render_repo_page() {
 		echo '<ul class="subsubsub"><li style="font-weight:600;margin-right:.3rem">' . esc_html__( 'Audience:', 'wp-red-pen' ) . '</li>';
 		$i = 0;
 		foreach ( $aud_tabs as $key => $label ) {
-			$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $who, 'audience' => $key ), admin_url( 'tools.php' ) ) );
+			$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $who, 'audience' => $key, 'wprp_src' => $source ), admin_url( 'tools.php' ) ) );
 			echo '<li>' . ( $i++ ? ' | ' : '' ) . '<a href="' . $url . '"' . ( $audience === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
 		}
 		echo '</ul><div style="clear:both"></div>';
