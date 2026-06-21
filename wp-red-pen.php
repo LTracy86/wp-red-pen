@@ -3195,10 +3195,14 @@ function wprp_print_frontend_assets() {
 add_action(
 	'wp_enqueue_scripts',
 	function () {
-		if ( wprp_devmode_on() ) {
+		$reviewer = ! wprp_user_can() && wprp_can_review();
+		if ( wprp_devmode_on() || $reviewer ) {
 			wp_enqueue_style( 'dashicons' );
-			// Vendored html2canvas (MIT) for client-side region screenshots.
-			wp_enqueue_script( 'wprp-html2canvas', WPRP_PLUGIN_URL . 'assets/vendor/html2canvas.min.js', array(), '1.4.1', true );
+			// Vendored html2canvas (MIT) for client-side region screenshots. Reviewers do NOT
+			// get it - screenshots are dev-only in v1 (avoids the private-page capture surface).
+			if ( ! $reviewer ) {
+				wp_enqueue_script( 'wprp-html2canvas', WPRP_PLUGIN_URL . 'assets/vendor/html2canvas.min.js', array(), '1.4.1', true );
+			}
 		}
 	}
 );
