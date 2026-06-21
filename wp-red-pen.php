@@ -3623,8 +3623,22 @@ function wprp_render_repo_page() {
 	echo '<ul class="subsubsub">';
 	$i = 0;
 	foreach ( $who_tabs as $key => $label ) {
-		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $key, 'audience' => $audience ), admin_url( 'tools.php' ) ) );
+		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $key, 'audience' => $audience, 'wprp_src' => $source ), admin_url( 'tools.php' ) ) );
 		echo ( $i++ ? ' | ' : '' ) . '<li><a href="' . $url . '"' . ( $who === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
+	}
+	echo '</ul><div style="clear:both"></div>';
+
+	// Source filter: All / Client reviews / Dev notes. Lets the dev narrow to reviewer feedback at a glance.
+	$src_tabs = array(
+		''       => __( 'All sources', 'wp-red-pen' ),
+		'review' => __( 'Client reviews', 'wp-red-pen' ),
+		'dev'    => __( 'Dev notes', 'wp-red-pen' ),
+	);
+	echo '<ul class="subsubsub"><li style="font-weight:600;margin-right:.3rem">' . esc_html__( 'Source:', 'wp-red-pen' ) . '</li>';
+	$i = 0;
+	foreach ( $src_tabs as $key => $label ) {
+		$url = esc_url( add_query_arg( array( 'page' => 'wp-red-pen', 'status' => $filter, 'assignee' => $who, 'audience' => $audience, 'wprp_src' => $key ), admin_url( 'tools.php' ) ) );
+		echo '<li>' . ( $i++ ? ' | ' : '' ) . '<a href="' . $url . '"' . ( $source === $key ? ' class="current"' : '' ) . '>' . esc_html( $label ) . '</a></li>';
 	}
 	echo '</ul><div style="clear:both"></div>';
 
