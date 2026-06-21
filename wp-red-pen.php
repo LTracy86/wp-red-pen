@@ -2093,9 +2093,12 @@ add_action(
 add_action(
 	'wp_footer',
 	function () {
-		if ( ! wprp_devmode_on() ) {
+		// Two doors: a logged-in dev in Dev Mode, OR a token-bearing anonymous reviewer.
+		if ( ! wprp_devmode_on() && ! wprp_can_review() ) {
 			return;
 		}
+		// Reviewer = a valid token holder who is NOT a logged-in dev. They get a restricted UI.
+		$reviewer = ! wprp_user_can() && wprp_can_review();
 		$scope = wprp_current_scope();
 		if ( ! in_array( $scope, wprp_show_on(), true ) ) {
 			return;
