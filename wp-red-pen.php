@@ -2168,8 +2168,11 @@ add_action(
 				'priming'  => wprp_priming_data( array_values( array_filter( array( $ctx['page']['key'], $ctx['template']['key'] ) ) ) ),
 			)
 		);
+		}
+		// Dark mode is a dev display preference; a reviewer always gets the default light panel.
+		$root_class = ( ! $reviewer && get_option( WPRP_DARK_OPT ) ) ? ' class="wprp-dark"' : '';
 		?>
-		<div id="wprp-root"<?php echo get_option( WPRP_DARK_OPT ) ? ' class="wprp-dark"' : ''; ?> data-cfg='<?php echo esc_attr( $cfg ); ?>'>
+		<div id="wprp-root"<?php echo $root_class; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static literal ?> data-cfg='<?php echo esc_attr( $cfg ); ?>'>
 			<button type="button" id="wprp-fab" aria-expanded="false" aria-haspopup="dialog" aria-controls="wprp-panel" aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>" title="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
 				<span class="dashicons dashicons-edit" aria-hidden="true"></span>
 				<span id="wprp-fab-count" class="wprp-count" aria-hidden="true" hidden></span>
