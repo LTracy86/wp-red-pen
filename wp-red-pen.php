@@ -61,6 +61,8 @@ define( 'WPRP_REVIEW_TOKENS_OPT', 'wprp_review_tokens' ); // global: client-revi
 define( 'WPRP_REVIEW_COOKIE',   'wprp_review' );      // reviewer-mode cookie name (persists reviewer mode across navigation; revalidated every hit)
 define( 'WPRP_META_REVIEWER',   '_wprp_reviewer' );   // note meta: the reviewer's typed name/identity for attribution (defined now, consumed in a later phase)
 define( 'WPRP_META_VIA_REVIEW', '_wprp_via_review' ); // note meta: 1 = note created through reviewer mode (defined now, consumed in a later phase)
+define( 'WPRP_REVIEW_RATE_MAX',    20 );                      // anti-abuse: max reviewer note/reply creates per IP+token per window
+define( 'WPRP_REVIEW_RATE_WINDOW', 10 * MINUTE_IN_SECONDS );  // anti-abuse: the rolling window for the reviewer create limiter
 
 /** Workflow statuses: short key -> human label. Single source of truth for the 3-state model. */
 function wprp_statuses() {
