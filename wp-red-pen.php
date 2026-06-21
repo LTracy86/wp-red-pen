@@ -1657,6 +1657,96 @@ function wprp_note_to_array( $note, $replies = null ) {
 	);
 }
 
+/**
+ * Shape a note into the RESTRICTED array a reviewer (token-bearing anonymous client)
+ * is allowed to see. This is the security boundary for read: it deliberately omits
+ * every internal-only field - assignee, agent, code scope, screenshot/shot url, the
+ * dev author identity, ctx (browser/OS), and the raw edit body. Reviewers get only
+ * what they need to avoid duplicate feedback: the rendered body, type, priority,
+ * status, anchor, the page url, and the reviewer's own display name when present.
+ * Replies are stripped to body + reviewer name + date (no dev author identity).
+ *
+ * @param WP_Post        $note    The note post.
+ * @param WP_Post[]|null $replies Pre-fetched replies, or null to query.
+ * @return array
+ */
+function wprp_note_to_array_reviewer( $note, $replies = null ) {
+	$type     = (string) get_post_meta( $note->ID, WPRP_META_TYPE, true );
+	$types    = wprp_note_types();
+	$priority = (string) get_post_meta( $note->ID, WPRP_META_PRIORITY, true );
+	$prios    = wprp_priorities();
+	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
+	$level    = (string) get_post_meta( $note->ID, WPRP_META_LEVEL, true );
+	$level    = ( 'template' === $level ) ? 'template' : 'page';
+	$reviewer = (string) get_post_meta( $note->ID, WPRP_META_REVIEWER, true );
+	$target   = (int) get_post_meta( $note->ID, WPRP_META_TARGET, true );
+	$rep_list = is_array( $replies ) ? $replies : wprp_get_replies( $note->ID );
+	return array(
+		'id'            => (int) $note->ID,
+		'body'          => wpautop( wprp_kses_note( $note->post_content ) ),
+		'type'          => $type,
+		'typeLabel'     => isset( $types[ $type ] ) ? $types[ $type ] : $types['note'],
+		'typeColor'     => wprp_note_type_color( $type ),
+		'status'        => $note->post_status,
+		'statusKey'     => wprp_status_key( $note->post_status ),
+		'statusLabel'   => wprp_statuses()[ wprp_status_key( $note->post_status ) ],
+		'resolved'      => WPRP_STATUS_DONE === $note->post_status,
+		'priority'      => $priority,
+		'priorityLabel' => isset( $prios[ $priority ] ) ? $prios[ $priority ] : $prios['normal'],
+		'anchor'        => (string) get_post_meta( $note->ID, WPRP_META_ANCHOR, true ),
+		'level'         => $level,
+		// A reviewer-attributed display name only - never a logged-in dev's identity.
+		'author'        => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
+		'date'          => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
+		'url'           => $target ? get_permalink( $target ) : (string) get_post_meta( $note->ID, WPRP_META_URL, true ),
+		'replies'       => array_map( 'wprp_reply_to_array_reviewer', $rep_list ),
+	);
+}
+
+/** Strip a reply for reviewer eyes: body + reviewer-attributed name + date only (no dev author identity). */
+function wprp_reply_to_array_reviewer( $reply ) {
+	$reviewer = (string) get_post_meta( $reply->ID, WPRP_META_REVIEWER, true );
+	return array(
+		'id'     => (int) $reply->ID,
+		'body'   => wpautop( wprp_kses_note( $reply->post_content ) ),
+		'author' => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
+		'date'   => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $reply ),
+	);
+}
+
+/**
+ * Reviewer-scoped priming payload for the page config: OPEN top-level notes for the
+ * current view ONLY, each stripped to the reviewer-safe shape, plus the open count
+ * and anchored pins. Mirrors wprp_priming_data() but never leaks dev-only fields.
+ *
+ * @param string[] $keys Context keys for the current view (page + template).
+ * @return array
+ */
+function wprp_priming_data_reviewer( $keys ) {
+	$notes = wprp_get_notes_for_context( $keys, 'open' );
+	$types = wprp_note_types();
+	$pins  = array();
+	foreach ( $notes as $n ) {
+		$anchor = (string) get_post_meta( $n->ID, WPRP_META_ANCHOR, true );
+		if ( '' === $anchor ) {
+			continue;
+		}
+		$type   = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
+		$pins[] = array(
+			'id'        => (int) $n->ID,
+			'anchor'    => $anchor,
+			'statusKey' => 'open',
+			'resolved'  => false,
+			'typeLabel' => isset( $types[ $type ] ) ? $types[ $type ] : $types['note'],
+			'body'      => wp_trim_words( wp_strip_all_tags( $n->post_content ), 14, '...' ),
+		);
+	}
+	return array(
+		'openCount' => count( $notes ),
+		'pins'      => $pins,
+	);
+}
+
 // ---------------------------------------------------------------------------
 // Red Pen Hub - push this site's notes to the local combined board (PRO).
 // Outbound only, non-blocking, dev-only. The Hub stores what we send; this site
