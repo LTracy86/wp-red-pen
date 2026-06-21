@@ -1053,7 +1053,7 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 
 	// Agent notes: rebuild the brief once, now that EVERY meta (codescope, url, anchor, shot) is
 	// written. The meta hook above may have fired a partial snapshot mid-create; this supersedes it.
-	if ( '' !== $agent && '' !== wprp_agent_label( $agent ) ) {
+	if ( ! $reviewer && '' !== $agent && '' !== wprp_agent_label( $agent ) ) {
 		wprp_write_agent_brief( $agent );
 	}
 	return $id;
