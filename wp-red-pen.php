@@ -2899,7 +2899,9 @@ function wprp_print_frontend_assets() {
 			if (!rtext) { return; }
 			var send = rform.querySelector('.wprp-replysend');
 			send.disabled = true;
-			api('/notes/' + rform.getAttribute('data-id') + '/replies', { method: 'POST', body: JSON.stringify({ body: rtext }) })
+			var replyPayload = { body: rtext };
+				if (isReviewer) { replyPayload.reviewer = reviewerName; }
+				api('/notes/' + rform.getAttribute('data-id') + '/replies', { method: 'POST', body: JSON.stringify(replyPayload) })
 				.then(function (data) { patchNoteInPlace(data); }).catch(function () { send.disabled = false; toast(SAVE_FAILED); });
 		});
 
@@ -2925,8 +2927,12 @@ function wprp_print_frontend_assets() {
 			}
 			var lvl = levelSel ? levelSel.value : 'page';
 			var lctx = ctxForLevel(lvl);
-			var caa = splitAssignee(assigneeSel.value);
-			api('/notes', { method: 'POST', body: JSON.stringify({ body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, assignee: caa.assignee, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '', level: lvl, ctx_key: lctx.key, ctx_label: lctx.label, target: (lvl === 'page' ? (cfg.page.target || 0) : 0), agent: caa.agent, codescope: codeScopeInput ? codeScopeInput.value : '' }) })
+			// Reviewers have no assignee select (server never renders it); they always post unassigned
+			// with the reviewer name. The server ignores any smuggled assignee/agent/shot regardless.
+			var caa = assigneeSel ? splitAssignee(assigneeSel.value) : { assignee: '0', agent: '' };
+			var createPayload = { body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, assignee: caa.assignee, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '', level: lvl, ctx_key: lctx.key, ctx_label: lctx.label, target: (lvl === 'page' ? (cfg.page.target || 0) : 0), agent: caa.agent, codescope: codeScopeInput ? codeScopeInput.value : '' };
+			if (isReviewer) { createPayload.reviewer = reviewerName; }
+			api('/notes', { method: 'POST', body: JSON.stringify(createPayload) })
 				.then(function (data) { body.value = ''; clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
 				.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
 		});
