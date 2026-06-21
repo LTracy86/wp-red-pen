@@ -975,6 +975,40 @@ function wprp_kses_note( $content ) {
 	);
 }
 
+/**
+ * Anti-abuse rate limiter for the reviewer (anonymous, token-bearing) create path.
+ *
+ * A reviewer link lets an unauthenticated visitor POST notes and replies, so the create
+ * surface must be throttled before any real client gets a link. Logged-in devs are NEVER
+ * limited - this helper is only ever called when the actor is a reviewer.
+ *
+ * A transient-backed sliding-window counter keyed by a hash of the visitor IP AND the raw
+ * reviewer token (so two clients on the same office NAT do not share a budget, and a single
+ * leaked token cannot be spread across IPs to multiply the cap). The transient TTL is the
+ * window, so it self-expires - no cron, no cleanup. Returns true when the actor is OVER the
+ * cap (caller should refuse with 429); false when there is still budget (and increments).
+ *
+ * IP is read from REMOTE_ADDR and validated as an IP. Behind a reverse proxy / load balancer
+ * REMOTE_ADDR can be the proxy's address (so all reviewers would share one bucket) - acceptable
+ * for v1; we deliberately do NOT trust X-Forwarded-For (spoofable, would let an attacker mint a
+ * fresh bucket per request and defeat the limit entirely). The per-token half of the key still
+ * bounds total volume even when the IP collapses to a proxy.
+ *
+ * @return bool True if the request is over the limit and must be rejected.
+ */
+function wprp_review_rate_exceeded() {
+	$ip  = isset( $_SERVER['REMOTE_ADDR'] ) ? filter_var( wp_unslash( $_SERVER['REMOTE_ADDR'] ), FILTER_VALIDATE_IP ) : false;
+	$ip  = $ip ? $ip : 'noip'; // graceful fallback: still windowed, just coarser
+	$raw = wprp_current_review_raw(); // the raw bearer token in effect this request
+	$key = 'wprp_rl_' . md5( $ip . '|' . $raw ); // md5 only to bound the transient key length; not a security hash
+	$n   = (int) get_transient( $key );
+	if ( $n >= WPRP_REVIEW_RATE_MAX ) {
+		return true;
+	}
+	set_transient( $key, $n + 1, WPRP_REVIEW_RATE_WINDOW );
+	return false;
+}
+
 function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array(), $agent = '', $codescope = '', $reviewer_name = '' ) {
 	if ( ! wprp_can_contribute() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
