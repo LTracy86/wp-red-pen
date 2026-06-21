@@ -3733,6 +3733,56 @@ add_action(
 	}
 );
 
+/** admin-post handler: generate a client review link. Shows the full URL exactly once via a short-lived transient. */
+add_action(
+	'admin_post_wprp_review_generate',
+	function () {
+		if ( ! wprp_user_can()
+			|| ! isset( $_POST['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_review_generate' ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+		$label = isset( $_POST['label'] ) ? sanitize_text_field( wp_unslash( $_POST['label'] ) ) : '';
+		$label = mb_substr( $label, 0, 80 );
+		if ( '' === $label ) {
+			wp_die( esc_html__( 'A label is required for a review link.', 'wp-red-pen' ) );
+		}
+		// Expiry is a whitelist of day-durations; anything else means never.
+		$days    = isset( $_POST['expiry'] ) ? (int) wp_unslash( $_POST['expiry'] ) : 0;
+		$expires = in_array( $days, array( 7, 30, 90 ), true ) ? ( time() + ( $days * DAY_IN_SECONDS ) ) : 0;
+
+		$gen = wprp_generate_review_token( $label, $expires );
+		$url = home_url( '/?' . WPRP_REVIEW_COOKIE . '=' . rawurlencode( $gen['token'] ) );
+
+		// Stash the one-time URL in a short-lived transient keyed by a random handle, so the raw
+		// token never travels in a redirect query string (it would land in server/browser logs).
+		$key = wp_generate_password( 16, false );
+		set_transient(
+			'wprp_new_link_' . $key,
+			array( 'url' => $url, 'label' => $label ),
+			5 * MINUTE_IN_SECONDS
+		);
+		wp_safe_redirect( add_query_arg( 'wprp_new_link', $key, admin_url( 'tools.php?page=wp-red-pen' ) ) );
+		exit;
+	}
+);
+
+/** admin-post handler: revoke a client review link (flips enabled to false; record kept for the audit trail). */
+add_action(
+	'admin_post_wprp_review_revoke',
+	function () {
+		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
+		if ( '' === $id || ! wprp_user_can()
+			|| ! isset( $_GET['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wprp_review_revoke_' . $id ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+		wprp_revoke_review_token( $id );
+		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen' ) );
+		exit;
+	}
+);
+
 /**
  * Neutralise CSV formula injection. A cell whose first character is one of = + - @
  * (or a leading tab/CR) is treated as a formula by Excel/Sheets; prefix it with a
