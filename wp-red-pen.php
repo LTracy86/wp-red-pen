@@ -1994,13 +1994,19 @@ add_action(
 			'/notes/(?P<id>\d+)/replies',
 			array(
 				'methods'             => 'POST',
-				'permission_callback' => $perm,
+				'permission_callback' => $perm_contribute,
 				'callback'            => function ( $req ) {
-					$res = wprp_create_reply( (int) $req['id'], (string) $req->get_param( 'body' ) );
+					$res = wprp_create_reply( (int) $req['id'], (string) $req->get_param( 'body' ), (string) $req->get_param( 'reviewer' ) );
 					if ( is_wp_error( $res ) ) {
 						return $res;
 					}
-					return rest_ensure_response( wprp_note_to_array( get_post( (int) $req['id'] ) ) );
+					// Return the parent note shaped for the caller (stripped for reviewers).
+					$reviewer = ! wprp_user_can() && wprp_can_review();
+					return rest_ensure_response(
+						$reviewer
+							? wprp_note_to_array_reviewer( get_post( (int) $req['id'] ) )
+							: wprp_note_to_array( get_post( (int) $req['id'] ) )
+					);
 				},
 			)
 		);
