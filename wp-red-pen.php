@@ -3259,6 +3259,89 @@ function wprp_render_repo_page() {
 	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
 	echo '</form></details>';
 
+	// Client review links: generate an unguessable link that lets a non-logged-in client
+	// leave notes (read-only on existing ones). Hash-only storage means a link's URL is
+	// shown exactly once at creation - the only later action is Revoke.
+	$rev_gen_url = admin_url( 'admin-post.php?action=wprp_review_generate' );
+	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:760px">';
+	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-admin-links" style="vertical-align:text-top"></span> ' . esc_html__( 'Client review links', 'wp-red-pen' ) . '</summary>';
+	echo '<p style="margin:.4rem 0 .6rem;color:#646970">' . esc_html__( 'Generate a private link that lets a client leave feedback notes on the front end without a WordPress login. Share it only with people you trust. The link is shown once at creation (the token is stored hashed, like a password) - if you lose it, revoke the link and make a new one. Revoke is the kill switch: it stops the link working immediately.', 'wp-red-pen' ) . '</p>';
+
+	// One-time display of a freshly created link's full URL (carried via a short-lived transient, keyed in the redirect).
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only redirect flag; the URL lives in a server-side transient, not the query string
+	$new_key = isset( $_GET['wprp_new_link'] ) ? sanitize_text_field( wp_unslash( $_GET['wprp_new_link'] ) ) : '';
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	if ( $new_key ) {
+		$new_link = get_transient( 'wprp_new_link_' . $new_key );
+		if ( $new_link && is_array( $new_link ) ) {
+			delete_transient( 'wprp_new_link_' . $new_key ); // show it once, then it is gone forever
+			echo '<div class="notice notice-success inline" style="margin:.4rem 0;max-width:720px"><p style="margin:.4rem 0"><strong>' . esc_html__( 'New review link for', 'wp-red-pen' ) . ' &ldquo;' . esc_html( $new_link['label'] ) . '&rdquo;</strong></p>';
+			echo '<p style="margin:.2rem 0;color:#b32d2e"><strong>' . esc_html__( 'Copy this now - it will not be shown again.', 'wp-red-pen' ) . '</strong></p>';
+			echo '<p style="margin:.2rem 0"><input type="text" readonly value="' . esc_attr( $new_link['url'] ) . '" onclick="this.select()" style="width:100%;max-width:680px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem"></p>';
+			echo '</div>';
+		}
+	}
+
+	echo '<form method="post" action="' . esc_url( $rev_gen_url ) . '" style="margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end">';
+	wp_nonce_field( 'wprp_review_generate' );
+	echo '<label style="display:block">' . esc_html__( 'Label (client or project name)', 'wp-red-pen' ) . '<br><input type="text" name="label" required maxlength="80" placeholder="' . esc_attr__( 'Acme Co - new site review', 'wp-red-pen' ) . '" style="width:18rem"></label>';
+	echo '<label style="display:block">' . esc_html__( 'Expiry', 'wp-red-pen' ) . '<br><select name="expiry">';
+	$expiry_opts = array(
+		'0'  => __( 'Never (revoke manually)', 'wp-red-pen' ),
+		'7'  => __( '7 days', 'wp-red-pen' ),
+		'30' => __( '30 days', 'wp-red-pen' ),
+		'90' => __( '90 days', 'wp-red-pen' ),
+	);
+	foreach ( $expiry_opts as $days => $opt_label ) {
+		echo '<option value="' . esc_attr( $days ) . '">' . esc_html( $opt_label ) . '</option>';
+	}
+	echo '</select></label>';
+	echo '<button type="submit" class="button button-primary">' . esc_html__( 'Generate link', 'wp-red-pen' ) . '</button>';
+	echo '</form>';
+
+	// Active links table.
+	$rev_tokens = wprp_review_tokens();
+	if ( $rev_tokens ) {
+		echo '<table class="wp-list-table widefat fixed striped" style="margin-top:.8rem;max-width:720px"><thead><tr>';
+		echo '<th>' . esc_html__( 'Label', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Created', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Expires', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Status', 'wp-red-pen' ) . '</th><th>' . esc_html__( 'Action', 'wp-red-pen' ) . '</th>';
+		echo '</tr></thead><tbody>';
+		$now = time();
+		foreach ( $rev_tokens as $rt ) {
+			$expired = ! empty( $rt['expires'] ) && (int) $rt['expires'] <= $now;
+			if ( empty( $rt['enabled'] ) ) {
+				$status = '<span style="color:#646970">' . esc_html__( 'Revoked', 'wp-red-pen' ) . '</span>';
+			} elseif ( $expired ) {
+				$status = '<span style="color:#996800">' . esc_html__( 'Expired', 'wp-red-pen' ) . '</span>';
+			} else {
+				$status = '<span style="color:#197b30">' . esc_html__( 'Active', 'wp-red-pen' ) . '</span>';
+			}
+			$created_str = ! empty( $rt['created'] ) ? wp_date( get_option( 'date_format' ), (int) $rt['created'] ) : '&mdash;';
+			$expires_str = empty( $rt['expires'] ) ? esc_html__( 'Never', 'wp-red-pen' ) : esc_html( wp_date( get_option( 'date_format' ), (int) $rt['expires'] ) );
+			echo '<tr>';
+			echo '<td>' . esc_html( $rt['label'] ) . '</td>';
+			echo '<td>' . esc_html( $created_str ) . '</td>';
+			echo '<td>' . $expires_str . '</td>'; // already escaped above
+			echo '<td>' . $status . '</td>'; // markup built from translated literals only
+			echo '<td>';
+			if ( ! empty( $rt['enabled'] ) ) {
+				$revoke_url = wp_nonce_url(
+					add_query_arg(
+						array( 'action' => 'wprp_review_revoke', 'id' => rawurlencode( (string) $rt['id'] ) ),
+						admin_url( 'admin-post.php' )
+					),
+					'wprp_review_revoke_' . $rt['id']
+				);
+				echo '<a class="button button-small" href="' . esc_url( $revoke_url ) . '" onclick="return confirm(\'' . esc_js( __( 'Revoke this review link? Anyone holding it will lose access immediately.', 'wp-red-pen' ) ) . '\')">' . esc_html__( 'Revoke', 'wp-red-pen' ) . '</a>';
+			} else {
+				echo '<span style="color:#646970">&mdash;</span>';
+			}
+			echo '</td></tr>';
+		}
+		echo '</tbody></table>';
+		echo '<p style="margin:.4rem 0 0;color:#646970"><em>' . esc_html__( 'A link\'s URL is shown only once at creation and cannot be re-displayed (it is stored hashed). The only action on an existing link is Revoke.', 'wp-red-pen' ) . '</em></p>';
+	}
+	echo '</details>';
+
 	// Status filter tabs.
 	$tabs = array(
 		'open'     => __( 'Open', 'wp-red-pen' ),
