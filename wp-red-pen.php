@@ -1016,6 +1016,10 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	// A reviewer (valid token, NOT a logged-in dev) is hard-constrained: forced open, author 0,
 	// no assignee / agent / code scope / screenshot, and stamped via_review + the reviewer name.
 	$reviewer = ! wprp_user_can() && wprp_can_review();
+	// Anti-abuse: throttle the anonymous reviewer create path only. Devs are never limited.
+	if ( $reviewer && wprp_review_rate_exceeded() ) {
+		return new WP_Error( 'wprp_rate_limited', __( 'You are adding notes too quickly. Please wait a few minutes and try again.', 'wp-red-pen' ), array( 'status' => 429 ) );
+	}
 	$body = trim( wprp_kses_note( $body ) );
 	if ( '' === $body ) {
 		return new WP_Error( 'wprp_empty', __( 'The note is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
