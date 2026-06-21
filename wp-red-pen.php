@@ -1112,6 +1112,10 @@ function wprp_create_reply( $parent_id, $body, $reviewer_name = '' ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot reply.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
 	$reviewer = ! wprp_user_can() && wprp_can_review();
+	// Anti-abuse: throttle the anonymous reviewer reply path only. Devs are never limited.
+	if ( $reviewer && wprp_review_rate_exceeded() ) {
+		return new WP_Error( 'wprp_rate_limited', __( 'You are replying too quickly. Please wait a few minutes and try again.', 'wp-red-pen' ), array( 'status' => 429 ) );
+	}
 	$parent = get_post( $parent_id );
 	if ( ! $parent || WPRP_CPT !== $parent->post_type || (int) $parent->post_parent !== 0 ) {
 		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
