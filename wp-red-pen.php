@@ -3787,7 +3787,14 @@ function wprp_render_repo_page() {
 			echo '</optgroup>';
 		}
 		echo '</select></td>';
-		echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
+		$via_review = (bool) get_post_meta( $n->ID, WPRP_META_VIA_REVIEW, true );
+		if ( $via_review ) {
+			$rev_name = (string) get_post_meta( $n->ID, WPRP_META_REVIEWER, true );
+			$by_label = '' !== $rev_name ? $rev_name : __( 'Anonymous reviewer', 'wp-red-pen' );
+			echo '<td><span style="display:inline-block;background:#D32F2F;color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.68rem;font-weight:600;margin-bottom:.2rem">' . esc_html__( 'Client', 'wp-red-pen' ) . '</span><br><span>' . esc_html( $by_label ) . '</span></td>';
+		} else {
+			echo '<td>' . esc_html( $author ? $author->display_name : '' ) . '</td>';
+		}
 		echo '<td>' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . '</td>';
 		$statuses_lbl = wprp_statuses();
 		$rs_nonce     = wp_create_nonce( 'wprp_resolve_' . $n->ID );
