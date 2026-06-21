@@ -2182,7 +2182,9 @@ add_action(
 				<header class="wprp-head">
 					<strong><?php esc_html_e( 'Red Pen', 'wp-red-pen' ); ?></strong>
 					<span class="wprp-page"><?php echo esc_html( $ctx['page']['label'] ); ?></span>
+					<?php if ( ! $reviewer ) : ?>
 					<a class="wprp-repo-link" href="<?php echo esc_url( admin_url( 'tools.php?page=wp-red-pen' ) ); ?>" target="_blank" rel="noopener" title="<?php esc_attr_e( 'Open the notes repository', 'wp-red-pen' ); ?>" aria-label="<?php esc_attr_e( 'Open the notes repository', 'wp-red-pen' ); ?>"><span class="dashicons dashicons-list-view" aria-hidden="true"></span></a>
+					<?php endif; ?>
 						<button type="button" class="wprp-x" id="wprp-close" aria-label="<?php esc_attr_e( 'Close', 'wp-red-pen' ); ?>">&times;</button>
 				</header>
 				<div class="wprp-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Filter notes', 'wp-red-pen' ); ?>">
@@ -2198,7 +2200,9 @@ add_action(
 					</div>
 					<div class="wprp-more" id="wprp-more" hidden>
 						<select id="wprp-priority" aria-label="<?php esc_attr_e( 'Priority', 'wp-red-pen' ); ?>"><?php echo $prio_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
+						<?php if ( ! $reviewer ) : ?>
 						<select id="wprp-assignee" aria-label="<?php esc_attr_e( 'Assign to', 'wp-red-pen' ); ?>"><?php echo $user_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
+						<?php endif; ?>
 						<label class="wprp-levellabel"><?php esc_html_e( 'Reporting level', 'wp-red-pen' ); ?>
 							<select id="wprp-level" aria-label="<?php esc_attr_e( 'Reporting level', 'wp-red-pen' ); ?>"><?php echo $level_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
 						</label>
