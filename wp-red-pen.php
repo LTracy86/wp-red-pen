@@ -2992,6 +2992,13 @@ function wprp_print_frontend_assets() {
 		}
 		shotClear.addEventListener('click', clearShot);
 
+		// Reviewers get no screenshot capture in v1 (html2canvas is never enqueued for them); hide
+		// the whole shot row so the dead button never appears.
+		if (isReviewer) {
+			var shotRow = shotBtn ? shotBtn.closest('.wprp-shotrow') : null;
+			if (shotRow) { shotRow.hidden = true; }
+		}
+
 		shotBtn.addEventListener('click', function () {
 			if (typeof html2canvas === 'undefined') { toast(SHOT_UNAVAILABLE); return; }
 			startCapture();
