@@ -447,6 +447,182 @@ function wprp_devmode_on() {
 	return wprp_user_can() && (bool) get_user_meta( get_current_user_id(), WPRP_USERMETA, true );
 }
 
+/* ---------------------------------------------------------------------------
+ * Client reviewer links (Phase 1 of the WordPress Client Reviewer Link feature).
+ *
+ * A reviewer link lets a NON-LOGGED-IN client leave notes through an unguessable
+ * bearer token. Tokens are stored HASH-ONLY (like a password) in the
+ * WPRP_REVIEW_TOKENS_OPT option - the raw token is shown to the admin exactly
+ * once at creation and never recoverable afterwards. The helpers below are the
+ * token store + validation layer. NOTHING consumes wprp_can_review() /
+ * wprp_can_contribute() yet - the render gate, asset enqueue, and REST callbacks
+ * are deliberately left untouched until later phases.
+ * ------------------------------------------------------------------------- */
+
+/** The stored reviewer-token records (array of { id, label, hash, created, expires, enabled }). */
+function wprp_review_tokens() {
+	$tokens = get_option( WPRP_REVIEW_TOKENS_OPT, array() );
+	return is_array( $tokens ) ? $tokens : array();
+}
+
+/**
+ * Generate a new reviewer-link token. Stores ONLY a SHA-256 hash of the high-entropy
+ * raw token; returns the RAW token (so the caller can display it once) plus the record.
+ * Capability checks belong in the admin handler, not here.
+ *
+ * @param string $label   Human label for the link (client/project name).
+ * @param int    $expires Unix timestamp the link expires, or 0 for never.
+ * @return array { token: raw token string, record: stored record array }
+ */
+function wprp_generate_review_token( $label, $expires = 0 ) {
+	// 20 random bytes = 160 bits of entropy, hex-encoded to a 40-char bearer token.
+	if ( function_exists( 'random_bytes' ) ) {
+		$raw = bin2hex( random_bytes( 20 ) );
+	} else {
+		$raw = wp_generate_password( 40, false ); // fallback only; random_bytes is preferred
+	}
+	$record = array(
+		'id'      => uniqid( 'rp', true ),
+		'label'   => sanitize_text_field( (string) $label ),
+		'hash'    => hash( 'sha256', $raw ), // store the hash, never the raw token
+		'created' => time(),
+		'expires' => (int) $expires, // 0 = never
+		'enabled' => true,
+	);
+	$tokens   = wprp_review_tokens();
+	$tokens[] = $record;
+	update_option( WPRP_REVIEW_TOKENS_OPT, $tokens, false ); // not autoloaded
+	return array(
+		'token'  => $raw,
+		'record' => $record,
+	);
+}
+
+/**
+ * Look up a raw token against the store. Returns the matching record ONLY when it is
+ * enabled and unexpired, using a timing-safe hash_equals compare. False otherwise.
+ *
+ * @param string $raw The raw bearer token from the request.
+ * @return array|false The matched record, or false.
+ */
+function wprp_find_review_token( $raw ) {
+	$raw = (string) $raw;
+	if ( '' === $raw ) {
+		return false;
+	}
+	$candidate = hash( 'sha256', $raw );
+	$now        = time();
+	foreach ( wprp_review_tokens() as $record ) {
+		if ( empty( $record['enabled'] ) ) {
+			continue;
+		}
+		if ( ! empty( $record['expires'] ) && (int) $record['expires'] <= $now ) {
+			continue;
+		}
+		// Timing-safe compare so a token cannot be discovered byte-by-byte.
+		if ( hash_equals( (string) $record['hash'], $candidate ) ) {
+			return $record;
+		}
+	}
+	return false;
+}
+
+/**
+ * On a FRONT-END (non-admin) request, resolve the reviewer token from the query
+ * string (?wprp_review=) or the reviewer cookie and validate it against the store.
+ * Memoized per request. Returns the matched record or false.
+ *
+ * @return array|false
+ */
+function wprp_reviewer_token_valid() {
+	static $cached = null;
+	if ( null !== $cached ) {
+		return $cached;
+	}
+	// Reviewer mode is a strictly front-end door; never honour the token in wp-admin.
+	if ( is_admin() ) {
+		$cached = false;
+		return $cached;
+	}
+	$raw = '';
+	if ( isset( $_GET[ WPRP_REVIEW_COOKIE ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a bearer token, validated below, not a state-changing action
+		$raw = sanitize_text_field( wp_unslash( $_GET[ WPRP_REVIEW_COOKIE ] ) );
+	} elseif ( isset( $_COOKIE[ WPRP_REVIEW_COOKIE ] ) ) {
+		$raw = sanitize_text_field( wp_unslash( $_COOKIE[ WPRP_REVIEW_COOKIE ] ) );
+	}
+	$cached = $raw ? wprp_find_review_token( $raw ) : false;
+	return $cached;
+}
+
+/** True when a valid reviewer token is present on a front-end request. (Helper only - nothing consumes it yet.) */
+function wprp_can_review() {
+	return (bool) wprp_reviewer_token_valid();
+}
+
+/** True when the request may CREATE notes/replies: a logged-in dev OR a valid reviewer. (Defined now, consumed in a later phase.) */
+function wprp_can_contribute() {
+	return wprp_user_can() || wprp_can_review();
+}
+
+/**
+ * Revoke a reviewer link by id: flip its enabled flag to false (kept for the audit
+ * trail rather than deleted) and persist. Capability checks belong in the handler.
+ *
+ * @param string $id The record id.
+ * @return bool True if a record was found and flipped.
+ */
+function wprp_revoke_review_token( $id ) {
+	$id      = (string) $id;
+	$tokens  = wprp_review_tokens();
+	$changed = false;
+	foreach ( $tokens as &$record ) {
+		if ( isset( $record['id'] ) && (string) $record['id'] === $id && ! empty( $record['enabled'] ) ) {
+			$record['enabled'] = false;
+			$changed           = true;
+		}
+	}
+	unset( $record );
+	if ( $changed ) {
+		update_option( WPRP_REVIEW_TOKENS_OPT, $tokens, false );
+	}
+	return $changed;
+}
+
+/**
+ * Persist reviewer mode across navigation: when a valid ?wprp_review=<raw> lands on a
+ * front-end request, (re)set a short-lived, site-scoped, httponly cookie. The cookie
+ * only persists the mode - validation always re-checks the raw token against the store
+ * on every request, so a revoked/expired token stops working immediately regardless of
+ * the cookie. Runs on init at a priority after cookies are available.
+ */
+function wprp_review_set_cookie() {
+	if ( is_admin() ) {
+		return;
+	}
+	if ( ! isset( $_GET[ WPRP_REVIEW_COOKIE ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- bearer token, validated below
+		return;
+	}
+	$raw = sanitize_text_field( wp_unslash( $_GET[ WPRP_REVIEW_COOKIE ] ) );
+	if ( ! $raw || ! wprp_find_review_token( $raw ) ) {
+		return; // only set the cookie for a token that currently validates
+	}
+	// A few-hours TTL; refreshed on every valid hit. httponly TRUE - the token is passed
+	// to JS via the page config in a later phase, not read from the cookie by script.
+	setcookie(
+		WPRP_REVIEW_COOKIE,
+		$raw,
+		array(
+			'expires'  => time() + ( 4 * HOUR_IN_SECONDS ),
+			'path'     => defined( 'COOKIEPATH' ) ? COOKIEPATH : '/',
+			'domain'   => defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '',
+			'secure'   => is_ssl(),
+			'httponly' => true,
+			'samesite' => 'Lax',
+		)
+	);
+}
+add_action( 'init', 'wprp_review_set_cookie' );
+
 /** Absolute path to the screenshots folder (uploads/wp-red-pen), created on demand. */
 function wprp_shot_dir( $create = false ) {
 	$up  = wp_upload_dir();
