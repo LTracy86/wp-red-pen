@@ -2604,12 +2604,15 @@ function wprp_print_frontend_assets() {
 				(n.assigneeName ? '<span class="wprp-assignee">&rarr; ' + esc(n.assigneeName) + '</span>' : '') +
 				'<span class="wprp-actions">' +
 				(n.anchor ? '<button type="button" class="wprp-locate" title="<?php echo esc_js( __( 'Highlight the pinned element', 'wp-red-pen' ) ); ?>" aria-label="<?php echo esc_js( __( 'Highlight the pinned element', 'wp-red-pen' ) ); ?>"><span class="dashicons dashicons-search"></span></button>' : '') +
-				'<select class="wprp-status" aria-label="<?php echo esc_js( __( 'Status', 'wp-red-pen' ) ); ?>">' +
-					'<option value="open"' + (sk === 'open' ? ' selected' : '') + '>' + esc(TAB_OPEN) + '</option>' +
-					'<option value="progress"' + (sk === 'progress' ? ' selected' : '') + '>' + esc(TAB_PROGRESS) + '</option>' +
-					'<option value="resolved"' + (sk === 'resolved' ? ' selected' : '') + '>' + esc(TAB_RESOLVED) + '</option>' +
-				'</select>' +
-				'<button type="button" class="wprp-edit"><?php echo esc_js( __( 'Edit', 'wp-red-pen' ) ); ?></button></span></div>' +
+				// Status dropdown + Edit are dev-only mutate controls; a reviewer sees notes read-only.
+				(isReviewer ? '' : (
+					'<select class="wprp-status" aria-label="<?php echo esc_js( __( 'Status', 'wp-red-pen' ) ); ?>">' +
+						'<option value="open"' + (sk === 'open' ? ' selected' : '') + '>' + esc(TAB_OPEN) + '</option>' +
+						'<option value="progress"' + (sk === 'progress' ? ' selected' : '') + '>' + esc(TAB_PROGRESS) + '</option>' +
+						'<option value="resolved"' + (sk === 'resolved' ? ' selected' : '') + '>' + esc(TAB_RESOLVED) + '</option>' +
+					'</select>' +
+					'<button type="button" class="wprp-edit"><?php echo esc_js( __( 'Edit', 'wp-red-pen' ) ); ?></button>'
+				)) + '</span></div>' +
 				'<div class="wprp-body">' + n.body + '</div>' +
 				(n.shot ? '<a class="wprp-shot" href="' + esc(n.shot) + '" target="_blank" rel="noopener"><img src="' + esc(n.shot) + '" alt="screenshot"></a>' : '') +
 				(n.ctx ? '<div class="wprp-ctx">' + esc(n.ctx) + '</div>' : '') +
