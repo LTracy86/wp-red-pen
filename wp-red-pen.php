@@ -1067,10 +1067,11 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
  * @param int    $parent_id The note being replied to.
  * @param string $body      The reply text.
  */
-function wprp_create_reply( $parent_id, $body ) {
-	if ( ! wprp_user_can() ) {
+function wprp_create_reply( $parent_id, $body, $reviewer_name = '' ) {
+	if ( ! wprp_can_contribute() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot reply.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
+	$reviewer = ! wprp_user_can() && wprp_can_review();
 	$parent = get_post( $parent_id );
 	if ( ! $parent || WPRP_CPT !== $parent->post_type || (int) $parent->post_parent !== 0 ) {
 		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
@@ -1079,17 +1080,25 @@ function wprp_create_reply( $parent_id, $body ) {
 	if ( '' === $body ) {
 		return new WP_Error( 'wprp_empty', __( 'The reply is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
 	}
-	return wp_insert_post(
+	$reply_id = wp_insert_post(
 		array(
 			'post_type'    => WPRP_CPT,
 			'post_status'  => WPRP_STATUS_OPEN,
 			'post_parent'  => (int) $parent_id,
-			'post_author'  => get_current_user_id(),
+			'post_author'  => $reviewer ? 0 : get_current_user_id(),
 			'post_content' => $body,
 			'post_title'   => wp_trim_words( wp_strip_all_tags( $body ), 8, '...' ),
 		),
 		true
 	);
+	if ( ! is_wp_error( $reply_id ) && $reviewer ) {
+		update_post_meta( $reply_id, WPRP_META_VIA_REVIEW, 1 );
+		$reviewer_name = sanitize_text_field( (string) $reviewer_name );
+		if ( '' !== $reviewer_name ) {
+			update_post_meta( $reply_id, WPRP_META_REVIEWER, mb_substr( $reviewer_name, 0, 80 ) );
+		}
+	}
+	return $reply_id;
 }
 
 /** Replies (child posts) of a note, oldest first. */
