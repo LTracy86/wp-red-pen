@@ -2450,6 +2450,26 @@ function wprp_print_frontend_assets() {
 		var root = document.getElementById('wprp-root');
 		if (!root) { return; }
 		var cfg = JSON.parse(root.getAttribute('data-cfg'));
+		// Reviewer mode: a token-bearing anonymous client. The overlay is read-only on existing
+		// notes (no resolve/edit/delete/assign), screenshots are off, and an optional one-time name
+		// prompt attributes their feedback. cfg.reviewer is set server-side only for a valid token.
+		var isReviewer = !!cfg.reviewer;
+		var REVIEWER_NAME_KEY = 'wprpReviewerName';
+		var reviewerName = '';
+		var reviewerNameAsked = false;
+		if (isReviewer) {
+			try { reviewerName = localStorage.getItem(REVIEWER_NAME_KEY) || ''; reviewerNameAsked = !!localStorage.getItem(REVIEWER_NAME_KEY + 'Asked'); } catch (e) {}
+		}
+		var REVIEWER_NAME_PROMPT = '<?php echo esc_js( __( 'Your name (optional) so the site owner knows who left this feedback:', 'wp-red-pen' ) ); ?>';
+		// Ask once per browser, the first time the reviewer opens the panel. Skippable (Cancel/blank).
+		function ensureReviewerName() {
+			if (!isReviewer || reviewerNameAsked) { return; }
+			reviewerNameAsked = true;
+			try { localStorage.setItem(REVIEWER_NAME_KEY + 'Asked', '1'); } catch (e) {}
+			var v = null;
+			try { v = window.prompt(REVIEWER_NAME_PROMPT, reviewerName || ''); } catch (e) { v = null; }
+			if (v != null) { reviewerName = String(v).slice(0, 80).trim(); try { if (reviewerName) { localStorage.setItem(REVIEWER_NAME_KEY, reviewerName); } } catch (e) {} }
+		}
 		var fab = document.getElementById('wprp-fab');
 		var panel = document.getElementById('wprp-panel');
 		var list = document.getElementById('wprp-list');
