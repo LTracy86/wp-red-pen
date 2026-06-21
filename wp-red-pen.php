@@ -2496,7 +2496,10 @@ function wprp_print_frontend_assets() {
 
 		function api(path, opts) {
 			opts = opts || {};
-			opts.headers = Object.assign({ 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce }, opts.headers || {});
+			// Reviewers authenticate with the bearer token header (they have no wp_rest nonce);
+			// logged-in devs send the nonce. The two paths are mutually exclusive.
+			var auth = cfg.reviewToken ? { 'X-WPRP-Review-Token': cfg.reviewToken } : { 'X-WP-Nonce': cfg.nonce };
+			opts.headers = Object.assign({ 'Content-Type': 'application/json' }, auth, opts.headers || {});
 			return fetch(cfg.root + path, opts).then(function (r) {
 				if (!r.ok) { throw new Error('HTTP ' + r.status); }
 				return r.json();
