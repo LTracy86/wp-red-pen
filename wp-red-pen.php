@@ -1120,6 +1120,12 @@ function wprp_create_reply( $parent_id, $body, $reviewer_name = '' ) {
 	if ( ! $parent || WPRP_CPT !== $parent->post_type || (int) $parent->post_parent !== 0 ) {
 		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
 	}
+	// A reviewer may only reply to an OPEN note - the same scope their read (GET) is limited to.
+	// Without this, replying to an arbitrary id would echo back a resolved/in-progress note's
+	// (stripped) content, which the GET deliberately hides, and let ids be enumerated.
+	if ( $reviewer && WPRP_STATUS_OPEN !== $parent->post_status ) {
+		return new WP_Error( 'wprp_forbidden', __( 'You can only reply to open notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
+	}
 	$body = trim( wprp_kses_note( $body ) );
 	if ( '' === $body ) {
 		return new WP_Error( 'wprp_empty', __( 'The reply is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
