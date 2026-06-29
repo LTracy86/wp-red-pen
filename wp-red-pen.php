@@ -3176,29 +3176,37 @@ function wprp_print_frontend_assets() {
 
 		function openMarkup(baseUrl, onCommit) {
 			var MK_COLOR = '#D32F2F'; // the deliberate Red Pen accent; fixed colour + weight in v1
+			// Inline SVG icons (static markup, no user input) so the toolbar needs no dashicons/font dependency.
+			function svg(paths) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths + '</svg>'; }
+			var ICON_ARROW  = svg('<line x1="5" y1="19" x2="19" y2="5"/><polyline points="9 5 19 5 19 15"/>');
+			var ICON_RECT   = svg('<rect x="4" y="6" width="16" height="12" rx="1"/>');
+			var ICON_PEN    = svg('<path d="M14.5 5.5l4 4L8 20l-4.5.5L4 16z"/><line x1="13" y1="7" x2="17" y2="11"/>');
+			var ICON_UNDO   = svg('<polyline points="9 7 4 12 9 17"/><path d="M4 12h11a5 5 0 0 1 5 5v1"/>');
+			var ICON_CANCEL = svg('<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>');
+			var ICON_SAVE   = svg('<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7"/><rect x="8" y="13" width="8" height="6"/>');
 			var overlay = document.createElement('div');
 			overlay.id = 'wprp-markup';
 			overlay.innerHTML =
 				'<div class="wprp-mk-bar">' +
-					'<button type="button" class="wprp-mk-tool is-active" data-tool="arrow"></button>' +
-					'<button type="button" class="wprp-mk-tool" data-tool="rect"></button>' +
-					'<button type="button" class="wprp-mk-tool" data-tool="pen"></button>' +
+					'<button type="button" class="wprp-mk-tool is-active" data-tool="arrow">' + ICON_ARROW + '<span class="wprp-mk-lbl"></span></button>' +
+					'<button type="button" class="wprp-mk-tool" data-tool="rect">' + ICON_RECT + '<span class="wprp-mk-lbl"></span></button>' +
+					'<button type="button" class="wprp-mk-tool" data-tool="pen">' + ICON_PEN + '<span class="wprp-mk-lbl"></span></button>' +
 					'<span class="wprp-mk-sp"></span>' +
-					'<button type="button" class="wprp-mk-tool" data-act="undo"></button>' +
+					'<button type="button" class="wprp-mk-tool" data-act="undo">' + ICON_UNDO + '<span class="wprp-mk-lbl"></span></button>' +
 					'<span class="wprp-mk-sp"></span>' +
-					'<button type="button" class="wprp-mk-tool" data-act="cancel"></button>' +
-					'<button type="button" class="wprp-mk-tool wprp-mk-done" data-act="done"></button>' +
+					'<button type="button" class="wprp-mk-tool" data-act="cancel">' + ICON_CANCEL + '<span class="wprp-mk-lbl"></span></button>' +
+					'<button type="button" class="wprp-mk-tool wprp-mk-done" data-act="done">' + ICON_SAVE + '<span class="wprp-mk-lbl"></span></button>' +
 				'</div>' +
 				'<div class="wprp-mk-stage"><canvas class="wprp-mk-canvas"></canvas></div>';
 			document.body.appendChild(overlay);
-			// Labels set as text (not innerHTML) so translated strings are never interpreted as markup.
+			// Labels set as text (not innerHTML) so translated strings are never interpreted as markup; the icon SVG stays.
 			var bar = overlay.querySelector('.wprp-mk-bar');
-			bar.querySelector('[data-tool="arrow"]').textContent = MK_ARROW;
-			bar.querySelector('[data-tool="rect"]').textContent  = MK_BOX;
-			bar.querySelector('[data-tool="pen"]').textContent   = MK_PEN;
-			bar.querySelector('[data-act="undo"]').textContent   = MK_UNDO;
-			bar.querySelector('[data-act="cancel"]').textContent = MK_CANCEL;
-			bar.querySelector('[data-act="done"]').textContent   = MK_DONE;
+			bar.querySelector('[data-tool="arrow"] .wprp-mk-lbl').textContent = MK_ARROW;
+			bar.querySelector('[data-tool="rect"] .wprp-mk-lbl').textContent  = MK_BOX;
+			bar.querySelector('[data-tool="pen"] .wprp-mk-lbl').textContent   = MK_PEN;
+			bar.querySelector('[data-act="undo"] .wprp-mk-lbl').textContent   = MK_UNDO;
+			bar.querySelector('[data-act="cancel"] .wprp-mk-lbl').textContent = MK_CANCEL;
+			bar.querySelector('[data-act="done"] .wprp-mk-lbl').textContent   = MK_DONE;
 
 			var canvas = overlay.querySelector('.wprp-mk-canvas');
 			var ctx = canvas.getContext('2d');
