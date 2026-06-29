@@ -3162,6 +3162,157 @@ function wprp_print_frontend_assets() {
 			});
 		}
 
+		// ---- screenshot markup: draw arrow/box/pen on the capture, flatten back to one WebP ----
+		// Annotations are composited onto the image and re-exported; no separate vector store, so the
+		// save/decode path, the _wprp_shot meta, the gated reader and delete-cleanup are all untouched.
+		function commitMarkup(url) {
+			pendingShot = url;
+			shotRemove = false;       // a marked-up image supersedes any pending removal
+			shotThumb.src = url;
+			shotPrev.hidden = false;
+		}
+
+		function openMarkup(baseUrl, onCommit) {
+			var MK_COLOR = '#D32F2F'; // the deliberate Red Pen accent; fixed colour + weight in v1
+			var overlay = document.createElement('div');
+			overlay.id = 'wprp-markup';
+			overlay.innerHTML =
+				'<div class="wprp-mk-bar">' +
+					'<button type="button" class="wprp-mk-tool is-active" data-tool="arrow"></button>' +
+					'<button type="button" class="wprp-mk-tool" data-tool="rect"></button>' +
+					'<button type="button" class="wprp-mk-tool" data-tool="pen"></button>' +
+					'<span class="wprp-mk-sp"></span>' +
+					'<button type="button" class="wprp-mk-tool" data-act="undo"></button>' +
+					'<span class="wprp-mk-sp"></span>' +
+					'<button type="button" class="wprp-mk-tool" data-act="cancel"></button>' +
+					'<button type="button" class="wprp-mk-tool wprp-mk-done" data-act="done"></button>' +
+				'</div>' +
+				'<div class="wprp-mk-stage"><canvas class="wprp-mk-canvas"></canvas></div>';
+			document.body.appendChild(overlay);
+			// Labels set as text (not innerHTML) so translated strings are never interpreted as markup.
+			var bar = overlay.querySelector('.wprp-mk-bar');
+			bar.querySelector('[data-tool="arrow"]').textContent = MK_ARROW;
+			bar.querySelector('[data-tool="rect"]').textContent  = MK_BOX;
+			bar.querySelector('[data-tool="pen"]').textContent   = MK_PEN;
+			bar.querySelector('[data-act="undo"]').textContent   = MK_UNDO;
+			bar.querySelector('[data-act="cancel"]').textContent = MK_CANCEL;
+			bar.querySelector('[data-act="done"]').textContent   = MK_DONE;
+
+			var canvas = overlay.querySelector('.wprp-mk-canvas');
+			var ctx = canvas.getContext('2d');
+			var img = new Image();
+			var strokes = [];          // committed marks; the stack that Undo pops
+			var cur = null;            // the mark being drawn right now
+			var tool = 'arrow';
+			var lw = 3;
+			var drawing = false;
+
+			img.onload = function () {
+				canvas.width = img.naturalWidth;
+				canvas.height = img.naturalHeight;
+				lw = Math.max(2, Math.round(Math.min(canvas.width, canvas.height) / 220));
+				redraw();
+			};
+			img.onerror = function () { teardown(); panel.hidden = false; };
+			img.src = baseUrl;
+
+			function redraw() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.drawImage(img, 0, 0);
+				for (var i = 0; i < strokes.length; i++) { drawStroke(strokes[i]); }
+				if (cur) { drawStroke(cur); }
+			}
+			function drawStroke(s) {
+				var p = s.points;
+				if (!p.length) { return; }
+				ctx.strokeStyle = MK_COLOR; ctx.fillStyle = MK_COLOR;
+				ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+				if (s.tool === 'pen') {
+					ctx.beginPath(); ctx.moveTo(p[0].x, p[0].y);
+					for (var i = 1; i < p.length; i++) { ctx.lineTo(p[i].x, p[i].y); }
+					ctx.stroke();
+				} else if (s.tool === 'rect') {
+					var a = p[0], b = p[p.length - 1];
+					ctx.strokeRect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+				} else { // arrow
+					var a0 = p[0], b0 = p[p.length - 1];
+					ctx.beginPath(); ctx.moveTo(a0.x, a0.y); ctx.lineTo(b0.x, b0.y); ctx.stroke();
+					var ang = Math.atan2(b0.y - a0.y, b0.x - a0.x);
+					var hl = lw * 4 + 6;
+					ctx.beginPath();
+					ctx.moveTo(b0.x, b0.y);
+					ctx.lineTo(b0.x - hl * Math.cos(ang - Math.PI / 7), b0.y - hl * Math.sin(ang - Math.PI / 7));
+					ctx.lineTo(b0.x - hl * Math.cos(ang + Math.PI / 7), b0.y - hl * Math.sin(ang + Math.PI / 7));
+					ctx.closePath(); ctx.fill();
+				}
+			}
+			function pt(e) {
+				var r = canvas.getBoundingClientRect();
+				return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) };
+			}
+			function down(e) {
+				if (e.button !== undefined && e.button !== 0) { return; }
+				drawing = true; cur = { tool: tool, points: [pt(e)] };
+				redraw(); e.preventDefault();
+			}
+			function move(e) {
+				if (!drawing) { return; }
+				var q = pt(e);
+				if (tool === 'pen') { cur.points.push(q); } else { cur.points[1] = q; }
+				redraw(); e.preventDefault();
+			}
+			function up() {
+				if (!drawing) { return; }
+				drawing = false;
+				if (cur) {
+					var a = cur.points[0], b = cur.points[cur.points.length - 1];
+					// keep pen scribbles; drop accidental zero-length rect/arrow clicks
+					if (tool === 'pen' ? cur.points.length > 1 : (Math.abs(b.x - a.x) > 2 || Math.abs(b.y - a.y) > 2)) {
+						strokes.push(cur);
+					}
+				}
+				cur = null; redraw();
+			}
+			canvas.addEventListener('pointerdown', down);
+			window.addEventListener('pointermove', move);
+			window.addEventListener('pointerup', up);
+
+			bar.addEventListener('click', function (e) {
+				var btn = e.target.closest('button'); if (!btn) { return; }
+				var t = btn.getAttribute('data-tool');
+				if (t) {
+					tool = t;
+					var all = bar.querySelectorAll('.wprp-mk-tool[data-tool]');
+					for (var i = 0; i < all.length; i++) { all[i].classList.toggle('is-active', all[i] === btn); }
+					return;
+				}
+				var act = btn.getAttribute('data-act');
+				if (act === 'undo') { strokes.pop(); redraw(); }
+				else if (act === 'cancel') { teardown(); panel.hidden = false; }
+				else if (act === 'done') { commit(); }
+			});
+			function key(e) { if (e.key === 'Escape') { teardown(); panel.hidden = false; } }
+			window.addEventListener('keydown', key);
+
+			function commit() {
+				var out;
+				try {
+					out = canvas.toDataURL('image/webp', 0.82);
+					if (out.indexOf('data:image/webp') !== 0) { out = canvas.toDataURL('image/png'); }
+				} catch (err) { out = baseUrl; }
+				teardown();
+				onCommit(out);
+				panel.hidden = false;
+			}
+			function teardown() {
+				canvas.removeEventListener('pointerdown', down);
+				window.removeEventListener('pointermove', move);
+				window.removeEventListener('pointerup', up);
+				window.removeEventListener('keydown', key);
+				if (overlay.parentNode) { overlay.parentNode.removeChild(overlay); }
+			}
+		}
+
 		// ---- element pinning: pick an element, drop a numbered marker, click to open ----
 		function clearAnchor() {
 			pendingAnchor = null;
