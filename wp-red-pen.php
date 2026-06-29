@@ -3061,6 +3061,17 @@ function wprp_print_frontend_assets() {
 		}
 		shotClear.addEventListener('click', clearShot);
 
+		// Click the thumbnail to re-open the drawing layer and add more marks (flattened, so old marks stay).
+		if (!isReviewer && shotThumb) {
+			shotThumb.title = MK_REOPEN;
+			shotThumb.addEventListener('click', function () {
+				var src = shotThumb.getAttribute('src');
+				if (!src) { return; }
+				panel.hidden = true;
+				openMarkup(src, commitMarkup);
+			});
+		}
+
 		// Reviewers get no screenshot capture in v1 (html2canvas is never enqueued for them); hide
 		// the whole shot row so the dead button never appears.
 		if (isReviewer) {
