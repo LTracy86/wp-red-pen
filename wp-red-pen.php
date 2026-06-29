@@ -3189,9 +3189,9 @@ function wprp_print_frontend_assets() {
 			overlay.id = 'wprp-markup';
 			overlay.innerHTML =
 				'<div class="wprp-mk-bar">' +
-					'<button type="button" class="wprp-mk-tool is-active" data-tool="arrow">' + ICON_ARROW + '<span class="wprp-mk-lbl"></span></button>' +
+					'<button type="button" class="wprp-mk-tool is-active" data-tool="pen">' + ICON_PEN + '<span class="wprp-mk-lbl"></span></button>' +
+					'<button type="button" class="wprp-mk-tool" data-tool="arrow">' + ICON_ARROW + '<span class="wprp-mk-lbl"></span></button>' +
 					'<button type="button" class="wprp-mk-tool" data-tool="rect">' + ICON_RECT + '<span class="wprp-mk-lbl"></span></button>' +
-					'<button type="button" class="wprp-mk-tool" data-tool="pen">' + ICON_PEN + '<span class="wprp-mk-lbl"></span></button>' +
 					'<span class="wprp-mk-sp"></span>' +
 					'<button type="button" class="wprp-mk-tool" data-act="undo">' + ICON_UNDO + '<span class="wprp-mk-lbl"></span></button>' +
 					'<span class="wprp-mk-sp"></span>' +
