@@ -3518,6 +3518,38 @@ function wprp_print_frontend_assets() {
 			showLocateHl(el);
 		}
 
+		// ---- jump to next open note: cycle the on-page pins, scroll + flash each (admin-bar item + "J") ----
+		// Reuses the locate highlight. Works off the live `pins` array (built from priming on load, then from
+		// lastNotes once the panel opens), so it functions before the panel is ever opened. Notes without an
+		// on-page anchor aren't jumpable - they're not in `pins`.
+		var JUMP_NONE = '<?php echo esc_js( __( 'No open notes are pinned on this page.', 'wp-red-pen' ) ); ?>';
+		var jumpIdx = -1;
+		function jumpToNextOpen() {
+			var targets = [];
+			for (var i = 0; i < pins.length; i++) {
+				var t = pins[i].target;
+				if (!t || !document.body.contains(t)) { try { t = document.querySelector(pins[i].sel); } catch (e) { t = null; } }
+				if (!t) { continue; }
+				var r = t.getBoundingClientRect();
+				if (r.width || r.height) { targets.push(t); }
+			}
+			if (!targets.length) { toast(JUMP_NONE); return; }
+			jumpIdx = (jumpIdx + 1) % targets.length;
+			var el = targets[jumpIdx];
+			el.scrollIntoView({ block: 'center', behavior: reduceMotion() ? 'auto' : 'smooth' });
+			showLocateHl(el);
+		}
+		// Delegated click (robust to admin-bar render order) + a "J" keyboard shortcut outside of form fields.
+		document.addEventListener('click', function (e) {
+			if (e.target.closest && e.target.closest('#wp-admin-bar-wprp-jump')) { e.preventDefault(); jumpToNextOpen(); }
+		});
+		document.addEventListener('keydown', function (e) {
+			if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) { return; }
+			var t = e.target;
+			if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) { return; }
+			if (e.key === 'j' || e.key === 'J') { jumpToNextOpen(); }
+		});
+
 		function positionPins() {
 			for (var k = 0; k < pins.length; k++) {
 				var p = pins[k], t = p.target;
