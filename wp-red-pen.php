@@ -4216,6 +4216,27 @@ add_action(
 	}
 );
 
+/** admin-post handler: save the repo edit-panel (note text + type) via wprp_update_note. */
+add_action(
+	'admin_post_wprp_edit_note',
+	function () {
+		$note = isset( $_POST['note'] ) ? (int) $_POST['note'] : 0;
+		if ( ! $note || ! wprp_user_can()
+			|| ! isset( $_POST['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_edit_note_' . $note )
+			|| WPRP_CPT !== get_post_type( $note ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+		// Raw (unslashed) body - wprp_update_note runs wprp_kses_note + the empty-body guard itself.
+		$body = isset( $_POST['body'] ) ? wp_unslash( $_POST['body'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized in wprp_update_note via wprp_kses_note
+		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'note';
+		wprp_update_note( $note, array( 'body' => $body, 'type' => $type ) );
+		$ref = wp_get_referer();
+		wp_safe_redirect( $ref ? remove_query_arg( 'wprp_edit', $ref ) : admin_url( 'tools.php?page=wp-red-pen' ) );
+		exit;
+	}
+);
+
 /** admin-post handler for the repository Resolve/Reopen buttons. */
 add_action(
 	'admin_post_wprp_resolve',
