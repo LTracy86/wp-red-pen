@@ -2557,6 +2557,14 @@ function wprp_print_frontend_assets() {
 		var shotThumb = document.getElementById('wprp-shot-thumb');
 		var shotClear = document.getElementById('wprp-shot-clear');
 		var pendingShot = null;
+		// screenshot markup (drawing layer) i18n - declared early so the thumb tooltip can read them at setup time
+		var MK_ARROW  = '<?php echo esc_js( __( 'Arrow', 'wp-red-pen' ) ); ?>';
+		var MK_BOX    = '<?php echo esc_js( __( 'Box', 'wp-red-pen' ) ); ?>';
+		var MK_PEN    = '<?php echo esc_js( __( 'Pen', 'wp-red-pen' ) ); ?>';
+		var MK_UNDO   = '<?php echo esc_js( __( 'Undo', 'wp-red-pen' ) ); ?>';
+		var MK_DONE   = '<?php echo esc_js( __( 'Done', 'wp-red-pen' ) ); ?>';
+		var MK_CANCEL = '<?php echo esc_js( __( 'Cancel', 'wp-red-pen' ) ); ?>';
+		var MK_REOPEN = '<?php echo esc_js( __( 'Click to draw on this screenshot', 'wp-red-pen' ) ); ?>';
 		var pinBtn = document.getElementById('wprp-pin-btn');
 		var pinInfo = document.getElementById('wprp-pin-info');
 		var pinLabel = document.getElementById('wprp-pin-label');
