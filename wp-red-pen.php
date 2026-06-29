@@ -2736,7 +2736,7 @@ function wprp_print_frontend_assets() {
 			var notes = [];
 			for (var _j = 0; _j < lastNotes.length; _j++) { if (statusKeyOf(lastNotes[_j]) === currentTab) { notes.push(lastNotes[_j]); } }
 			if (!notes.length) {
-				list.innerHTML = '<p class="wprp-muted">' + emptyMsgFor(currentTab) + '</p>';
+				list.innerHTML = '<p class="wprp-muted' + (currentTab === 'resolved' || currentTab === 'progress' ? '' : ' wprp-empty') + '">' + emptyMsgFor(currentTab) + '</p>';
 			} else {
 				list.innerHTML = notes.map(noteHtml).join('');
 			}
