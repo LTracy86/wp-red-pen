@@ -2444,19 +2444,26 @@ function wprp_print_frontend_assets() {
 		#wprp-capture{position:fixed;inset:0;z-index:99999;cursor:crosshair;background:rgba(30,34,37,.28)}
 		#wprp-capture .wprp-selbox{position:absolute;border:2px dashed var(--wprp-red);background:rgba(211,47,47,.12);pointer-events:none}
 		#wprp-capture .wprp-hint,#wprp-pinmode .wprp-hint{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:var(--wprp-ink);color:#fff;font-family:-apple-system,sans-serif;font-size:.82rem;padding:.4rem .8rem;border-radius:6px;pointer-events:none}
-			/* screenshot markup (drawing layer): flatten arrow/box/pen onto the captured WebP */
-			#wprp-markup{position:fixed;inset:0;z-index:100001;background:rgba(30,34,37,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;box-sizing:border-box}
-			/* hex literals (not the --wprp-* vars): the modal mounts on <body>, outside #wprp-root, so those custom properties don't cascade here */
-			#wprp-markup .wprp-mk-bar{display:flex;gap:8px;align-items:center;background:#1E2225;padding:8px;border-radius:10px;font-family:-apple-system,sans-serif;flex-wrap:wrap;justify-content:center}
+			/* screenshot markup (drawing layer): flatten pen/arrow/box onto the captured WebP. */
+			/* Hex literals (not the --wprp-* vars): the modal mounts on <body>, outside #wprp-root, so those custom properties don't cascade here. */
+			/* Base theme = LIGHT; the prefers-color-scheme: dark block below restores the dark look. The white/red buttons read on both bars, so only the backdrop, bar, and separator flip. */
+			#wprp-markup{position:fixed;inset:0;z-index:100001;background:rgba(30,34,37,.40);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;box-sizing:border-box}
+			#wprp-markup .wprp-mk-bar{display:flex;gap:8px;align-items:center;background:#eef1f3;padding:8px;border-radius:10px;border:1px solid #d7dde2;box-shadow:0 4px 18px rgba(30,34,37,.25);font-family:-apple-system,sans-serif;flex-wrap:wrap;justify-content:center}
 			#wprp-markup .wprp-mk-tool{display:inline-flex;align-items:center;gap:.4rem;background:#fff;border:2px solid #D32F2F;color:#D32F2F;font:inherit;font-size:.9rem;font-weight:600;padding:.55rem .9rem;border-radius:8px;cursor:pointer;line-height:1}
 			#wprp-markup .wprp-mk-tool svg{width:20px;height:20px;display:block;flex:none}
 			#wprp-markup .wprp-mk-tool:hover{background:#fde8e8}
 			#wprp-markup .wprp-mk-tool.is-active{background:#D32F2F;color:#fff}
-			#wprp-markup .wprp-mk-sp{width:1px;height:26px;background:#55585b;margin:0 2px}
+			#wprp-markup .wprp-mk-sp{width:1px;height:26px;background:#cfd4d8;margin:0 2px}
 			#wprp-markup .wprp-mk-done{background:#D32F2F;color:#fff;font-weight:700}
 			#wprp-markup .wprp-mk-done:hover{background:#B71C1C}
 			#wprp-markup .wprp-mk-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%}
-			#wprp-markup .wprp-mk-canvas{max-width:100%;max-height:100%;background:#fff;border-radius:4px;box-shadow:0 6px 24px rgba(0,0,0,.5);cursor:crosshair;touch-action:none}
+			#wprp-markup .wprp-mk-canvas{max-width:100%;max-height:100%;background:#fff;border-radius:4px;box-shadow:0 6px 24px rgba(0,0,0,.3);cursor:crosshair;touch-action:none}
+			@media (prefers-color-scheme: dark){
+				#wprp-markup{background:rgba(30,34,37,.92)}
+				#wprp-markup .wprp-mk-bar{background:#1E2225;border-color:#33383c;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+				#wprp-markup .wprp-mk-sp{background:#55585b}
+				#wprp-markup .wprp-mk-canvas{box-shadow:0 6px 24px rgba(0,0,0,.6)}
+			}
 			#wprp-shot-thumb{cursor:pointer}
 			/* element-pin: form row + indicator */
 			.wprp-pinrow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
