@@ -4136,6 +4136,7 @@ function wprp_render_repo_page() {
 		} else {
 			echo '<a class="button button-small" href="' . $mk_status( 'open' ) . '">' . esc_html__( 'Reopen', 'wp-red-pen' ) . '</a> ';
 		}
+		echo '<a class="button button-small" href="' . esc_url( add_query_arg( 'wprp_edit', $n->ID ) . '#wprp-editpanel' ) . '">' . esc_html__( 'Edit', 'wp-red-pen' ) . '</a> ';
 		echo '<a class="button button-small button-link-delete" style="color:#b32d2e" href="' . esc_url( $delete_url ) . '" onclick="return confirm(\'' . esc_js( __( 'Delete this note permanently, including its replies and screenshot? This cannot be undone.', 'wp-red-pen' ) ) . '\');">' . esc_html__( 'Delete', 'wp-red-pen' ) . '</a></td>';
 		echo '</tr>';
 	}
