@@ -2400,6 +2400,8 @@ function wprp_print_frontend_assets() {
 		.wprp-repo-link .dashicons{font-size:18px;width:18px;height:18px}
 		.wprp-list{padding:.5rem .75rem;overflow-y:auto;flex:1;min-height:60px}
 		.wprp-muted{color:var(--wprp-gray);font-size:.85rem;margin:.4rem 0}
+		/* branded empty state for the "No open notes on this page" message (open tab only) */
+		.wprp-empty{background:var(--wprp-red);color:#fff;font-weight:600;text-align:center;border-radius:6px;padding:.55rem .7rem}
 		.wprp-note{border:1px solid #e6e9ec;border-left:3px solid var(--wprp-red);border-radius:6px;padding:.45rem .6rem;margin-bottom:.5rem;font-size:.86rem}
 		.wprp-note.is-resolved{opacity:.55;border-left-color:var(--wprp-gray)}
 		.wprp-note .wprp-meta{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;font-size:.72rem;color:var(--wprp-gray);margin-bottom:.25rem}
