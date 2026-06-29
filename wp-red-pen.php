@@ -3214,7 +3214,7 @@ function wprp_print_frontend_assets() {
 			var img = new Image();
 			var strokes = [];          // committed marks; the stack that Undo pops
 			var cur = null;            // the mark being drawn right now
-			var tool = 'arrow';
+			var tool = 'pen';
 			var lw = 3;
 			var drawing = false;
 
