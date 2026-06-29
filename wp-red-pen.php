@@ -2157,6 +2157,18 @@ add_action(
 				'href'   => esc_url( admin_url( 'tools.php?page=wp-red-pen' ) ),
 			)
 		);
+		// Front-end helper only (no on-page pins to jump to in wp-admin), and only when Dev Mode is on.
+		if ( $on && ! is_admin() ) {
+			$bar->add_node(
+				array(
+					'parent' => 'wprp-toggle',
+					'id'     => 'wprp-jump',
+					'title'  => __( 'Jump to next open note', 'wp-red-pen' ),
+					'href'   => '#wprp-jump-next',
+					'meta'   => array( 'title' => __( 'Scroll to the next open note pinned on this page (shortcut: J)', 'wp-red-pen' ) ),
+				)
+			);
+		}
 	},
 	80
 );
