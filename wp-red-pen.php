@@ -2461,6 +2461,12 @@ function wprp_print_frontend_assets() {
 			@media (prefers-color-scheme: dark){
 				#wprp-markup{background:rgba(30,34,37,.92)}
 				#wprp-markup .wprp-mk-bar{background:#1E2225;border-color:#33383c;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+				/* inactive/light buttons get a dark surface (red border kept, brighter-red text+icon for contrast); active tool + Save stay solid red */
+				#wprp-markup .wprp-mk-tool{background:#26292c;color:#FF5252}
+				#wprp-markup .wprp-mk-tool:hover{background:#33383c}
+				#wprp-markup .wprp-mk-tool.is-active{background:#D32F2F;color:#fff}
+				#wprp-markup .wprp-mk-done{background:#D32F2F;color:#fff}
+				#wprp-markup .wprp-mk-done:hover{background:#B71C1C}
 				#wprp-markup .wprp-mk-sp{background:#55585b}
 				#wprp-markup .wprp-mk-canvas{box-shadow:0 6px 24px rgba(0,0,0,.6)}
 			}
