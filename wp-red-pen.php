@@ -3990,6 +3990,30 @@ function wprp_render_repo_page() {
 		return;
 	}
 
+	// Edit panel: editing a note's text + type from the repo (priority/assignee are inline quick-edits already).
+	// Rendered ABOVE the bulk form (its own top-level form) to avoid nesting <form> inside <form>.
+	$edit_id = isset( $_GET['wprp_edit'] ) ? (int) $_GET['wprp_edit'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only view toggle; the save is a nonced POST
+	if ( $edit_id ) {
+		$en = get_post( $edit_id );
+		if ( $en && WPRP_CPT === $en->post_type && 0 === (int) $en->post_parent ) {
+			$etype      = (string) get_post_meta( $edit_id, WPRP_META_TYPE, true );
+			$cancel_url = remove_query_arg( 'wprp_edit' );
+			echo '<form id="wprp-editpanel" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" style="background:#fff;border:1px solid #dfe3e6;border-left:4px solid #D32F2F;border-radius:6px;padding:1rem 1.1rem;margin:0 0 1rem;max-width:680px">';
+			wp_nonce_field( 'wprp_edit_note_' . $edit_id );
+			echo '<input type="hidden" name="action" value="wprp_edit_note">';
+			echo '<input type="hidden" name="note" value="' . (int) $edit_id . '">';
+			echo '<h2 style="margin-top:0;font-size:1rem">' . esc_html__( 'Edit note', 'wp-red-pen' ) . '</h2>';
+			echo '<p style="margin:.4rem 0"><textarea name="body" rows="4" required style="width:100%;box-sizing:border-box">' . esc_textarea( $en->post_content ) . '</textarea></p>';
+			echo '<p style="margin:.4rem 0"><label>' . esc_html__( 'Type', 'wp-red-pen' ) . ' <select name="type">';
+			foreach ( $types as $tk => $tl ) {
+				echo '<option value="' . esc_attr( $tk ) . '"' . selected( $tk, ( '' !== $etype ? $etype : 'note' ), false ) . '>' . esc_html( $tl ) . '</option>';
+			}
+			echo '</select></label></p>';
+			echo '<p style="margin:.4rem 0 0"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'wp-red-pen' ) . '</button> <a class="button" href="' . esc_url( $cancel_url ) . '">' . esc_html__( 'Cancel', 'wp-red-pen' ) . '</a></p>';
+			echo '</form>';
+		}
+	}
+
 	echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 	wp_nonce_field( 'wprp_bulk' );
 	echo '<input type="hidden" name="action" value="wprp_bulk">';
