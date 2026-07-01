@@ -2351,11 +2351,15 @@ add_action(
 			}
 		}
 		// Level options built from the current view: This page + (when distinct) This template.
+		// Reviewers only ever file page-level notes (their targeting is clamped server-side too);
+		// the template + site-wide levels are dev-only.
 		$level_opts = '<option value="page">' . esc_html( $ctx['page']['label'] ) . '</option>';
-		if ( '' !== $ctx['template']['key'] ) {
+		if ( ! $reviewer && '' !== $ctx['template']['key'] ) {
 			$level_opts .= '<option value="template">' . esc_html( $ctx['template']['label'] ) . '</option>';
 		}
-		$level_opts .= '<option value="global">' . esc_html( $ctx['global']['label'] ) . '</option>';
+		if ( ! $reviewer ) {
+			$level_opts .= '<option value="global">' . esc_html( $ctx['global']['label'] ) . '</option>';
+		}
 		if ( $reviewer ) {
 			// RESTRICTED reviewer config: no wp_rest nonce (reviewers have none - the JS sends the
 			// token header instead), reviewer-scoped + stripped priming, and a reviewer flag the JS
