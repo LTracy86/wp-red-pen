@@ -936,7 +936,7 @@ add_action(
  */
 function wprp_save_context( $note_id, $context, $target_id = 0 ) {
 	$context = is_array( $context ) ? $context : array();
-	$level   = ( isset( $context['level'] ) && 'template' === $context['level'] ) ? 'template' : 'page';
+	$level   = ( isset( $context['level'] ) && in_array( $context['level'], array( 'template', 'global' ), true ) ) ? $context['level'] : 'page';
 	$key     = isset( $context['key'] ) ? sanitize_text_field( (string) $context['key'] ) : '';
 	$label   = isset( $context['label'] ) ? sanitize_text_field( (string) $context['label'] ) : '';
 	if ( '' === $key && (int) $target_id > 0 ) {
