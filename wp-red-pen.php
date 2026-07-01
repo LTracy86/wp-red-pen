@@ -4093,7 +4093,8 @@ function wprp_render_repo_page() {
 		$cs_html    = '' !== $cs ? '<div style="font-size:.72rem;color:#3A3A3C;margin-top:.2rem;font-family:monospace">' . esc_html__( 'Code:', 'wp-red-pen' ) . ' ' . esc_html( $cs ) . '</div>' : '';
 		echo '<td>' . wprp_kses_note( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . $agent_html . $cs_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
 		$ctx_label = (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true );
-		$level     = ( 'template' === (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true ) ) ? 'template' : 'page';
+		$level     = (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true );
+		$level     = in_array( $level, array( 'template', 'global' ), true ) ? $level : 'page';
 		if ( $target ) {
 			$where = '<a href="' . esc_url( get_edit_post_link( $target ) ) . '">' . esc_html( '' !== $ctx_label ? $ctx_label : get_the_title( $target ) ) . '</a> <a href="' . esc_url( get_permalink( $target ) ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '">&#8599;</a>';
 		} else {
