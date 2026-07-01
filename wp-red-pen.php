@@ -1632,6 +1632,11 @@ function wprp_write_agent_brief( $slug, $exclude = 0 ) {
 	}
 	wprp_shot_dir( true ); // ensure the folder + deny guards exist
 	$path  = wprp_agent_brief_path( $slug );
+	// Clean up any legacy, guessably-named brief from before the secret suffix (v0.18.0).
+	$legacy = trailingslashit( wprp_shot_dir() ) . 'agent-' . sanitize_file_name( $slug ) . '.json';
+	if ( $legacy !== $path && file_exists( $legacy ) ) {
+		@unlink( $legacy ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_unlink, WordPress.PHP.NoSilencedErrors.Discouraged
+	}
 	$brief = wprp_build_agent_brief( $slug, $exclude );
 	if ( empty( $brief['notes'] ) ) {
 		if ( file_exists( $path ) ) {
