@@ -2267,6 +2267,7 @@ add_action(
 		if ( '' !== $ctx['template']['key'] ) {
 			$level_opts .= '<option value="template">' . esc_html( $ctx['template']['label'] ) . '</option>';
 		}
+		$level_opts .= '<option value="global">' . esc_html( $ctx['global']['label'] ) . '</option>';
 		if ( $reviewer ) {
 			// RESTRICTED reviewer config: no wp_rest nonce (reviewers have none - the JS sends the
 			// token header instead), reviewer-scoped + stripped priming, and a reviewer flag the JS
