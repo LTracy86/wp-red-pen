@@ -363,6 +363,11 @@ function wprp_current_context() {
 	return array(
 		'page'     => $page,
 		'template' => $tpl,
+		// Site-wide level: a fixed, view-independent context so a note can apply to EVERY page.
+		'global'   => array(
+			'key'   => WPRP_GLOBAL_KEY,
+			'label' => __( 'Site-wide (every page)', 'wp-red-pen' ),
+		),
 	);
 }
 
