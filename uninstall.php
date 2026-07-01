@@ -9,9 +9,16 @@
  * Removes:
  *   - every wprp_note post (the notes themselves) and their postmeta
  *   - the wprp_devmode per-user preference on every user
+ *   - every wprp_* option (including the Hub connect token and the reviewer-link
+ *     token hashes - secrets must not survive a delete)
+ *   - the plugin's transients
  *   - the uploads/wp-red-pen screenshots folder and its files
  *
  * Does NOT touch any post, page, or option the plugin did not create.
+ *
+ * NOTE: keep the option list below in sync with the WPRP_*_OPT define() block in
+ * wp-red-pen.php. uninstall.php runs standalone (the main plugin is not loaded),
+ * so the option names are spelled out as literals here on purpose.
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
