@@ -2039,10 +2039,12 @@ add_action(
 						$keys   = (string) $req->get_param( 'keys' );
 							$agent  = (string) $req->get_param( 'agent' );
 						if ( $reviewer ) {
-							// Force OPEN + context-scoped; ignore target/status/agent params entirely.
-							$notes = ( '' !== $keys )
-								? wprp_get_notes_for_context( explode( ',', $keys ), 'open' )
-								: array();
+							// Force OPEN, and pass the requested keys through the reviewer allow-list
+							// server-side: no site-wide notes, no notes on non-public (draft/private)
+							// posts, whatever keys the client asks for. Stops a link holder harvesting
+							// notes beyond the public pages they can already browse.
+							$safe  = wprp_reviewer_safe_keys( explode( ',', $keys ) );
+							$notes = $safe ? wprp_get_notes_for_context( $safe, 'open' ) : array();
 						} else {
 							$notes  = ( '' !== $agent )
 									? wprp_get_notes_for_agent( $agent, $status ? $status : 'any' )
