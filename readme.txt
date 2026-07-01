@@ -62,6 +62,28 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.17.0 =
+* New "Site-wide" reporting level: a note can now apply to every page of the site, not just this page or this template. Choose "Site-wide (every page)" from the Reporting level dropdown - the note then shows on the front-end panel everywhere and carries a Site-wide badge in the repository. Free, core feature.
+
+= 0.16.0 =
+* Edit a note's text and type right in the repository table (Tools > Red Pen): an Edit button on each row opens an inline panel, so you no longer have to open the note on the front end to fix a typo or change its type. (Priority and assignee were already editable in the table.)
+
+= 0.15.0 =
+* Jump to the next open note: a new admin-bar item - and the J key - cycles through the open notes pinned on the current page, scrolling each into view and highlighting it, so you can walk a page's flags without opening the panel.
+* The "No open notes on this page" message now stands out with a red background.
+
+= 0.14.0 =
+* Draw on your screenshots: after you snip a screenshot, a markup window opens with freehand pen, arrow, and rectangle tools (plus undo) so you can circle and point at exactly what you mean. The marks are saved into the image. Click an existing screenshot thumbnail to reopen markup and add more. Free, core feature.
+
+= 0.13.0 =
+* Client Reviewer Link: share a link that lets a client or outside reviewer leave notes on the front end without a WordPress login. Their feedback comes in attributed and scoped - they only see open notes on the page they are viewing, and none of the dev-only controls.
+
+= 0.12.1 =
+* Fixed: connecting to Red Pen Hub silently failed when the Hub URL was entered without http:// or https://. Schemeless URLs are now handled.
+
+= 0.12.0 =
+* Connect to Red Pen Hub: point your site at a local Red Pen Hub (URL + token under Display settings) and your notes push to the shared cross-project board automatically whenever they change. Outbound only, no external service - your site stays the source of truth. (Red Pen Hub is a separate, optional app.)
+
 = 0.11.0 =
 * Custom note types: define your own note types in Tools > Red Pen > Display settings (one "Label" or "Label|#hexcolor" per line). They appear in every note-type dropdown alongside the built-ins (Note / Suggested edit / Bug / Question) and render their colour as the note's flag on the front end and in the repository. Free, core feature.
 
