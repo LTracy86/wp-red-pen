@@ -43,7 +43,8 @@ define( 'WPRP_META_ASSIGNEE', '_wprp_assignee' ); // assigned user id (0 = unass
 define( 'WPRP_META_ANCHOR', '_wprp_anchor' );   // element-pin anchor (JSON: selector + relative x/y)
 define( 'WPRP_META_CTXKEY', '_wprp_ctx_key' );  // context key: post:ID | term:tax:ID | pt_archive:slug | tpl:* | home | search | 404 ...
 define( 'WPRP_META_CTXLABEL', '_wprp_ctx_label' ); // human label for the context
-define( 'WPRP_META_LEVEL',  '_wprp_level' );    // page | template
+define( 'WPRP_META_LEVEL',  '_wprp_level' );    // page | template | global
+define( 'WPRP_GLOBAL_KEY',  'site' );           // reserved ctx key for site-wide (every view) notes
 define( 'WPRP_SHOT_DIR',    'wp-red-pen' );     // uploads subfolder for screenshots
 define( 'WPRP_REST_NS',     'wprp/v1' );
 define( 'WPRP_DBVER_OPT',   'wprp_db_version' ); // schema version (for one-time data migrations)
