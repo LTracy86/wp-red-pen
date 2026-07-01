@@ -4104,7 +4104,8 @@ function wprp_render_repo_page() {
 				$where .= ' <a href="' . esc_url( $ctx_url ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '" target="_blank" rel="noopener">&#8599;</a>';
 			}
 		}
-		$lvl_badge = '<div style="margin-top:.25rem"><span style="font-size:.68rem;font-weight:600;color:#3A3A3C;border:1px solid #dfe3e6;border-radius:3px;padding:0 .3rem">' . esc_html( 'template' === $level ? __( 'Template', 'wp-red-pen' ) : __( 'Page', 'wp-red-pen' ) ) . '</span></div>';
+		$lvl_label = 'template' === $level ? __( 'Template', 'wp-red-pen' ) : ( 'global' === $level ? __( 'Site-wide', 'wp-red-pen' ) : __( 'Page', 'wp-red-pen' ) );
+		$lvl_badge = '<div style="margin-top:.25rem"><span style="font-size:.68rem;font-weight:600;color:#3A3A3C;border:1px solid #dfe3e6;border-radius:3px;padding:0 .3rem">' . esc_html( $lvl_label ) . '</span></div>';
 		echo '<td>' . $where . $lvl_badge . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built with esc_* above
 		echo '<td><select class="wprp-qe" onchange="if(this.value)location.href=this.value">';
 		echo '<option value="' . $qe_url( 'assignee', '0' ) . '"' . selected( '' === $agent_slug && 0 === $assignee, true, false ) . '>' . esc_html__( 'Unassigned', 'wp-red-pen' ) . '</option>';
