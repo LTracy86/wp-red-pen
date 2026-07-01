@@ -54,6 +54,7 @@ function wprp_uninstall_site() {
 		'wprp_agent_custom',  // custom agent label
 		'wprp_review_tokens', // client-reviewer link token hashes (secret)
 		'wprp_shot_guarded',  // one-time screenshot-folder guard flag
+		'wprp_brief_secret',  // random suffix for agent-brief filenames
 	);
 	foreach ( $options as $opt ) {
 		delete_option( $opt );
