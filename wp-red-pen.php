@@ -2281,7 +2281,8 @@ add_action(
 					'url'         => esc_url_raw( home_url( add_query_arg( array() ) ) ),
 					'page'        => $ctx['page'],     // { key, label, target }
 					'template'    => $ctx['template'], // { key, label }
-					'priming'     => wprp_priming_data_reviewer( array_values( array_filter( array( $ctx['page']['key'], $ctx['template']['key'] ) ) ) ),
+					'global'      => $ctx['global'],   // { key, label } - site-wide, every view
+					'priming'     => wprp_priming_data_reviewer( array_values( array_filter( array( $ctx['page']['key'], $ctx['template']['key'], $ctx['global']['key'] ) ) ) ),
 				)
 			);
 		} else {
