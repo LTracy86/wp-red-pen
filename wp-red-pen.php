@@ -2583,7 +2583,7 @@ function wprp_print_frontend_assets() {
 			// Agents live in the assignee dropdown as value "agent:<slug>"; split into {assignee, agent}.
 			function splitAssignee(v) { return (v && v.indexOf('agent:') === 0) ? { assignee: 0, agent: v.slice(6) } : { assignee: (v || '0'), agent: '' }; }
 			// The current view's contexts (key/label/target) the server computed for this page.
-			function ctxForLevel(lvl) { return (lvl === 'template' && cfg.template && cfg.template.key) ? cfg.template : cfg.page; }
+			function ctxForLevel(lvl) { if (lvl === 'global' && cfg.global && cfg.global.key) { return cfg.global; } return (lvl === 'template' && cfg.template && cfg.template.key) ? cfg.template : cfg.page; }
 		var countEl = document.getElementById('wprp-fab-count');
 		var tabOpenBtn = document.getElementById('wprp-tab-open');
 		var tabProgressBtn = document.getElementById('wprp-tab-progress');
