@@ -1500,9 +1500,71 @@ function wprp_get_notes_for_agent( $slug, $status = 'any', $exclude = 0 ) {
 	return get_posts( $args );
 }
 
+/**
+ * Per-site random secret woven into the agent-brief filename so the briefs are as
+ * unguessable as the screenshots. Without this the briefs sit at a KNOWN path
+ * (agent-claude.json) and, on any server that ignores the folder's .htaccess deny
+ * (nginx, or Apache with AllowOverride None), would be fetchable by anyone. Generated
+ * once on first need, stored not-autoloaded.
+ */
+function wprp_brief_secret() {
+	$secret = (string) get_option( 'wprp_brief_secret' );
+	if ( '' === $secret ) {
+		$secret = function_exists( 'random_bytes' ) ? bin2hex( random_bytes( 8 ) ) : wp_generate_password( 16, false );
+		update_option( 'wprp_brief_secret', $secret, false );
+	}
+	return $secret;
+}
+
 /** Filesystem path of an agent's JSON brief inside the deny-protected screenshots folder. */
 function wprp_agent_brief_path( $slug ) {
-	return trailingslashit( wprp_shot_dir() ) . 'agent-' . sanitize_file_name( (string) $slug ) . '.json';
+	return trailingslashit( wprp_shot_dir() ) . 'agent-' . sanitize_file_name( (string) $slug ) . '-' . wprp_brief_secret() . '.json';
+}
+
+/**
+ * Is a post safe for a reviewer (an anonymous client-link holder) to see notes about?
+ * Only publicly-viewable published content - never drafts, private, pending, or trashed
+ * posts, whose note bodies could leak internal/unpublished work.
+ */
+function wprp_is_public_post( $post_id ) {
+	$post = get_post( (int) $post_id );
+	if ( ! $post ) {
+		return false;
+	}
+	if ( function_exists( 'is_post_publicly_viewable' ) ) { // WP 5.7+
+		return (bool) is_post_publicly_viewable( $post );
+	}
+	$type = get_post_type_object( $post->post_type );
+	return 'publish' === $post->post_status && $type && $type->public;
+}
+
+/**
+ * Narrow a set of context keys to the ones a reviewer is allowed to read notes for.
+ * Drops the site-wide (global) key entirely - reviewers never see site-wide dev notes -
+ * and drops post keys that point at non-public content. Public view keys (home / front /
+ * search / 404 and the tpl:/pt_archive:/term:/date:/author: archive templates) pass.
+ * This is the server-side guard: the client can ask for any keys, but only these return.
+ */
+function wprp_reviewer_safe_keys( $keys ) {
+	$safe = array();
+	foreach ( (array) $keys as $key ) {
+		$key = (string) $key;
+		if ( '' === $key || WPRP_GLOBAL_KEY === $key ) {
+			continue;
+		}
+		if ( 0 === strpos( $key, 'post:' ) ) {
+			$pid = (int) substr( $key, 5 );
+			if ( $pid > 0 && wprp_is_public_post( $pid ) ) {
+				$safe[] = $key;
+			}
+			continue;
+		}
+		if ( preg_match( '/^(front|home|search|404)$/', $key )
+			|| preg_match( '/^(tpl:|pt_archive:|term:|date:|author:)/', $key ) ) {
+			$safe[] = $key;
+		}
+	}
+	return array_values( array_unique( $safe ) );
 }
 
 /**
