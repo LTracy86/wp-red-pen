@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.18.0 =
+* Security hardening for client review links. A review-link holder can now only read notes on public, published pages (never drafts, private posts, or site-wide dev notes), and their own feedback always attaches to the page they are actually on - it can no longer be aimed at other pages or made site-wide. Agent brief files now use an unguessable filename so they cannot be fetched directly on servers that ignore the folder's access rules. Uninstalling the plugin now also removes every stored option, including the Hub connect token and review-link secrets.
+
 = 0.17.0 =
 * New "Site-wide" reporting level: a note can now apply to every page of the site, not just this page or this template. Choose "Site-wide (every page)" from the Reporting level dropdown - the note then shows on the front-end panel everywhere and carries a Site-wide badge in the repository. Free, core feature.
 
