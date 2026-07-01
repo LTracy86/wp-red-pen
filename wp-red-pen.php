@@ -1704,7 +1704,7 @@ function wprp_note_to_array( $note, $replies = null ) {
 	$assignee = (int) get_post_meta( $note->ID, WPRP_META_ASSIGNEE, true );
 	$au       = $assignee ? get_userdata( $assignee ) : false;
 	$level    = (string) get_post_meta( $note->ID, WPRP_META_LEVEL, true );
-	$level    = ( 'template' === $level ) ? 'template' : 'page';
+	$level    = in_array( $level, array( 'template', 'global' ), true ) ? $level : 'page';
 	return array(
 		'id'         => (int) $note->ID,
 		'body'       => wpautop( wprp_kses_note( $note->post_content ) ),
@@ -1756,7 +1756,7 @@ function wprp_note_to_array_reviewer( $note, $replies = null ) {
 	$prios    = wprp_priorities();
 	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
 	$level    = (string) get_post_meta( $note->ID, WPRP_META_LEVEL, true );
-	$level    = ( 'template' === $level ) ? 'template' : 'page';
+	$level    = in_array( $level, array( 'template', 'global' ), true ) ? $level : 'page';
 	$reviewer = (string) get_post_meta( $note->ID, WPRP_META_REVIEWER, true );
 	$target   = (int) get_post_meta( $note->ID, WPRP_META_TARGET, true );
 	$rep_list = is_array( $replies ) ? $replies : wprp_get_replies( $note->ID );
