@@ -1033,6 +1033,25 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	$types = wprp_note_types();
 	$type  = isset( $types[ $type ] ) ? $type : 'note';
 
+	// Reviewers must never choose their own targeting. Derive it server-side from the page
+	// URL and forbid site-wide / arbitrary-post targets, so a reviewer note always lands on
+	// the public page they are actually on (never a global note on every dev page, never
+	// attached to some unrelated or non-public post).
+	if ( $reviewer ) {
+		$rid = $url ? url_to_postid( $url ) : 0;
+		if ( $rid > 0 && wprp_is_public_post( $rid ) ) {
+			$target_id = $rid;
+			$context   = array( 'level' => 'page', 'key' => 'post:' . $rid, 'label' => get_the_title( $rid ) );
+		} else {
+			$ck        = isset( $context['key'] ) ? $context['key'] : '';
+			$okeys     = wprp_reviewer_safe_keys( array( $ck ) );
+			$target_id = 0;
+			$context   = $okeys
+				? array( 'level' => 'page', 'key' => $okeys[0], 'label' => isset( $context['label'] ) ? (string) $context['label'] : '' )
+				: array();
+		}
+	}
+
 	$id = wp_insert_post(
 		array(
 			'post_type'    => WPRP_CPT,
