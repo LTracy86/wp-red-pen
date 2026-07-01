@@ -40,9 +40,28 @@ function wprp_uninstall_site() {
 	// Drop the per-user Dev Mode preference.
 	$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => 'wprp_devmode' ) );
 
-	// Drop our options (schema version + visibility setting).
-	delete_option( 'wprp_db_version' );
-	delete_option( 'wprp_show_on' );
+	// Drop every option the plugin wrote. Includes secrets (Hub token, reviewer-link
+	// token hashes) - these must not be left behind after a delete.
+	$options = array(
+		'wprp_db_version',    // schema version
+		'wprp_show_on',       // where the widget appears
+		'wprp_pin_color',     // custom pin colour
+		'wprp_dark',          // dark mode
+		'wprp_custom_types',  // user-defined note types
+		'wprp_hub_url',       // Red Pen Hub URL
+		'wprp_hub_token',     // Red Pen Hub connect token (secret)
+		'wprp_agents',        // enabled agent platforms
+		'wprp_agent_custom',  // custom agent label
+		'wprp_review_tokens', // client-reviewer link token hashes (secret)
+		'wprp_shot_guarded',  // one-time screenshot-folder guard flag
+	);
+	foreach ( $options as $opt ) {
+		delete_option( $opt );
+	}
+
+	// Drop the plugin's transients (the dynamic rate-limit / new-link ones expire on their own).
+	delete_transient( 'wprp_assignable_users' );
+	delete_transient( 'wprp_open_count' );
 
 	// Remove the screenshots folder (uploads/wp-red-pen) and its files.
 	$up  = wp_upload_dir();
