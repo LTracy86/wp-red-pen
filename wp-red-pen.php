@@ -4488,7 +4488,8 @@ add_action(
 			$au        = $assignee ? get_userdata( $assignee ) : false;
 			$author    = get_userdata( $n->post_author );
 			$ctx_label = (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true );
-			$level     = ( 'template' === (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true ) ) ? 'Template' : 'Page';
+			$lvl_raw   = (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true );
+			$level     = 'template' === $lvl_raw ? 'Template' : ( 'global' === $lvl_raw ? 'Site-wide' : 'Page' );
 			fputcsv(
 				$out,
 				array(
