@@ -3,7 +3,7 @@ Contributors: ltracy
 Donate link: https://buymeacoffee.com/lincolntracy
 Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
-Tested up to: 6.7
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 0.18.1
 License: GPLv2 or later
