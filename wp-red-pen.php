@@ -4566,8 +4566,11 @@ add_action(
 		}
 
 		$filter = isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : 'open';
-		$filter = in_array( $filter, array( 'open', 'resolved', 'all' ), true ) ? $filter : 'open';
-		$statuses = 'all' === $filter ? array( WPRP_STATUS_OPEN, WPRP_STATUS_DONE ) : array( 'resolved' === $filter ? WPRP_STATUS_DONE : WPRP_STATUS_OPEN );
+		$filter = in_array( $filter, array( 'open', 'progress', 'resolved', 'all' ), true ) ? $filter : 'open';
+		// 'all' must include In Progress too, or those notes vanish from every export.
+		$statuses = 'all' === $filter
+			? wprp_all_statuses()
+			: array( 'resolved' === $filter ? WPRP_STATUS_DONE : ( 'progress' === $filter ? WPRP_STATUS_PROGRESS : WPRP_STATUS_OPEN ) );
 
 		$who = isset( $_GET['assignee'] ) ? sanitize_key( wp_unslash( $_GET['assignee'] ) ) : '';
 		$who = in_array( $who, array( 'me', 'none' ), true ) ? $who : '';
