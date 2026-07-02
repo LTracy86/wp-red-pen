@@ -63,7 +63,8 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 == Changelog ==
 
 = 0.18.1 =
-* Security fix: closed a gap where a client review-link holder could read notes they were not meant to see (site-wide dev notes, notes on draft or private pages, and agent-queue notes) by replying to them. Replies from a review link are now limited to the same open, public-page notes the reviewer can already read. Also fixed CSV export so In Progress notes are included in the "All" export and labelled correctly.
+* Security fix: closed a gap where a client review-link holder could read notes they were not meant to see (site-wide dev notes, notes on draft or private pages, and agent-queue notes) by replying to them. Replies from a review link are now limited to the same open, public-page notes the reviewer can already read.
+* Fixed CSV export so In Progress notes are included in the "All" export and each row shows its real status (they were dropped and mislabelled before).
 
 = 0.18.0 =
 * Security hardening for client review links. A review-link holder can now only read notes on public, published pages (never drafts, private posts, or site-wide dev notes), and their own feedback always attaches to the page they are actually on - it can no longer be aimed at other pages or made site-wide. Agent brief files now use an unguessable filename so they cannot be fetched directly on servers that ignore the folder's access rules. Uninstalling the plugin now also removes every stored option, including the Hub connect token and review-link secrets.
