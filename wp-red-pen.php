@@ -1145,11 +1145,13 @@ function wprp_create_reply( $parent_id, $body, $reviewer_name = '' ) {
 	if ( ! $parent || WPRP_CPT !== $parent->post_type || (int) $parent->post_parent !== 0 ) {
 		return new WP_Error( 'wprp_missing', __( 'Note not found.', 'wp-red-pen' ), array( 'status' => 404 ) );
 	}
-	// A reviewer may only reply to an OPEN note - the same scope their read (GET) is limited to.
-	// Without this, replying to an arbitrary id would echo back a resolved/in-progress note's
-	// (stripped) content, which the GET deliberately hides, and let ids be enumerated.
-	if ( $reviewer && WPRP_STATUS_OPEN !== $parent->post_status ) {
-		return new WP_Error( 'wprp_forbidden', __( 'You can only reply to open notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
+	// A reviewer may only reply to a note their scoped GET would have returned: OPEN, non-agent,
+	// on a public page/template. The reply endpoint echoes the parent note back (shaped for the
+	// reviewer), so without this a token holder could reach a site-wide/global dev note, a note on
+	// a draft/private page, or an agent-queue note by its id - reading content the GET deliberately
+	// hides and spamming replies onto internal notes. Same visibility rule as the read path.
+	if ( $reviewer && ! wprp_reviewer_can_see_note( $parent ) ) {
+		return new WP_Error( 'wprp_forbidden', __( 'You can only reply to open notes on this site\'s public pages.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
 	$body = trim( wprp_kses_note( $body ) );
 	if ( '' === $body ) {
