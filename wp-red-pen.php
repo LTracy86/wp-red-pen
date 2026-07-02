@@ -4594,8 +4594,9 @@ add_action(
 			);
 		}
 		$notes = get_posts( $query_args );
-		$types      = wprp_note_types();
-		$priorities = wprp_priorities();
+		$types        = wprp_note_types();
+		$priorities   = wprp_priorities();
+		$statuses_lbl = wprp_statuses();
 
 		$filename = 'wp-red-pen-' . $filter . '-' . gmdate( 'Ymd' ) . '.csv';
 		nocache_headers();
