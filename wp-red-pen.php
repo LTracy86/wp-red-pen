@@ -1587,6 +1587,33 @@ function wprp_reviewer_safe_keys( $keys ) {
 }
 
 /**
+ * Would a reviewer's scoped GET have returned this note? Reviewers may only READ (and
+ * therefore reply to) OPEN, non-agent notes whose context is a public page/template - the
+ * exact set wprp_get_notes_for_context() + wprp_reviewer_safe_keys() expose on the GET path.
+ *
+ * This is the guard for the reply endpoint, which echoes the parent note back through
+ * wprp_note_to_array_reviewer(). Without it a token holder could reach a site-wide/global
+ * dev note, a note on a draft/private page, or an agent-queue note by its id and read it
+ * (and spam replies onto internal notes), defeating the v0.18.0 read scoping.
+ *
+ * @param WP_Post|null $note A top-level note post.
+ * @return bool
+ */
+function wprp_reviewer_can_see_note( $note ) {
+	if ( ! $note || WPRP_CPT !== $note->post_type || 0 !== (int) $note->post_parent ) {
+		return false;
+	}
+	if ( WPRP_STATUS_OPEN !== $note->post_status ) {
+		return false; // reviewers only ever see open notes
+	}
+	if ( '' !== (string) get_post_meta( $note->ID, WPRP_META_AGENT, true ) ) {
+		return false; // agent notes are an internal surface, never shown to reviewers
+	}
+	$key = (string) get_post_meta( $note->ID, WPRP_META_CTXKEY, true );
+	return (bool) wprp_reviewer_safe_keys( array( $key ) );
+}
+
+/**
  * Build the portable JSON brief for one agent: its actionable queue (open + in-progress),
  * bodies as plain text, replies, code scope, and where each note lives. Pure data - no
  * markup, no nonces - so a local agent can read the file straight off disk.
