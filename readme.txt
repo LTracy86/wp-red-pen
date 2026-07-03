@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.18.1
+Stable tag: 0.19.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,10 @@ No. The floating button and its code only load for logged-in editors/admins with
 Deleting (not just deactivating) removes every note and the per-user Dev Mode preference. Nothing else on your site is touched.
 
 == Changelog ==
+
+= 0.19.0 =
+* The Red Pen Hub can now pull every note on the site into the combined board, not just site-wide notes - page and post-attached notes were previously missing from the Hub view.
+* Notes now carry a precise creation timestamp and, once resolved, a resolved date and the name of whoever resolved them, so the Hub board can show and sort by when each note was created and closed.
 
 = 0.18.1 =
 * Security fix: closed a gap where a client review-link holder could read notes they were not meant to see (site-wide dev notes, notes on draft or private pages, and agent-queue notes) by replying to them. Replies from a review link are now limited to the same open, public-page notes the reviewer can already read.

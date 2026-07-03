@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.18.1
+ * Version:           0.19.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.18.1' );
+define( 'WPRP_VERSION',     '0.19.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -44,6 +44,8 @@ define( 'WPRP_META_ANCHOR', '_wprp_anchor' );   // element-pin anchor (JSON: sel
 define( 'WPRP_META_CTXKEY', '_wprp_ctx_key' );  // context key: post:ID | term:tax:ID | pt_archive:slug | tpl:* | home | search | 404 ...
 define( 'WPRP_META_CTXLABEL', '_wprp_ctx_label' ); // human label for the context
 define( 'WPRP_META_LEVEL',  '_wprp_level' );    // page | template | global
+define( 'WPRP_META_RESOLVED_AT', '_wprp_resolved_at' ); // ISO 8601 timestamp stamped when a note is resolved (cleared on reopen)
+define( 'WPRP_META_RESOLVED_BY', '_wprp_resolved_by' ); // user id who resolved the note (cleared on reopen)
 define( 'WPRP_GLOBAL_KEY',  'site' );           // reserved ctx key for site-wide (every view) notes
 define( 'WPRP_SHOT_DIR',    'wp-red-pen' );     // uploads subfolder for screenshots
 define( 'WPRP_REST_NS',     'wprp/v1' );
@@ -1280,6 +1282,17 @@ function wprp_set_status( $note_id, $status ) {
 			'post_status' => $status,
 		)
 	);
+	// Stamp who/when on resolve so the note carries an audit trail across surfaces
+	// (the Hub board reads these); clear both if the note is reopened.
+	if ( WPRP_STATUS_DONE === $status ) {
+		if ( ! get_post_meta( (int) $note_id, WPRP_META_RESOLVED_AT, true ) ) {
+			update_post_meta( (int) $note_id, WPRP_META_RESOLVED_AT, gmdate( 'c' ) );
+		}
+		update_post_meta( (int) $note_id, WPRP_META_RESOLVED_BY, (int) get_current_user_id() );
+	} else {
+		delete_post_meta( (int) $note_id, WPRP_META_RESOLVED_AT );
+		delete_post_meta( (int) $note_id, WPRP_META_RESOLVED_BY );
+	}
 	return true;
 }
 
@@ -1427,6 +1440,43 @@ function wprp_get_notes_for( $target_id, $status = 'any' ) {
 					array( 'key' => WPRP_META_AGENT, 'compare' => 'NOT EXISTS' ),
 					array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '=' ),
 				),
+			),
+		)
+	);
+}
+
+/**
+ * Every top-level human note across the whole site, regardless of which page/post
+ * it is attached to. This is what the Hub's cross-project pull needs: the default
+ * target=0 query only returns site-wide notes, so page-attached notes were invisible
+ * on the combined board. Excludes agent-targeted notes and replies. Uncapped because
+ * the Hub authenticates as a dev pulling its own site.
+ *
+ * @param string $status 'open' | 'progress' | 'resolved' | 'any'.
+ * @return WP_Post[]
+ */
+function wprp_get_all_notes( $status = 'any' ) {
+	$statuses = wprp_all_statuses();
+	if ( 'open' === $status ) {
+		$statuses = array( WPRP_STATUS_OPEN );
+	} elseif ( 'resolved' === $status ) {
+		$statuses = array( WPRP_STATUS_DONE );
+	} elseif ( 'progress' === $status ) {
+		$statuses = array( WPRP_STATUS_PROGRESS );
+	}
+	return get_posts(
+		array(
+			'post_type'      => WPRP_CPT,
+			'post_status'    => $statuses,
+			'post_parent'    => 0,
+			'posts_per_page' => -1,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query'     => array(
+				'relation' => 'OR',
+				array( 'key' => WPRP_META_AGENT, 'compare' => 'NOT EXISTS' ),
+				array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '=' ),
 			),
 		)
 	);
@@ -1818,6 +1868,8 @@ function wprp_note_to_array( $note, $replies = null ) {
 	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
 	$assignee = (int) get_post_meta( $note->ID, WPRP_META_ASSIGNEE, true );
 	$au       = $assignee ? get_userdata( $assignee ) : false;
+	$rby      = (int) get_post_meta( $note->ID, WPRP_META_RESOLVED_BY, true );
+	$rbu      = $rby ? get_userdata( $rby ) : false;
 	$level    = (string) get_post_meta( $note->ID, WPRP_META_LEVEL, true );
 	$level    = in_array( $level, array( 'template', 'global' ), true ) ? $level : 'page';
 	return array(
@@ -1833,6 +1885,9 @@ function wprp_note_to_array( $note, $replies = null ) {
 		'resolved'   => WPRP_STATUS_DONE === $note->post_status,
 		'author'     => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
 		'date'       => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
+		'createdAt'  => get_the_time( 'c', $note ), // ISO 8601, for cross-tool consumers (the Hub); 'date' stays localized for our own UI
+		'resolvedAt' => (string) get_post_meta( $note->ID, WPRP_META_RESOLVED_AT, true ),
+		'resolvedBy' => $rbu ? $rbu->display_name : '',
 		'target'     => (int) get_post_meta( $note->ID, WPRP_META_TARGET, true ),
 		'shot'       => wprp_shot_url( (string) get_post_meta( $note->ID, WPRP_META_SHOT, true ) ),
 		'ctx'         => (string) get_post_meta( $note->ID, WPRP_META_CTX, true ),
@@ -2094,11 +2149,18 @@ add_action(
 							$safe  = wprp_reviewer_safe_keys( explode( ',', $keys ) );
 							$notes = $safe ? wprp_get_notes_for_context( $safe, 'open' ) : array();
 						} else {
-							$notes  = ( '' !== $agent )
-									? wprp_get_notes_for_agent( $agent, $status ? $status : 'any' )
-									: ( ( '' !== $keys )
-								? wprp_get_notes_for_context( explode( ',', $keys ), $status ? $status : 'any' )
-								: wprp_get_notes_for( $target, $status ? $status : 'any' ) );
+							// scope=all is the Hub's cross-project pull: every note on the site,
+							// not just the target=0 site-wide ones. agent/keys/target paths unchanged.
+							$scope = (string) $req->get_param( 'scope' );
+							if ( '' !== $agent ) {
+								$notes = wprp_get_notes_for_agent( $agent, $status ? $status : 'any' );
+							} elseif ( '' !== $keys ) {
+								$notes = wprp_get_notes_for_context( explode( ',', $keys ), $status ? $status : 'any' );
+							} elseif ( 'all' === $scope ) {
+								$notes = wprp_get_all_notes( $status ? $status : 'any' );
+							} else {
+								$notes = wprp_get_notes_for( $target, $status ? $status : 'any' );
+							}
 						}
 						// Batch the replies (one query for all notes, not one per note) and prime
 							// the user cache so author/assignee lookups don't each hit the DB.
