@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.20.0
+ * Version:           0.20.1
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.20.0' );
+define( 'WPRP_VERSION',     '0.20.1' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -2056,16 +2056,26 @@ function wprp_push_to_hub( $blocking = false ) {
 		$target    = (int) get_post_meta( $p->ID, WPRP_META_TARGET, true );
 		$type      = (string) get_post_meta( $p->ID, WPRP_META_TYPE, true );
 		$statuskey = wprp_status_key( $p->post_status );
+		$rby_id    = (int) get_post_meta( $p->ID, WPRP_META_RESOLVED_BY, true );
+		$rby_u     = $rby_id ? get_userdata( $rby_id ) : false;
+		$asg_id    = (int) get_post_meta( $p->ID, WPRP_META_ASSIGNEE, true );
+		$asg_u     = $asg_id ? get_userdata( $asg_id ) : false;
 		$notes[]   = array(
-			'id'        => (int) $p->ID,
-			'body'      => wp_strip_all_tags( $p->post_content ),
-			'type'      => $type,
-			'typeColor' => wprp_note_type_color( $type ),
-			'priority'  => (string) get_post_meta( $p->ID, WPRP_META_PRIORITY, true ),
-			'status'    => ( 'progress' === $statuskey ) ? 'in_progress' : $statuskey,
-			'url'       => $target ? get_permalink( $target ) : home_url( '/' ),
-			'anchor'    => (string) get_post_meta( $p->ID, WPRP_META_ANCHOR, true ),
-			'createdAt' => get_post_time( 'c', true, $p ),
+			'id'           => (int) $p->ID,
+			'body'         => wp_strip_all_tags( $p->post_content ),
+			'type'         => $type,
+			'typeColor'    => wprp_note_type_color( $type ),
+			'priority'     => (string) get_post_meta( $p->ID, WPRP_META_PRIORITY, true ),
+			// Keep the push payload in step with the pull shape (wprp_note_to_array) so a
+			// push-connected site shows the same severity / timestamps / identity on the board.
+			'severity'     => (string) get_post_meta( $p->ID, WPRP_META_SEVERITY, true ),
+			'status'       => ( 'progress' === $statuskey ) ? 'in_progress' : $statuskey,
+			'url'          => $target ? get_permalink( $target ) : home_url( '/' ),
+			'anchor'       => (string) get_post_meta( $p->ID, WPRP_META_ANCHOR, true ),
+			'createdAt'    => get_post_time( 'c', true, $p ),
+			'resolvedAt'   => (string) get_post_meta( $p->ID, WPRP_META_RESOLVED_AT, true ),
+			'resolvedBy'   => $rby_u ? $rby_u->display_name : '',
+			'assigneeName' => $asg_u ? $asg_u->display_name : '',
 		);
 	}
 	$project = (string) get_bloginfo( 'name' );
