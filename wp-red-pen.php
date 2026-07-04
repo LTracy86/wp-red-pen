@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.19.0
+ * Version:           0.20.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.19.0' );
+define( 'WPRP_VERSION',     '0.20.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -39,6 +39,7 @@ define( 'WPRP_META_URL',    '_wprp_url' );      // context url where it was adde
 define( 'WPRP_META_SHOT',   '_wprp_shot' );     // attached screenshot filename (in uploads/wp-red-pen)
 define( 'WPRP_META_CTX',    '_wprp_ctx' );      // browser/OS/viewport string captured at creation
 define( 'WPRP_META_PRIORITY', '_wprp_priority' ); // low | normal | high
+define( 'WPRP_META_SEVERITY', '_wprp_severity' ); // blocker|critical|major|minor|trivial ('' = unset); impact axis, distinct from priority
 define( 'WPRP_META_ASSIGNEE', '_wprp_assignee' ); // assigned user id (0 = unassigned)
 define( 'WPRP_META_ANCHOR', '_wprp_anchor' );   // element-pin anchor (JSON: selector + relative x/y)
 define( 'WPRP_META_CTXKEY', '_wprp_ctx_key' );  // context key: post:ID | term:tax:ID | pt_archive:slug | tpl:* | home | search | 404 ...
@@ -159,6 +160,22 @@ function wprp_priorities() {
 		'low'    => __( 'Low', 'wp-red-pen' ),
 		'normal' => __( 'Normal', 'wp-red-pen' ),
 		'high'   => __( 'High', 'wp-red-pen' ),
+	);
+}
+
+/**
+ * Severity keys -> human labels. The impact axis, distinct from priority (scheduling):
+ * a low-priority high-severity crash is a real thing. Optional per note - '' means unset,
+ * so notes only show a severity when one was deliberately chosen. Single source of truth
+ * for the severity dropdown.
+ */
+function wprp_severities() {
+	return array(
+		'blocker'  => __( 'Blocker', 'wp-red-pen' ),
+		'critical' => __( 'Critical', 'wp-red-pen' ),
+		'major'    => __( 'Major', 'wp-red-pen' ),
+		'minor'    => __( 'Minor', 'wp-red-pen' ),
+		'trivial'  => __( 'Trivial', 'wp-red-pen' ),
 	);
 }
 
@@ -1017,7 +1034,7 @@ function wprp_review_rate_exceeded() {
 	return false;
 }
 
-function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array(), $agent = '', $codescope = '', $reviewer_name = '' ) {
+function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array(), $agent = '', $codescope = '', $reviewer_name = '', $severity = '' ) {
 	if ( ! wprp_can_contribute() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
 	}
@@ -1080,6 +1097,11 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	$prios    = wprp_priorities();
 	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
 	update_post_meta( $id, WPRP_META_PRIORITY, $priority );
+
+	$sevs     = wprp_severities();
+	if ( isset( $sevs[ $severity ] ) ) {
+		update_post_meta( $id, WPRP_META_SEVERITY, $severity );
+	}
 
 	if ( $reviewer ) {
 		// Mark the note as reviewer feedback and attribute it; ignore assignee/agent/codescope/shot.
@@ -1355,6 +1377,15 @@ function wprp_update_note( $note_id, $args ) {
 		$prios    = wprp_priorities();
 		$priority = isset( $prios[ $args['priority'] ] ) ? $args['priority'] : 'normal';
 		update_post_meta( $note_id, WPRP_META_PRIORITY, $priority );
+	}
+
+	if ( isset( $args['severity'] ) ) {
+		$sevs = wprp_severities();
+		if ( isset( $sevs[ $args['severity'] ] ) ) {
+			update_post_meta( $note_id, WPRP_META_SEVERITY, $args['severity'] );
+		} else {
+			delete_post_meta( $note_id, WPRP_META_SEVERITY );
+		}
 	}
 
 	if ( isset( $args['assignee'] ) ) {
@@ -1866,6 +1897,9 @@ function wprp_note_to_array( $note, $replies = null ) {
 	$priority = (string) get_post_meta( $note->ID, WPRP_META_PRIORITY, true );
 	$prios    = wprp_priorities();
 	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
+	$severity = (string) get_post_meta( $note->ID, WPRP_META_SEVERITY, true );
+	$sevs     = wprp_severities();
+	$severity = isset( $sevs[ $severity ] ) ? $severity : '';
 	$assignee = (int) get_post_meta( $note->ID, WPRP_META_ASSIGNEE, true );
 	$au       = $assignee ? get_userdata( $assignee ) : false;
 	$rby      = (int) get_post_meta( $note->ID, WPRP_META_RESOLVED_BY, true );
@@ -1893,6 +1927,8 @@ function wprp_note_to_array( $note, $replies = null ) {
 		'ctx'         => (string) get_post_meta( $note->ID, WPRP_META_CTX, true ),
 		'priority'    => $priority,
 		'priorityLabel' => isset( $prios[ $priority ] ) ? $prios[ $priority ] : $prios['normal'],
+		'severity'    => $severity,
+		'severityLabel' => '' !== $severity ? $sevs[ $severity ] : '',
 		'assignee'    => $assignee,
 		'assigneeName' => $au ? $au->display_name : '',
 		'anchor'      => (string) get_post_meta( $note->ID, WPRP_META_ANCHOR, true ),
@@ -2210,7 +2246,8 @@ add_action(
 							),
 							(string) $req->get_param( 'agent' ),
 							(string) $req->get_param( 'codescope' ),
-							(string) $req->get_param( 'reviewer' )
+							(string) $req->get_param( 'reviewer' ),
+							(string) $req->get_param( 'severity' )
 						);
 						if ( is_wp_error( $id ) ) {
 							return $id;
@@ -2283,6 +2320,7 @@ add_action(
 							'body'          => (string) $req->get_param( 'body' ),
 							'type'          => $req->get_param( 'type' ),
 							'priority'      => $req->get_param( 'priority' ),
+							'severity'      => $req->get_param( 'severity' ),
 							'assignee'      => $req->get_param( 'assignee' ),
 							'anchor'        => (string) $req->get_param( 'anchor' ),
 							'anchor_remove' => $req->get_param( 'anchor_remove' ),
@@ -2422,6 +2460,11 @@ add_action(
 		foreach ( wprp_priorities() as $key => $label ) {
 			$prio_opts .= '<option value="' . esc_attr( $key ) . '"' . selected( $key, 'normal', false ) . '>' . esc_html( $label ) . '</option>';
 		}
+		// Severity is optional: an empty first option means "no severity set".
+		$sev_opts = '<option value="">' . esc_html__( 'Severity...', 'wp-red-pen' ) . '</option>';
+		foreach ( wprp_severities() as $key => $label ) {
+			$sev_opts .= '<option value="' . esc_attr( $key ) . '">' . esc_html( $label ) . '</option>';
+		}
 		// Assignee + agent option lists are DEV-ONLY: a reviewer never sees the user list or the
 		// agent slugs (those are internal surface). Reviewers get an empty agent set and no user_opts.
 		$agents    = $reviewer ? array() : wprp_enabled_agents();
@@ -2512,6 +2555,9 @@ add_action(
 					</div>
 					<div class="wprp-more" id="wprp-more" hidden>
 						<select id="wprp-priority" aria-label="<?php esc_attr_e( 'Priority', 'wp-red-pen' ); ?>"><?php echo $prio_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
+						<?php if ( ! $reviewer ) : ?>
+						<select id="wprp-severity" aria-label="<?php esc_attr_e( 'Severity', 'wp-red-pen' ); ?>"><?php echo $sev_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
+						<?php endif; ?>
 						<?php if ( ! $reviewer ) : ?>
 						<select id="wprp-assignee" aria-label="<?php esc_attr_e( 'Assign to', 'wp-red-pen' ); ?>"><?php echo $user_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
 						<?php endif; ?>
@@ -2630,6 +2676,12 @@ function wprp_print_frontend_assets() {
 			.wprp-prio-high{background:var(--wprp-red);color:#fff}
 			.wprp-prio-normal{background:#eef1f3;color:var(--wprp-gray);border-color:#dfe3e6}
 			.wprp-prio-low{background:transparent;color:var(--wprp-gray);border-color:#dfe3e6}
+			.wprp-sev{border-radius:3px;padding:.02rem .3rem;font-size:.68rem;font-weight:600;background:transparent;border:1px solid currentColor}
+			.wprp-sev-blocker{color:#8e1b28}
+			.wprp-sev-critical{color:#c0392b}
+			.wprp-sev-major{color:#b9770e}
+			.wprp-sev-minor{color:var(--wprp-gray)}
+			.wprp-sev-trivial{color:var(--wprp-gray);opacity:.75}
 			.wprp-assignee{color:var(--wprp-gray);font-size:.72rem}
 			.wprp-levellabel{display:flex;flex-direction:column;gap:.15rem;font-size:.7rem;color:var(--wprp-gray);font-weight:600}
 			.wprp-levellabel select{font-weight:400}
@@ -2760,6 +2812,7 @@ function wprp_print_frontend_assets() {
 		var body = document.getElementById('wprp-body');
 		var typeSel = document.getElementById('wprp-type');
 			var prioSel = document.getElementById('wprp-priority');
+			var sevSel = document.getElementById('wprp-severity'); // null for reviewers (dev-only field)
 			var assigneeSel = document.getElementById('wprp-assignee');
 			var levelSel = document.getElementById('wprp-level');
 			var codeScopeInput = document.getElementById('wprp-codescope'); // null when agent feedback is off
@@ -2890,6 +2943,7 @@ function wprp_print_frontend_assets() {
 			return '<div class="wprp-note wprp-st-' + sk + (sk === 'resolved' ? ' is-resolved' : '') + '" data-id="' + n.id + '">' +
 				'<div class="wprp-meta"><span class="wprp-tag"' + (n.typeColor ? ' style="background:' + esc(n.typeColor) + '"' : '') + '>' + esc(n.typeLabel) + '</span>' +
 				'<span class="wprp-prio wprp-prio-' + esc(n.priority || 'normal') + '">' + esc(n.priorityLabel) + '</span>' +
+				(n.severity ? '<span class="wprp-sev wprp-sev-' + esc(n.severity) + '">' + esc(n.severityLabel) + '</span>' : '') +
 				(n.level === 'template' ? '<span class="wprp-level" title="' + esc(n.ctxLabel || '') + '"><?php echo esc_js( __( 'Template', 'wp-red-pen' ) ); ?></span>' : '') +
 					(n.level === 'global' ? '<span class="wprp-level" title="' + esc(n.ctxLabel || '') + '"><?php echo esc_js( __( 'Site-wide', 'wp-red-pen' ) ); ?></span>' : '') +
 				'<span>' + esc(n.author) + '</span><span>' + esc(n.date) + '</span>' +
@@ -3212,7 +3266,7 @@ function wprp_print_frontend_assets() {
 				var elvl = levelSel ? levelSel.value : 'page';
 					var ectx = ctxForLevel(elvl);
 					var eaa = splitAssignee(assigneeSel.value);
-					var payload = { body: text, type: typeSel.value, priority: prioSel.value, assignee: eaa.assignee, agent: eaa.agent, codescope: codeScopeInput ? codeScopeInput.value : '', level: elvl, ctx_key: ectx.key, ctx_label: ectx.label, target: (elvl === 'page' ? (cfg.page.target || 0) : 0) };
+					var payload = { body: text, type: typeSel.value, priority: prioSel.value, severity: sevSel ? sevSel.value : '', assignee: eaa.assignee, agent: eaa.agent, codescope: codeScopeInput ? codeScopeInput.value : '', level: elvl, ctx_key: ectx.key, ctx_label: ectx.label, target: (elvl === 'page' ? (cfg.page.target || 0) : 0) };
 					if (pendingShot) { payload.shot = pendingShot; } else if (shotRemove) { payload.shot_remove = 1; }
 					if (pendingAnchor) { payload.anchor = JSON.stringify(pendingAnchor); } else if (anchorRemove) { payload.anchor_remove = 1; }
 				api('/notes/' + editingId, { method: 'POST', body: JSON.stringify(payload) })
@@ -3225,10 +3279,10 @@ function wprp_print_frontend_assets() {
 			// Reviewers have no assignee select (server never renders it); they always post unassigned
 			// with the reviewer name. The server ignores any smuggled assignee/agent/shot regardless.
 			var caa = assigneeSel ? splitAssignee(assigneeSel.value) : { assignee: '0', agent: '' };
-			var createPayload = { body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, assignee: caa.assignee, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '', level: lvl, ctx_key: lctx.key, ctx_label: lctx.label, target: (lvl === 'page' ? (cfg.page.target || 0) : 0), agent: caa.agent, codescope: codeScopeInput ? codeScopeInput.value : '' };
+			var createPayload = { body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, severity: sevSel ? sevSel.value : '', assignee: caa.assignee, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '', level: lvl, ctx_key: lctx.key, ctx_label: lctx.label, target: (lvl === 'page' ? (cfg.page.target || 0) : 0), agent: caa.agent, codescope: codeScopeInput ? codeScopeInput.value : '' };
 			if (isReviewer) { createPayload.reviewer = reviewerName; }
 			api('/notes', { method: 'POST', body: JSON.stringify(createPayload) })
-				.then(function (data) { body.value = ''; clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
+				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
 				.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
 		});
 
@@ -3239,6 +3293,7 @@ function wprp_print_frontend_assets() {
 			pendingShot = null; pendingAnchor = null;
 			typeSel.value = n.type || 'note';
 			prioSel.value = n.priority || 'normal';
+			if (sevSel) { sevSel.value = n.severity || ''; }
 			assigneeSel.value = n.agent ? ('agent:' + n.agent) : String(n.assignee || 0);
 			if (levelSel) { levelSel.value = (n.level === 'global') ? 'global' : ((n.level === 'template' && cfg.template && cfg.template.key) ? 'template' : 'page'); }
 			if (codeScopeInput) { codeScopeInput.value = n.codeScope || ''; }
@@ -4658,6 +4713,7 @@ add_action(
 		$notes = get_posts( $query_args );
 		$types        = wprp_note_types();
 		$priorities   = wprp_priorities();
+		$severities   = wprp_severities();
 		$statuses_lbl = wprp_statuses();
 
 		$filename = 'wp-red-pen-' . $filter . '-' . gmdate( 'Ymd' ) . '.csv';
@@ -4666,10 +4722,11 @@ add_action(
 		header( 'Content-Disposition: attachment; filename=' . $filename );
 
 		$out = fopen( 'php://output', 'w' );
-		fputcsv( $out, array( 'ID', 'Type', 'Priority', 'Level', 'Status', 'Note', 'Where', 'URL', 'Assignee', 'Author', 'Environment', 'When' ) );
+		fputcsv( $out, array( 'ID', 'Type', 'Priority', 'Severity', 'Level', 'Status', 'Note', 'Where', 'URL', 'Assignee', 'Author', 'Environment', 'When' ) );
 		foreach ( $notes as $n ) {
 			$type      = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
 			$priority  = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
+			$severity  = (string) get_post_meta( $n->ID, WPRP_META_SEVERITY, true );
 			$target    = (int) get_post_meta( $n->ID, WPRP_META_TARGET, true );
 			$assignee  = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
 			$au        = $assignee ? get_userdata( $assignee ) : false;
@@ -4683,6 +4740,7 @@ add_action(
 					$n->ID,
 					isset( $types[ $type ] ) ? $types[ $type ] : $type,
 					isset( $priorities[ $priority ] ) ? $priorities[ $priority ] : '',
+					isset( $severities[ $severity ] ) ? $severities[ $severity ] : '',
 					$level,
 					$statuses_lbl[ wprp_status_key( $n->post_status ) ],
 					wprp_csv_cell( wp_strip_all_tags( $n->post_content ) ),

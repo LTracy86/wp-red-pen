@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.19.0
+Stable tag: 0.20.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,9 @@ No. The floating button and its code only load for logged-in editors/admins with
 Deleting (not just deactivating) removes every note and the per-user Dev Mode preference. Nothing else on your site is touched.
 
 == Changelog ==
+
+= 0.20.0 =
+* Added an optional Severity field to notes (Blocker / Critical / Major / Minor / Trivial) - a separate impact axis from Priority, for teams that triage by how bad a bug is as well as how soon to fix it. Set it in the note form under More; it shows on the note, in the CSV export, and on the Red Pen Hub board.
 
 = 0.19.0 =
 * The Red Pen Hub can now pull every note on the site into the combined board, not just site-wide notes - page and post-attached notes were previously missing from the Hub view.
