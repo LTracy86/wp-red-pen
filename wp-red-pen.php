@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.21.0
+ * Version:           0.22.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.21.0' );
+define( 'WPRP_VERSION',     '0.22.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -58,6 +58,8 @@ define( 'WPRP_CUSTOM_TYPES_OPT', 'wprp_custom_types' ); // global: user-defined 
 define( 'WPRP_HUB_URL_OPT',   'wprp_hub_url' );    // global: Red Pen Hub URL this site pushes notes to
 define( 'WPRP_HUB_TOKEN_OPT', 'wprp_hub_token' );  // global: Red Pen Hub connect token
 define( 'WPRP_BRAND_OPT',     'wprp_brand' );       // global (PRO): client-report branding (array: title, logo, color, hide_credit)
+define( 'WPRP_PRO_KEY_OPT',   'wprp_pro_key' );      // global (PRO): the offline-signed license key the buyer pastes in
+define( 'WPRP_PRO_PUBKEY',    'wFHUq3h8K8Kw8zKfpN7sjFT49529e8ACkbXJYmnR8h4=' ); // PRO license: Ed25519 public key, base64 of the raw 32 bytes. VERIFY-ONLY - safe to ship in the open; it can check a key, never mint one.
 define( 'WPRP_META_AGENT',     '_wprp_agent' );     // agent feedback: target agent slug ('' = a human note)
 define( 'WPRP_META_CODESCOPE', '_wprp_codescope' ); // agent feedback: optional code scope / file reference (free text)
 define( 'WPRP_AGENTS_OPT',     'wprp_agents' );      // global: enabled agent platform slugs (agent feedback dormant when empty)
@@ -183,19 +185,73 @@ function wprp_severities() {
 /**
  * Is the PRO tier unlocked on this install? The single gate seam for paid features
  * (currently the white-label client-report branding). Three ways to flip it, all
- * lightest-touch and NO phone-home, per the credo:
- *   - define( 'WPRP_PRO', true ) in wp-config.php,
- *   - the 'wprp_pro_unlocked' option (the settings toggle, a placeholder for now),
+ * lightest-touch and NO phone-home, no server, per the credo:
+ *   - define( 'WPRP_PRO', true ) in wp-config.php (dev / self-use),
+ *   - a valid offline-signed license key stored in WPRP_PRO_KEY_OPT (the buyer path),
  *   - the 'wprp_is_pro' filter.
- * The real offline-signed license key validation replaces the settings toggle at
- * release; this function stays the stable seam everything else checks, so nothing
- * downstream changes when the gate gets its final lock.
+ * The license path verifies an Ed25519 signature LOCALLY against WPRP_PRO_PUBKEY -
+ * no phone-home, no expiry, no revocation. The stored key is the single source of
+ * truth (verified live), so the unlock can never drift out of sync with the key.
  */
 function wprp_is_pro() {
 	if ( defined( 'WPRP_PRO' ) && WPRP_PRO ) {
 		return true;
 	}
-	return (bool) apply_filters( 'wprp_is_pro', (bool) get_option( 'wprp_pro_unlocked', false ) );
+	return (bool) apply_filters( 'wprp_is_pro', false !== wprp_license_info() );
+}
+
+/**
+ * Decode the stored license key and return its info, or false if there is no key
+ * or it does not verify. Info is array( 'email' => string ). Verified live off the
+ * stored key so there is no separate "unlocked" flag to fall out of sync.
+ *
+ * @return array{email:string}|false
+ */
+function wprp_license_info() {
+	$key = (string) get_option( WPRP_PRO_KEY_OPT, '' );
+	return '' === trim( $key ) ? false : wprp_verify_license( $key );
+}
+
+/** URL-safe base64 decode (accepts missing padding). Returns raw bytes or false. */
+function wprp_b64url_decode( $s ) {
+	$s   = strtr( (string) $s, '-_', '+/' );
+	$pad = strlen( $s ) % 4;
+	if ( $pad ) {
+		$s .= str_repeat( '=', 4 - $pad );
+	}
+	return base64_decode( $s, true );
+}
+
+/**
+ * Verify a Red Pen PRO license key against the embedded Ed25519 public key. The key
+ * is "base64url(payload).base64url(signature)" where payload is "email|YYYYMMDD".
+ * Returns array( 'email' => ... ) on a genuine signature, or false on anything wrong
+ * (malformed, tampered, unsigned, or sodium unavailable). No network, no clock.
+ *
+ * @param string $key The pasted license key.
+ * @return array{email:string}|false
+ */
+function wprp_verify_license( $key ) {
+	$key = trim( (string) $key );
+	if ( '' === $key || 1 !== substr_count( $key, '.' ) ) {
+		return false;
+	}
+	if ( ! function_exists( 'sodium_crypto_sign_verify_detached' ) ) {
+		return false; // fail closed - WP 5.2+ bundles sodium_compat, so this is belt-and-braces
+	}
+	list( $p_enc, $s_enc ) = explode( '.', $key, 2 );
+	$payload = wprp_b64url_decode( $p_enc );
+	$sig     = wprp_b64url_decode( $s_enc );
+	$pub     = base64_decode( WPRP_PRO_PUBKEY, true );
+	if ( false === $payload || false === $sig || false === $pub
+		|| 64 !== strlen( $sig ) || 32 !== strlen( $pub ) ) {
+		return false;
+	}
+	if ( ! sodium_crypto_sign_verify_detached( $sig, $payload, $pub ) ) {
+		return false;
+	}
+	$email = sanitize_email( (string) strtok( $payload, '|' ) );
+	return $email ? array( 'email' => $email ) : false;
 }
 
 /**
@@ -4121,13 +4177,19 @@ function wprp_render_repo_page() {
 	$brand     = wprp_report_brand();
 	$is_pro    = wprp_is_pro();
 	$pro_const = defined( 'WPRP_PRO' ) && WPRP_PRO;
-	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only redirect flag
+	$license   = wprp_license_info(); // array( 'email' => ... ) or false
+	$pro_key   = (string) get_option( WPRP_PRO_KEY_OPT, '' );
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only redirect flags
 	$brand_saved = isset( $_GET['brand'] ) && 'saved' === sanitize_key( wp_unslash( $_GET['brand'] ) );
+	$lic_flag    = isset( $_GET['lic'] ) ? sanitize_key( wp_unslash( $_GET['lic'] ) ) : '';
 	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:760px">';
 	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-media-document" style="vertical-align:text-top"></span> ' . esc_html__( 'Client report', 'wp-red-pen' ) . '</summary>';
 	if ( $brand_saved ) {
 		echo '<div class="notice notice-success inline" style="margin:.4rem 0"><p>' . esc_html__( 'Report settings saved.', 'wp-red-pen' ) . '</p></div>';
+	}
+	if ( 'bad' === $lic_flag ) {
+		echo '<div class="notice notice-error inline" style="margin:.4rem 0"><p>' . esc_html__( 'That license key did not validate. Check you pasted the whole key, exactly as sent.', 'wp-red-pen' ) . '</p></div>';
 	}
 	echo '<p style="margin:.4rem 0 .6rem;color:#646970">' . esc_html__( 'Generate a clean, printable report of the notes to hand a client - open items only, or everything including what is resolved. It opens in a new tab; use your browser Print / Save as PDF to send it. The plain report is free; branding is PRO.', 'wp-red-pen' ) . '</p>';
 	echo '<p style="margin:.2rem 0 .8rem">';
@@ -4846,7 +4908,7 @@ add_action(
 // White-label client report (free plain report; PRO branding)
 // ---------------------------------------------------------------------------
 
-/** admin-post handler: save the client-report branding + the PRO unlock flag. */
+/** admin-post handler: save the client-report branding + the PRO license key. */
 add_action(
 	'admin_post_wprp_save_brand',
 	function () {
@@ -4855,8 +4917,10 @@ add_action(
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_save_brand' ) ) {
 			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
 		}
-		// Placeholder unlock (a checkbox) until the offline-signed license key ships at release.
-		update_option( 'wprp_pro_unlocked', ! empty( $_POST['pro_unlock'] ) ? 1 : 0, false );
+		// PRO license key (offline-signed). Stored verbatim; wprp_is_pro() verifies it live.
+		$lic_key = isset( $_POST['pro_key'] ) ? trim( (string) wp_unslash( $_POST['pro_key'] ) ) : '';
+		update_option( WPRP_PRO_KEY_OPT, $lic_key, false );
+		$lic_state = '' === $lic_key ? 'off' : ( false !== wprp_verify_license( $lic_key ) ? 'ok' : 'bad' );
 
 		$color = isset( $_POST['brand_color'] ) ? sanitize_hex_color( sanitize_text_field( wp_unslash( $_POST['brand_color'] ) ) ) : '';
 		$brand = array(
@@ -4866,7 +4930,7 @@ add_action(
 			'hide_credit' => ! empty( $_POST['brand_hide_credit'] ) ? 1 : 0,
 		);
 		update_option( WPRP_BRAND_OPT, $brand, false );
-		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen&brand=saved' ) );
+		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen&brand=saved&lic=' . $lic_state ) );
 		exit;
 	}
 );
