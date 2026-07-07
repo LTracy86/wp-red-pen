@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.20.1
+ * Version:           0.21.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.20.1' );
+define( 'WPRP_VERSION',     '0.21.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -57,6 +57,7 @@ define( 'WPRP_DARK_OPT',     'wprp_dark' );       // global: dark mode for the f
 define( 'WPRP_CUSTOM_TYPES_OPT', 'wprp_custom_types' ); // global: user-defined note types ("Label|#hexcolor" per line)
 define( 'WPRP_HUB_URL_OPT',   'wprp_hub_url' );    // global: Red Pen Hub URL this site pushes notes to
 define( 'WPRP_HUB_TOKEN_OPT', 'wprp_hub_token' );  // global: Red Pen Hub connect token
+define( 'WPRP_BRAND_OPT',     'wprp_brand' );       // global (PRO): client-report branding (array: title, logo, color, hide_credit)
 define( 'WPRP_META_AGENT',     '_wprp_agent' );     // agent feedback: target agent slug ('' = a human note)
 define( 'WPRP_META_CODESCOPE', '_wprp_codescope' ); // agent feedback: optional code scope / file reference (free text)
 define( 'WPRP_AGENTS_OPT',     'wprp_agents' );      // global: enabled agent platform slugs (agent feedback dormant when empty)
@@ -176,6 +177,42 @@ function wprp_severities() {
 		'major'    => __( 'Major', 'wp-red-pen' ),
 		'minor'    => __( 'Minor', 'wp-red-pen' ),
 		'trivial'  => __( 'Trivial', 'wp-red-pen' ),
+	);
+}
+
+/**
+ * Is the PRO tier unlocked on this install? The single gate seam for paid features
+ * (currently the white-label client-report branding). Three ways to flip it, all
+ * lightest-touch and NO phone-home, per the credo:
+ *   - define( 'WPRP_PRO', true ) in wp-config.php,
+ *   - the 'wprp_pro_unlocked' option (the settings toggle, a placeholder for now),
+ *   - the 'wprp_is_pro' filter.
+ * The real offline-signed license key validation replaces the settings toggle at
+ * release; this function stays the stable seam everything else checks, so nothing
+ * downstream changes when the gate gets its final lock.
+ */
+function wprp_is_pro() {
+	if ( defined( 'WPRP_PRO' ) && WPRP_PRO ) {
+		return true;
+	}
+	return (bool) apply_filters( 'wprp_is_pro', (bool) get_option( 'wprp_pro_unlocked', false ) );
+}
+
+/**
+ * Client-report branding (PRO). Saved values with safe defaults; the accent falls
+ * back to the app red so a half-filled brand never renders a broken report. These
+ * values are only APPLIED when wprp_is_pro() - the free report is always plain.
+ *
+ * @return array{title:string,logo:string,color:string,hide_credit:bool}
+ */
+function wprp_report_brand() {
+	$b = get_option( WPRP_BRAND_OPT, array() );
+	$b = is_array( $b ) ? $b : array();
+	return array(
+		'title'       => isset( $b['title'] ) ? (string) $b['title'] : '',
+		'logo'        => isset( $b['logo'] ) ? (string) $b['logo'] : '',
+		'color'       => ( isset( $b['color'] ) && $b['color'] ) ? (string) $b['color'] : '#D32F2F',
+		'hide_credit' => ! empty( $b['hide_credit'] ),
 	);
 }
 
@@ -4075,6 +4112,43 @@ function wprp_render_repo_page() {
 	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
 	echo '</form></details>';
 
+	// Client report: a printable, client-facing summary of the notes (the deliverable a
+	// freelancer sends). The plain report is free; branding (logo, colour, title, hidden
+	// credit) is the PRO layer, applied by wprp_render_client_report() when wprp_is_pro().
+	$rep_all   = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_report&scope=all' ), 'wprp_report' );
+	$rep_open  = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_report&scope=open' ), 'wprp_report' );
+	$brand_url = admin_url( 'admin-post.php?action=wprp_save_brand' );
+	$brand     = wprp_report_brand();
+	$is_pro    = wprp_is_pro();
+	$pro_const = defined( 'WPRP_PRO' ) && WPRP_PRO;
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only redirect flag
+	$brand_saved = isset( $_GET['brand'] ) && 'saved' === sanitize_key( wp_unslash( $_GET['brand'] ) );
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:760px">';
+	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-media-document" style="vertical-align:text-top"></span> ' . esc_html__( 'Client report', 'wp-red-pen' ) . '</summary>';
+	if ( $brand_saved ) {
+		echo '<div class="notice notice-success inline" style="margin:.4rem 0"><p>' . esc_html__( 'Report settings saved.', 'wp-red-pen' ) . '</p></div>';
+	}
+	echo '<p style="margin:.4rem 0 .6rem;color:#646970">' . esc_html__( 'Generate a clean, printable report of the notes to hand a client - open items only, or everything including what is resolved. It opens in a new tab; use your browser Print / Save as PDF to send it. The plain report is free; branding is PRO.', 'wp-red-pen' ) . '</p>';
+	echo '<p style="margin:.2rem 0 .8rem">';
+	echo '<a class="button button-primary" href="' . esc_url( $rep_all ) . '" target="_blank" rel="noopener">' . esc_html__( 'Generate report (all)', 'wp-red-pen' ) . '</a> ';
+	echo '<a class="button" href="' . esc_url( $rep_open ) . '" target="_blank" rel="noopener">' . esc_html__( 'Open items only', 'wp-red-pen' ) . '</a>';
+	echo '</p>';
+
+	// Branding (PRO) - fields are always editable; they only take effect when PRO is unlocked.
+	echo '<hr style="margin:.6rem 0;border:none;border-top:1px solid #eee">';
+	echo '<form method="post" action="' . esc_url( $brand_url ) . '">';
+	wp_nonce_field( 'wprp_save_brand' );
+	echo '<p style="margin:.2rem 0 .4rem"><strong>' . esc_html__( 'Branding', 'wp-red-pen' ) . '</strong> <span style="font-size:.7rem;font-weight:700;color:#fff;background:#D32F2F;border-radius:3px;padding:.05rem .35rem;vertical-align:middle">PRO</span> &mdash; ' . esc_html__( 'your logo, an accent colour, and a custom title on the report. Applied only when PRO is unlocked; the free report stays plain.', 'wp-red-pen' ) . '</p>';
+	echo '<label style="display:block;margin:.3rem 0"><input type="checkbox" name="pro_unlock" value="1"' . checked( $is_pro, true, false ) . ( $pro_const ? ' disabled' : '' ) . '> ' . esc_html__( 'Unlock PRO features', 'wp-red-pen' ) . ' <span style="color:#646970">' . ( $pro_const ? esc_html__( '(forced on by the WPRP_PRO constant)', 'wp-red-pen' ) : esc_html__( '(temporary switch - the offline license key replaces this at release)', 'wp-red-pen' ) ) . '</span></label>';
+	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Report title', 'wp-red-pen' ) . '<br><input type="text" name="brand_title" value="' . esc_attr( $brand['title'] ) . '" placeholder="' . esc_attr__( 'Acme Co - Website Review', 'wp-red-pen' ) . '" style="width:100%;max-width:360px"></label>';
+	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Logo URL', 'wp-red-pen' ) . '<br><input type="text" name="brand_logo" value="' . esc_attr( $brand['logo'] ) . '" placeholder="https://example.com/logo.png" style="width:100%;max-width:360px"></label>';
+	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Accent colour', 'wp-red-pen' ) . ' <input type="color" name="brand_color" value="' . esc_attr( $brand['color'] ) . '" style="vertical-align:middle"></label>';
+	echo '<label style="display:block;margin:.3rem 0"><input type="checkbox" name="brand_hide_credit" value="1"' . checked( $brand['hide_credit'], true, false ) . '> ' . esc_html__( 'Hide the "Generated with Red Pen" credit on the report', 'wp-red-pen' ) . '</label>';
+	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save report settings', 'wp-red-pen' ) . '</button></p>';
+	echo '</form>';
+	echo '</details>';
+
 	// Client review links: generate an unguessable link that lets a non-logged-in client
 	// leave notes (read-only on existing ones). Hash-only storage means a link's URL is
 	// shown exactly once at creation - the only later action is Revoke.
@@ -4767,6 +4841,231 @@ add_action(
 		exit;
 	}
 );
+
+// ---------------------------------------------------------------------------
+// White-label client report (free plain report; PRO branding)
+// ---------------------------------------------------------------------------
+
+/** admin-post handler: save the client-report branding + the PRO unlock flag. */
+add_action(
+	'admin_post_wprp_save_brand',
+	function () {
+		if ( ! wprp_user_can()
+			|| ! isset( $_POST['_wpnonce'] )
+			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_save_brand' ) ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+		}
+		// Placeholder unlock (a checkbox) until the offline-signed license key ships at release.
+		update_option( 'wprp_pro_unlocked', ! empty( $_POST['pro_unlock'] ) ? 1 : 0, false );
+
+		$color = isset( $_POST['brand_color'] ) ? sanitize_hex_color( sanitize_text_field( wp_unslash( $_POST['brand_color'] ) ) ) : '';
+		$brand = array(
+			'title'       => isset( $_POST['brand_title'] ) ? sanitize_text_field( wp_unslash( $_POST['brand_title'] ) ) : '',
+			'logo'        => isset( $_POST['brand_logo'] ) ? esc_url_raw( trim( (string) wp_unslash( $_POST['brand_logo'] ) ) ) : '',
+			'color'       => $color ? $color : '',
+			'hide_credit' => ! empty( $_POST['brand_hide_credit'] ) ? 1 : 0,
+		);
+		update_option( WPRP_BRAND_OPT, $brand, false );
+		wp_safe_redirect( admin_url( 'tools.php?page=wp-red-pen&brand=saved' ) );
+		exit;
+	}
+);
+
+add_action( 'admin_post_wprp_report', 'wprp_render_client_report' );
+
+/**
+ * Render the client report: a standalone, printable HTML document of the site's
+ * notes grouped by status - the deliverable a freelancer hands a client ("here is
+ * what you asked for, here is what is done"). The PLAIN report is FREE (export is
+ * never gated); the branded layer (logo, accent colour, custom title, hidden Red
+ * Pen credit) is applied only when wprp_is_pro(). Capability-gated; meant to be
+ * printed to PDF from the browser via the Print button. Agent-queue notes and
+ * internal-only fields (assignee, agent, code scope, browser context) are omitted
+ * so it stays a clean, client-appropriate deliverable.
+ */
+function wprp_render_client_report() {
+	if ( ! wprp_user_can()
+		|| ! isset( $_GET['_wpnonce'] )
+		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'wprp_report' ) ) {
+		wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
+	}
+
+	$scope    = isset( $_GET['scope'] ) ? sanitize_key( wp_unslash( $_GET['scope'] ) ) : 'all';
+	$scope    = in_array( $scope, array( 'all', 'open' ), true ) ? $scope : 'all';
+	$statuses = 'open' === $scope ? array( WPRP_STATUS_OPEN, WPRP_STATUS_PROGRESS ) : wprp_all_statuses();
+
+	// Human notes only - a client never sees the agent queue.
+	$notes = get_posts(
+		array(
+			'post_type'      => WPRP_CPT,
+			'post_status'    => $statuses,
+			'post_parent'    => 0,
+			'posts_per_page' => 1000,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				array(
+					'relation' => 'OR',
+					array( 'key' => WPRP_META_AGENT, 'compare' => 'NOT EXISTS' ),
+					array( 'key' => WPRP_META_AGENT, 'value' => '', 'compare' => '=' ),
+				),
+			),
+		)
+	);
+
+	$pro    = wprp_is_pro();
+	$brand  = wprp_report_brand();
+	$accent = '#D32F2F';
+	if ( $pro ) {
+		$c      = sanitize_hex_color( $brand['color'] );
+		$accent = $c ? $c : '#D32F2F';
+	}
+	$site  = get_bloginfo( 'name' );
+	/* translators: %s: site name. */
+	$title = ( $pro && '' !== $brand['title'] ) ? $brand['title'] : sprintf( __( '%s - Review Report', 'wp-red-pen' ), $site );
+
+	$buckets = array( 'open' => array(), 'progress' => array(), 'resolved' => array() );
+	foreach ( $notes as $n ) {
+		$a = wprp_note_to_array( $n );
+		if ( isset( $buckets[ $a['statusKey'] ] ) ) {
+			$buckets[ $a['statusKey'] ][] = $a;
+		}
+	}
+	$labels    = wprp_statuses();
+	$total     = count( $notes );
+	$generated = wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) );
+	$pill      = array( 'open' => $accent, 'progress' => '#996800', 'resolved' => '#197b30' );
+
+	nocache_headers();
+	if ( ! headers_sent() ) {
+		header( 'Content-Type: text/html; charset=utf-8' );
+	}
+
+	echo '<!doctype html><html lang="' . esc_attr( get_bloginfo( 'language' ) ) . '"><head><meta charset="utf-8">';
+	echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
+	echo '<meta name="robots" content="noindex,nofollow">';
+	echo '<title>' . esc_html( $title ) . '</title>';
+	echo '<style>'
+		. ':root{--accent:' . esc_html( $accent ) . '}'
+		. '*{box-sizing:border-box}'
+		. 'body{margin:0;background:#f3f4f6;color:#1e2227;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}'
+		. '.page{max-width:820px;margin:0 auto;background:#fff;padding:0 0 3rem}'
+		. '.bar{display:flex;gap:1rem;justify-content:center;padding:.7rem;background:#e9ebef;position:sticky;top:0}'
+		. '.bar button,.bar a{font:inherit;font-weight:600;cursor:pointer;border-radius:7px;padding:.5rem 1rem;border:1px solid #c7ccd3;background:#fff;color:#1e2227;text-decoration:none}'
+		. '.bar .print{background:var(--accent);color:#fff;border-color:var(--accent)}'
+		. '.head{border-top:6px solid var(--accent);padding:1.8rem 2rem 1.4rem}'
+		. '.head .logo{max-height:64px;max-width:260px;margin-bottom:.9rem}'
+		. '.head h1{margin:.1rem 0;font-size:1.7rem;letter-spacing:-.01em}'
+		. '.head .sub{color:#5b616a;font-size:.92rem}'
+		. '.summary{display:flex;flex-wrap:wrap;gap:.6rem;padding:0 2rem 1.2rem}'
+		. '.stat{flex:1;min-width:120px;border:1px solid #e4e6ea;border-radius:9px;padding:.7rem .9rem}'
+		. '.stat .n{font-size:1.5rem;font-weight:800}.stat .l{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#6b7178}'
+		. 'section{padding:0 2rem}'
+		. 'h2.sec{font-size:1.05rem;margin:1.4rem 0 .5rem;padding-bottom:.3rem;border-bottom:2px solid var(--accent)}'
+		. '.note{border:1px solid #e4e6ea;border-radius:10px;padding:.9rem 1rem;margin:.6rem 0;page-break-inside:avoid}'
+		. '.note .top{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.35rem}'
+		. '.tag{font-size:.72rem;font-weight:700;border-radius:999px;padding:.12rem .55rem;border:1px solid #d3d7dd;color:#3a3f46}'
+		. '.tag.status{color:#fff;border:none}.tag.sev{border-color:var(--accent);color:var(--accent)}'
+		. '.note .loc{font-size:.82rem;color:#6b7178;margin-bottom:.35rem}.note .loc a{color:inherit}'
+		. '.note .body{font-size:.95rem}.note .body p{margin:.3rem 0}'
+		. '.note img.shot{max-width:100%;border:1px solid #e0e2e6;border-radius:7px;margin-top:.5rem}'
+		. '.note .when{font-size:.76rem;color:#8a9099;margin-top:.5rem}'
+		. '.empty{padding:2.5rem 2rem;color:#6b7178;text-align:center}'
+		. '.credit{margin-top:2rem;padding:1rem 2rem 0;border-top:1px solid #e4e6ea;color:#8a9099;font-size:.8rem;text-align:center}'
+		. '@media print{body{background:#fff}.page{max-width:none}.bar{display:none}.head{border-top-width:6px}.note{border-color:#d7dade}}'
+		. '</style></head><body><div class="page">';
+
+	// Toolbar (screen only).
+	echo '<div class="bar">';
+	echo '<button type="button" class="print" onclick="window.print()">' . esc_html__( 'Print / Save as PDF', 'wp-red-pen' ) . '</button>';
+	$other_scope = 'open' === $scope ? 'all' : 'open';
+	$other_url   = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_report&scope=' . $other_scope ), 'wprp_report' );
+	$other_label = 'open' === $scope ? __( 'Show all (incl. resolved)', 'wp-red-pen' ) : __( 'Show open items only', 'wp-red-pen' );
+	echo '<a href="' . esc_url( $other_url ) . '">' . esc_html( $other_label ) . '</a>';
+	echo '</div>';
+
+	// Header.
+	echo '<div class="head">';
+	if ( $pro && '' !== $brand['logo'] ) {
+		echo '<img class="logo" src="' . esc_url( $brand['logo'] ) . '" alt="' . esc_attr( $site ) . '">';
+	}
+	echo '<h1>' . esc_html( $title ) . '</h1>';
+	echo '<div class="sub">' . esc_html( $site ) . ' &middot; ' . esc_html( home_url() ) . ' &middot; ' . esc_html( $generated ) . '</div>';
+	echo '</div>';
+
+	// Summary tiles.
+	echo '<div class="summary">';
+	$tiles = array(
+		'open'     => count( $buckets['open'] ),
+		'progress' => count( $buckets['progress'] ),
+	);
+	if ( 'open' !== $scope ) {
+		$tiles['resolved'] = count( $buckets['resolved'] );
+	}
+	echo '<div class="stat"><div class="n">' . (int) $total . '</div><div class="l">' . esc_html__( 'Total', 'wp-red-pen' ) . '</div></div>';
+	foreach ( $tiles as $k => $c ) {
+		echo '<div class="stat"><div class="n">' . (int) $c . '</div><div class="l">' . esc_html( $labels[ $k ] ) . '</div></div>';
+	}
+	echo '</div>';
+
+	if ( 0 === $total ) {
+		echo '<div class="empty">' . esc_html__( 'No notes to report yet.', 'wp-red-pen' ) . '</div>';
+	}
+
+	// One section per status bucket (in workflow order), skipping empties.
+	$order = ( 'open' === $scope ) ? array( 'open', 'progress' ) : array( 'open', 'progress', 'resolved' );
+	foreach ( $order as $key ) {
+		$items = $buckets[ $key ];
+		if ( ! $items ) {
+			continue;
+		}
+		echo '<section><h2 class="sec">' . esc_html( $labels[ $key ] ) . ' (' . count( $items ) . ')</h2>';
+		foreach ( $items as $a ) {
+			echo '<div class="note"><div class="top">';
+			echo '<span class="tag">' . esc_html( $a['typeLabel'] ) . '</span>';
+			if ( '' !== $a['severityLabel'] ) {
+				echo '<span class="tag sev">' . esc_html( $a['severityLabel'] ) . '</span>';
+			}
+			$pc = isset( $pill[ $a['statusKey'] ] ) ? $pill[ $a['statusKey'] ] : $accent;
+			echo '<span class="tag status" style="background:' . esc_attr( $pc ) . '">' . esc_html( $a['statusLabel'] ) . '</span>';
+			echo '</div>';
+
+			$loc_label = '' !== $a['ctxLabel'] ? $a['ctxLabel'] : ( $a['target'] ? get_the_title( $a['target'] ) : '' );
+			$loc_url   = $a['target'] ? get_permalink( $a['target'] ) : '';
+			if ( '' === $loc_label && 'global' === $a['level'] ) {
+				$loc_label = __( 'Site-wide', 'wp-red-pen' );
+			}
+			if ( '' !== $loc_label ) {
+				echo '<div class="loc">' . esc_html__( 'On:', 'wp-red-pen' ) . ' ';
+				echo $loc_url ? '<a href="' . esc_url( $loc_url ) . '">' . esc_html( $loc_label ) . '</a>' : esc_html( $loc_label );
+				echo '</div>';
+			}
+
+			echo '<div class="body">' . wp_kses_post( $a['body'] ) . '</div>';
+			if ( '' !== $a['shot'] ) {
+				echo '<img class="shot" src="' . esc_url( $a['shot'] ) . '" alt="' . esc_attr__( 'Screenshot', 'wp-red-pen' ) . '">';
+			}
+
+			$when = sprintf( /* translators: %s: date. */ esc_html__( 'Added %s', 'wp-red-pen' ), esc_html( $a['date'] ) );
+			if ( 'resolved' === $a['statusKey'] && '' !== $a['resolvedAt'] ) {
+				$rts = strtotime( $a['resolvedAt'] );
+				if ( $rts ) {
+					$when .= ' &middot; ' . sprintf( /* translators: %s: date. */ esc_html__( 'Resolved %s', 'wp-red-pen' ), esc_html( wp_date( get_option( 'date_format' ), $rts ) ) );
+				}
+			}
+			echo '<div class="when">' . $when . '</div>'; // built from escaped pieces above
+			echo '</div>';
+		}
+		echo '</section>';
+	}
+
+	if ( ! ( $pro && $brand['hide_credit'] ) ) {
+		echo '<div class="credit">' . esc_html__( 'Generated with Red Pen', 'wp-red-pen' ) . '</div>';
+	}
+
+	echo '</div></body></html>';
+	exit;
+}
 
 // ---------------------------------------------------------------------------
 // Admin: load dashicons on our screens (for the menu icon + meta box chrome)
