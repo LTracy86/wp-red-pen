@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.22.0
+ * Version:           0.23.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.22.0' );
+define( 'WPRP_VERSION',     '0.23.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -250,8 +250,11 @@ function wprp_verify_license( $key ) {
 	if ( ! sodium_crypto_sign_verify_detached( $sig, $payload, $pub ) ) {
 		return false;
 	}
-	$email = sanitize_email( (string) strtok( $payload, '|' ) );
-	return $email ? array( 'email' => $email ) : false;
+	// The licensee is the payload's first field: a buyer email for hand-issued keys,
+	// or an opaque license id for pooled/batch keys (storefront auto-delivery). Accept
+	// either - sanitize as text, not as an email, so id-form keys validate too.
+	$licensee = sanitize_text_field( (string) strtok( $payload, '|' ) );
+	return '' !== $licensee ? array( 'email' => $licensee ) : false; // key stays 'email' for cross-surface parity; holds the licensee (email or id)
 }
 
 /**
@@ -4202,7 +4205,21 @@ function wprp_render_repo_page() {
 	echo '<form method="post" action="' . esc_url( $brand_url ) . '">';
 	wp_nonce_field( 'wprp_save_brand' );
 	echo '<p style="margin:.2rem 0 .4rem"><strong>' . esc_html__( 'Branding', 'wp-red-pen' ) . '</strong> <span style="font-size:.7rem;font-weight:700;color:#fff;background:#D32F2F;border-radius:3px;padding:.05rem .35rem;vertical-align:middle">PRO</span> &mdash; ' . esc_html__( 'your logo, an accent colour, and a custom title on the report. Applied only when PRO is unlocked; the free report stays plain.', 'wp-red-pen' ) . '</p>';
-	echo '<label style="display:block;margin:.3rem 0"><input type="checkbox" name="pro_unlock" value="1"' . checked( $is_pro, true, false ) . ( $pro_const ? ' disabled' : '' ) . '> ' . esc_html__( 'Unlock PRO features', 'wp-red-pen' ) . ' <span style="color:#646970">' . ( $pro_const ? esc_html__( '(forced on by the WPRP_PRO constant)', 'wp-red-pen' ) : esc_html__( '(temporary switch - the offline license key replaces this at release)', 'wp-red-pen' ) ) . '</span></label>';
+	// PRO license key: the buyer pastes the key from their purchase. Verified locally
+	// against the embedded Ed25519 public key - offline, no phone-home, no expiry.
+	if ( $pro_const ) {
+		echo '<p style="margin:.3rem 0;color:#197b30"><span class="dashicons dashicons-yes" style="vertical-align:text-bottom"></span> ' . esc_html__( 'PRO is enabled by the WPRP_PRO constant on this install.', 'wp-red-pen' ) . '</p>';
+	} else {
+		echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'PRO license key', 'wp-red-pen' ) . '<br><input type="text" name="pro_key" value="' . esc_attr( $pro_key ) . '" placeholder="' . esc_attr__( 'paste your license key', 'wp-red-pen' ) . '" style="width:100%;max-width:520px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem"></label>';
+		if ( is_array( $license ) ) {
+			/* translators: %s: the buyer email carried in the license key. */
+			echo '<p style="margin:.2rem 0;color:#197b30"><span class="dashicons dashicons-yes" style="vertical-align:text-bottom"></span> ' . esc_html( sprintf( __( 'PRO unlocked - licensed to %s.', 'wp-red-pen' ), $license['email'] ) ) . '</p>';
+		} elseif ( '' !== $pro_key ) {
+			echo '<p style="margin:.2rem 0;color:#b32d2e"><span class="dashicons dashicons-warning" style="vertical-align:text-bottom"></span> ' . esc_html__( 'This key does not validate - PRO is off. Re-paste the exact key from your purchase.', 'wp-red-pen' ) . '</p>';
+		} else {
+			echo '<p style="margin:.2rem 0;color:#646970">' . esc_html__( 'No key yet - the free report works without one; a valid key unlocks the branding below.', 'wp-red-pen' ) . '</p>';
+		}
+	}
 	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Report title', 'wp-red-pen' ) . '<br><input type="text" name="brand_title" value="' . esc_attr( $brand['title'] ) . '" placeholder="' . esc_attr__( 'Acme Co - Website Review', 'wp-red-pen' ) . '" style="width:100%;max-width:360px"></label>';
 	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Logo URL', 'wp-red-pen' ) . '<br><input type="text" name="brand_logo" value="' . esc_attr( $brand['logo'] ) . '" placeholder="https://example.com/logo.png" style="width:100%;max-width:360px"></label>';
 	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Accent colour', 'wp-red-pen' ) . ' <input type="color" name="brand_color" value="' . esc_attr( $brand['color'] ) . '" style="vertical-align:middle"></label>';
