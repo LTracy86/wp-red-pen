@@ -4212,7 +4212,7 @@ function wprp_render_repo_page() {
 	} else {
 		echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'PRO license key', 'wp-red-pen' ) . '<br><input type="text" name="pro_key" value="' . esc_attr( $pro_key ) . '" placeholder="' . esc_attr__( 'paste your license key', 'wp-red-pen' ) . '" style="width:100%;max-width:520px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem"></label>';
 		if ( is_array( $license ) ) {
-			/* translators: %s: the buyer email carried in the license key. */
+			/* translators: %s: the licensee carried in the license key (a buyer email, or a license id for pooled keys). */
 			echo '<p style="margin:.2rem 0;color:#197b30"><span class="dashicons dashicons-yes" style="vertical-align:text-bottom"></span> ' . esc_html( sprintf( __( 'PRO unlocked - licensed to %s.', 'wp-red-pen' ), $license['email'] ) ) . '</p>';
 		} elseif ( '' !== $pro_key ) {
 			echo '<p style="margin:.2rem 0;color:#b32d2e"><span class="dashicons dashicons-warning" style="vertical-align:text-bottom"></span> ' . esc_html__( 'This key does not validate - PRO is off. Re-paste the exact key from your purchase.', 'wp-red-pen' ) . '</p>';
