@@ -2635,7 +2635,7 @@ add_action(
 		?>
 		<div id="wprp-root"<?php echo $root_class; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static literal ?> data-cfg='<?php echo esc_attr( $cfg ); ?>'>
 			<button type="button" id="wprp-fab" aria-expanded="false" aria-haspopup="dialog" aria-controls="wprp-panel" aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>" title="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
-				<span class="dashicons dashicons-edit" aria-hidden="true"></span>
+				<svg viewBox="0 0 24 24" aria-hidden="true" class="wprp-nib"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4z"/></svg>
 				<span id="wprp-fab-count" class="wprp-count" aria-hidden="true" hidden></span>
 			</button>
 			<section id="wprp-panel" hidden tabindex="-1" role="dialog" aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
