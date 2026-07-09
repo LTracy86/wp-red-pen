@@ -2473,7 +2473,7 @@ add_action(
 		$bar->add_node(
 			array(
 				'id'    => 'wprp-toggle',
-				'title' => '<span class="ab-icon dashicons dashicons-edit" style="top:2px"></span>' . esc_html( $label ),
+				'title' => '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:17px;height:17px;margin:7px 6px 0 0;vertical-align:top;float:left"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4z"/></svg>' . esc_html( $label ),
 				'href'  => esc_url( $toggle_url ),
 				'meta'  => array( 'title' => __( 'Toggle Red Pen Dev Mode', 'wp-red-pen' ) ),
 			)
