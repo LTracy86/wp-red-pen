@@ -2,7 +2,7 @@
 
 A logged-in review layer for WordPress. Editors and admins flip on **Dev Mode** and drop notes, flags, and suggested edits on any post or page from a floating button. Every note collects on the post's edit screen and in a single shared to-do repository.
 
-Part of the [Tracy Digital Media](https://tracydigitalmedia.com/) free dev-plugin family. Free, with an optional [tip jar](https://buymeacoffee.com/lincolntracy) - no license keys, no premium tier, no third-party services.
+Part of the [Tracy Digital Media](https://tracydigitalmedia.com/) free dev-plugin family. The full core is free forever, with an optional [tip jar](https://buymeacoffee.com/lincolntracy) - no account, no subscription, no third-party services. An optional [PRO upgrade](https://redpen.tools) (one-time purchase, offline-verified key, no phone-home) adds white-label client reports and the multi-site Hub board.
 
 > WP Red Pen is the one deliberate exception to the TDM "no warm/red" palette rule: the editorial red-pen branding gets a red accent (#D32F2F) on otherwise TDM-neutral (near-black / gray / white) chrome.
 
