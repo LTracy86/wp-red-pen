@@ -32,7 +32,7 @@ Built for editorial review, client hand-offs, content audits, and team to-do lis
 
 = The free-tier promise =
 
-WP Red Pen is free, with an optional tip jar. It deliberately does NOT bolt on the things competitors paywall - no email alerts, no external SaaS sync, no license keys, no per-seat fees. Your notes live in your database and nowhere else.
+WP Red Pen's core is free forever, with an optional tip jar. It deliberately does NOT bolt on the things competitors paywall - no email alerts, no external SaaS sync, no per-seat fees. Your notes live in your database and nowhere else. An optional one-time PRO purchase (offline-verified key, never phones home) adds white-label client reports and the multi-site Hub board.
 
 == Installation ==
 
