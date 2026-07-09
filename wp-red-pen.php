@@ -2641,6 +2641,7 @@ add_action(
 			<section id="wprp-panel" hidden tabindex="-1" role="dialog" aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
 				<div id="wprp-resize" class="wprp-resize" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="300" aria-valuenow="420" aria-label="<?php esc_attr_e( 'Resize the panel (arrow keys to widen or narrow)', 'wp-red-pen' ); ?>" title="<?php esc_attr_e( 'Drag or use arrow keys to resize', 'wp-red-pen' ); ?>"></div>
 				<header class="wprp-head">
+					<svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;flex:none"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4z"/></svg>
 					<strong><?php esc_html_e( 'Red Pen', 'wp-red-pen' ); ?></strong>
 					<span class="wprp-page"><?php echo esc_html( $ctx['page']['label'] ); ?></span>
 					<?php if ( ! $reviewer ) : ?>
