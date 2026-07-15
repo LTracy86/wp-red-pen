@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+    WP Red Pen - Psalm static analysis config.
+
+    First-time setup (dev only; nothing here ships in the plugin):
+        composer install
+        composer analyze                 # run the analysis
+        composer analyze:baseline        # grandfather existing findings into psalm-baseline.xml
+
+    phpVersion is pinned to the plugin's minimum supported runtime (7.4) so the
+    analysis catches anything that would break on the oldest install we claim to
+    support, not just on the 8.2 dev box.
+
+    errorLevel 4 is a deliberate middle setting for adopting Psalm onto an
+    existing single-file WP plugin: strict enough to catch real type/null/param
+    bugs, loose enough not to drown in WP's loosely-typed hook surface. Tighten
+    toward 1 over time once a baseline is in place.
+-->
+<psalm
+    errorLevel="4"
+    resolveFromConfigFile="true"
+    phpVersion="7.4"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <file name="wp-red-pen.php"/>
+        <file name="uninstall.php"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+        </ignoreFiles>
+    </projectFiles>
+
+    <!-- WordPress core function/class/constant signatures so Psalm knows the API surface. -->
+    <stubs>
+        <file name="vendor/php-stubs/wordpress-stubs/wordpress-stubs.php"/>
+    </stubs>
+</psalm>

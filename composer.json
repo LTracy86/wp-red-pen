@@ -1,0 +1,23 @@
+{
+    "name": "tracydigitalmedia/wp-red-pen",
+    "description": "Dev tooling for WP Red Pen. Static analysis only - the plugin itself ships as a single file with zero runtime dependencies.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Lincoln Tracy",
+            "homepage": "https://tracydigitalmedia.com/"
+        }
+    ],
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "vimeo/psalm": "^5.26",
+        "php-stubs/wordpress-stubs": "^6.6"
+    },
+    "scripts": {
+        "analyze": "psalm",
+        "analyze:baseline": "psalm --set-baseline=psalm-baseline.xml"
+    }
+}
