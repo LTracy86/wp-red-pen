@@ -4168,8 +4168,8 @@ function wprp_render_repo_page() {
 	echo '</form></details>';
 
 	// Client report: a printable, client-facing summary of the notes (the deliverable a
-	// freelancer sends). The plain report is free; branding (logo, colour, title, hidden
-	// credit) is the PRO layer, applied by wprp_render_client_report() when wprp_is_pro().
+	// freelancer sends). Both the report and its branding (logo, colour, title) are free -
+	// wprp_render_client_report() always applies branding in this open-source build.
 	$rep_all   = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_report&scope=all' ), 'wprp_report' );
 	$rep_open  = wp_nonce_url( admin_url( 'admin-post.php?action=wprp_report&scope=open' ), 'wprp_report' );
 	$brand_url = admin_url( 'admin-post.php?action=wprp_save_brand' );
