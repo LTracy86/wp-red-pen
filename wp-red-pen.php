@@ -2158,7 +2158,9 @@ function wprp_push_to_hub( $blocking = false ) {
 			// Keep the push payload in step with the pull shape (wprp_note_to_array) so a
 			// push-connected site shows the same severity / timestamps / identity on the board.
 			'severity'     => (string) get_post_meta( $p->ID, WPRP_META_SEVERITY, true ),
-			'status'       => ( 'progress' === $statuskey ) ? 'in_progress' : $statuskey,
+			// Emit the canonical status key ('open' / 'progress' / 'resolved') the same way the
+			// pull path and every other surface do, so Hub in-progress write-backs reconcile cleanly.
+			'status'       => $statuskey,
 			'url'          => $target ? get_permalink( $target ) : home_url( '/' ),
 			'anchor'       => (string) get_post_meta( $p->ID, WPRP_META_ANCHOR, true ),
 			'createdAt'    => get_post_time( 'c', true, $p ),
