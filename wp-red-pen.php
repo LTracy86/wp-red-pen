@@ -2468,7 +2468,7 @@ add_action(
 		$bar->add_node(
 			array(
 				'id'    => 'wprp-toggle',
-				'title' => '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:17px;height:17px;margin:7px 6px 0 0;vertical-align:top;float:left"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4z"/></svg>' . esc_html( $label ),
+				'title' => '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:17px;height:17px;margin:7px 6px 0 0;vertical-align:top;float:left"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4zM11.6 12.9h.8v6.7h-.8zM7.51 10.08 9.87 16.14 10.38 15.94 8.02 9.88zM16.49 10.08 14.13 16.14 13.62 15.94 15.98 9.88z"/></svg>' . esc_html( $label ),
 				'href'  => esc_url( $toggle_url ),
 				'meta'  => array( 'title' => __( 'Toggle Red Pen Dev Mode', 'wp-red-pen' ) ),
 			)
@@ -2630,13 +2630,13 @@ add_action(
 		?>
 		<div id="wprp-root"<?php echo $root_class; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static literal ?> data-cfg='<?php echo esc_attr( $cfg ); ?>'>
 			<button type="button" id="wprp-fab" aria-expanded="false" aria-haspopup="dialog" aria-controls="wprp-panel" aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>" title="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
-				<svg viewBox="0 0 24 24" aria-hidden="true" class="wprp-nib"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4z"/></svg>
+				<svg viewBox="0 0 24 24" aria-hidden="true" class="wprp-nib"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4zM11.6 12.9h.8v6.7h-.8zM7.51 10.08 9.87 16.14 10.38 15.94 8.02 9.88zM16.49 10.08 14.13 16.14 13.62 15.94 15.98 9.88z"/></svg>
 				<span id="wprp-fab-count" class="wprp-count" aria-hidden="true" hidden></span>
 			</button>
 			<section id="wprp-panel" hidden tabindex="-1" role="dialog" aria-label="<?php esc_attr_e( 'Red Pen notes', 'wp-red-pen' ); ?>">
 				<div id="wprp-resize" class="wprp-resize" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="300" aria-valuenow="420" aria-label="<?php esc_attr_e( 'Resize the panel (arrow keys to widen or narrow)', 'wp-red-pen' ); ?>" title="<?php esc_attr_e( 'Drag or use arrow keys to resize', 'wp-red-pen' ); ?>"></div>
 				<header class="wprp-head">
-					<svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;flex:none"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4z"/></svg>
+					<svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;flex:none"><path fill="currentColor" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4zM11.6 12.9h.8v6.7h-.8zM7.51 10.08 9.87 16.14 10.38 15.94 8.02 9.88zM16.49 10.08 14.13 16.14 13.62 15.94 15.98 9.88z"/></svg>
 					<strong><?php esc_html_e( 'Red Pen', 'wp-red-pen' ); ?></strong>
 					<span class="wprp-page"><?php echo esc_html( $ctx['page']['label'] ); ?></span>
 					<?php if ( ! $reviewer ) : ?>
@@ -4027,7 +4027,7 @@ add_action(
 	function () {
 		// Lives under Tools (not a top-level menu) to keep the main admin sidebar uncluttered.
 		// The menu title carries a red pen dashicon (the brand accent), mirroring how Smooth Moves badges its Tools item.
-		$wprp_menu_title = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;vertical-align:-3px;margin-right:5px"><path fill="#D32F2F" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4z"/></svg>' . esc_html__( 'Red Pen', 'wp-red-pen' );
+		$wprp_menu_title = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:16px;height:16px;vertical-align:-3px;margin-right:5px"><path fill="#D32F2F" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4zM11.6 12.9h.8v6.7h-.8zM7.51 10.08 9.87 16.14 10.38 15.94 8.02 9.88zM16.49 10.08 14.13 16.14 13.62 15.94 15.98 9.88z"/></svg>' . esc_html__( 'Red Pen', 'wp-red-pen' );
 		add_submenu_page(
 			'tools.php',
 			__( 'Red Pen', 'wp-red-pen' ),
@@ -4106,7 +4106,7 @@ function wprp_render_repo_page() {
 		// only restyles Red Pen's own content, never the rest of the WordPress dashboard.
 		echo '<style id="wprp-repo-dark">.wrap.wprp-dark{background:#1e2125;color:#e6e9ec;padding:10px 16px 24px;border-radius:6px;margin-top:10px}.wrap.wprp-dark h1,.wrap.wprp-dark h2,.wrap.wprp-dark h3,.wrap.wprp-dark strong{color:#e6e9ec}.wrap.wprp-dark a{color:#6db3ff}.wrap.wprp-dark p,.wrap.wprp-dark label,.wrap.wprp-dark .subsubsub,.wrap.wprp-dark .subsubsub a{color:#b9c0c7}.wrap.wprp-dark .subsubsub a.current{color:#fff;font-weight:600}.wrap.wprp-dark .wp-list-table{background:#23272b;border-color:#3a3f44}.wrap.wprp-dark .wp-list-table th,.wrap.wprp-dark .wp-list-table td{color:#e6e9ec;border-color:#3a3f44;background:transparent}.wrap.wprp-dark .wp-list-table thead th,.wrap.wprp-dark .wp-list-table tfoot th{background:#2a2f34;color:#aeb4ba}.wrap.wprp-dark .wp-list-table.striped>tbody>:nth-child(odd){background:#262b30}.wrap.wprp-dark details{background:#23272b!important;border:1px solid #3a3f44!important;color:#e6e9ec}.wrap.wprp-dark details summary,.wrap.wprp-dark details p,.wrap.wprp-dark details label{color:#c8ced4!important}.wrap.wprp-dark details strong{color:#e6e9ec!important}.wrap.wprp-dark details hr{border-top-color:#3a3f44!important}.wrap.wprp-dark input,.wrap.wprp-dark select,.wrap.wprp-dark textarea{background:#1a1d20;color:#e6e9ec;border-color:#3a3f44}.wrap.wprp-dark .button:not(.button-primary){background:#2a2f34;color:#e6e9ec;border-color:#4a4f55;box-shadow:none}.wrap.wprp-dark .button:not(.button-primary):hover{background:#333941;color:#fff;border-color:#5a616a}.wrap.wprp-dark .notice{background:#23272b;color:#e6e9ec;border-color:#3a3f44}.wrap.wprp-dark code{background:#15181b;color:#e6e9ec}</style>';
 	}
-	echo '<div class="wrap' . ( $wprp_dark ? ' wprp-dark' : '' ) . '"><h1 style="display:flex;align-items:center;gap:.5rem"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:22px;height:22px;flex:none"><path fill="#D32F2F" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4z"/></svg>' . esc_html__( 'Red Pen - Notes Repository', 'wp-red-pen' ) . '</h1>';
+	echo '<div class="wrap' . ( $wprp_dark ? ' wprp-dark' : '' ) . '"><h1 style="display:flex;align-items:center;gap:.5rem"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:22px;height:22px;flex:none"><path fill="#D32F2F" fill-rule="evenodd" d="M12 2l6.5 6.5-4.6 11.8a2 2 0 0 1-3.8 0L5.5 8.5 12 2zM13.7 11.4a1.7 1.7 0 1 1-3.4 0 1.7 1.7 0 1 1 3.4 0zM11.3 4.6h1.4v5h-1.4zM11.6 12.9h.8v6.7h-.8zM7.51 10.08 9.87 16.14 10.38 15.94 8.02 9.88zM16.49 10.08 14.13 16.14 13.62 15.94 15.98 9.88z"/></svg>' . esc_html__( 'Red Pen - Notes Repository', 'wp-red-pen' ) . '</h1>';
 	echo '<p>' . esc_html__( 'Every note, flag, and suggested edit dropped across the site. Shared with all editors and admins.', 'wp-red-pen' ) . '</p>';
 
 	// Red Pen Hub connection result (set by the save handler after a blocking test push).
