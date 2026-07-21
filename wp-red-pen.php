@@ -2710,7 +2710,8 @@ function wprp_print_frontend_assets() {
 			#wprp-root [hidden]{display:none!important}
 			/* Dark mode (Display settings toggle) - front-end panel only; scoped to #wprp-root.wprp-dark. */
 			#wprp-root.wprp-dark #wprp-panel{background:#23272b!important;color:#e6e9ec!important;border-color:#3a3f44!important}
-			#wprp-root.wprp-dark .wprp-note{background:#2a2f34!important;border-color:#3a3f44!important}
+			/* background stays normal-weight: the wprp-flash keyframes animate background, and animations lose to !important declarations */
+			#wprp-root.wprp-dark .wprp-note{background:#2a2f34;border-color:#3a3f44!important}
 			#wprp-root.wprp-dark .wprp-muted,#wprp-root.wprp-dark .wprp-meta,#wprp-root.wprp-dark .wprp-ctx,#wprp-root.wprp-dark .wprp-reply-meta,#wprp-root.wprp-dark .wprp-assignee,#wprp-root.wprp-dark .wprp-levellabel{color:#9aa0a6!important}
 			#wprp-root.wprp-dark .wprp-form{background:#1f2327!important;border-top-color:#3a3f44!important}
 			#wprp-root.wprp-dark .wprp-form select,#wprp-root.wprp-dark .wprp-form textarea,#wprp-root.wprp-dark .wprp-replytext{background:#1a1d20!important;color:#e6e9ec!important;border-color:#3a3f44!important}
