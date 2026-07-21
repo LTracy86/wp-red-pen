@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.25.2
+Stable tag: 0.25.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,7 +62,7 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
-= 0.25.2 =
+= 0.25.3 =
 * Theme-proofing, round two: attribute-qualified theme rules (e.g. button[type="submit"] { ... !important }) out-rank plain class selectors and were still restyling the Add note / Reply buttons. The whole widget stylesheet now lives one ID tier up - every component rule is scoped under its mount-root ID - so no realistic site selector can out-rank it.
 
 = 0.25.0 =
