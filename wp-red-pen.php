@@ -3254,7 +3254,7 @@ function wprp_print_frontend_assets() {
 		var MIN_W = 300;
 		function maxW() { return Math.max(MIN_W, window.innerWidth - 40); }
 		function clampW(w) { return Math.min(maxW(), Math.max(MIN_W, w)); }
-		function applyW(w) { var cw = clampW(w); panel.style.width = cw + 'px'; if (resizeHandle) { resizeHandle.setAttribute('aria-valuenow', String(Math.round(cw))); resizeHandle.setAttribute('aria-valuemax', String(Math.round(maxW()))); } }
+		function applyW(w) { var cw = clampW(w); panel.style.setProperty('width', cw + 'px', 'important'); if (resizeHandle) { resizeHandle.setAttribute('aria-valuenow', String(Math.round(cw))); resizeHandle.setAttribute('aria-valuemax', String(Math.round(maxW()))); } }
 		function storedW() { try { var v = parseInt(localStorage.getItem(WPRP_W_KEY), 10); return (v > 0) ? v : 0; } catch (e) { return 0; } }
 		function saveW(w) { try { localStorage.setItem(WPRP_W_KEY, String(Math.round(clampW(w)))); } catch (e) {} }
 
