@@ -2761,7 +2761,7 @@ function wprp_print_frontend_assets() {
 		/* branded empty state for the "No open notes on this page" message (open tab only) */
 		.wprp-empty{background:var(--wprp-red)!important;color:#fff!important;font-weight:600!important;text-align:center!important;border-radius:6px!important;padding:.55rem .7rem!important}
 		.wprp-note{border:1px solid #e6e9ec!important;border-left:3px solid var(--wprp-red)!important;border-radius:6px!important;padding:.45rem .6rem!important;margin-bottom:.5rem!important;font-size:.86rem!important}
-		.wprp-note.is-resolved{opacity:.55!important;border-left-color:var(--wprp-gray)!important}
+		.wprp-note.wprp-resolved{opacity:.55!important;border-left-color:var(--wprp-gray)!important}
 		.wprp-note .wprp-meta{display:flex!important;flex-wrap:wrap!important;gap:.35rem!important;align-items:center!important;font-size:.72rem!important;color:var(--wprp-gray)!important;margin-bottom:.25rem!important}
 		.wprp-tag{background:var(--wprp-red)!important;color:#fff!important;border-radius:3px!important;padding:.02rem .3rem!important;font-weight:600!important}
 		.wprp-note .wprp-body p{margin:.2rem 0!important}
@@ -2861,7 +2861,7 @@ function wprp_print_frontend_assets() {
 			<?php if ( $wprp_pin_color ) { echo '#wprp-pinlayer{--wprp-pin:' . $wprp_pin_color . '}'; } // custom pin colour, scoped to the layer the markers actually live in ?>
 			.wprp-pin{position:fixed!important;transform:translate(-50%,-50%)!important;min-width:22px!important;height:22px!important;padding:0 5px!important;border-radius:11px!important;background:var(--wprp-pin,#D32F2F)!important;color:#fff!important;border:2px solid #fff!important;box-shadow:0 2px 6px rgba(30,34,37,.4)!important;font-size:11px!important;font-weight:700!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;pointer-events:auto!important;box-sizing:border-box!important}
 			.wprp-pin:hover{filter:brightness(0.9)!important}
-			.wprp-pin.is-resolved{background:var(--wprp-gray)!important;opacity:.65!important}
+			.wprp-pin.wprp-resolved{background:var(--wprp-gray)!important;opacity:.65!important}
 			.wprp-note.wprp-flash{animation:wprp-flash 1.3s ease!important}
 			@keyframes wprp-flash{0%{background:rgba(211,47,47,.20)}100%{background:transparent}}
 		#wprp-busy{position:fixed!important;inset:0!important;z-index:99999!important;display:flex!important;align-items:center!important;justify-content:center!important;background:rgba(30,34,37,.18)!important;font-family:-apple-system,sans-serif!important}
@@ -2877,7 +2877,7 @@ function wprp_print_frontend_assets() {
 			.wprp-tab:hover{color:var(--wprp-red)!important}
 			.wprp-tab.wprp-active{color:var(--wprp-red)!important;border-bottom-color:var(--wprp-red)!important}
 			/* on the Resolved tab the notes are the content, so don't dim them */
-			.wprp-list-resolved .wprp-note.is-resolved{opacity:1!important}
+			.wprp-list-resolved .wprp-note.wprp-resolved{opacity:1!important}
 			/* collapsible advanced fields in the add-note form */
 			.wprp-more-toggle{background:#fff!important;border:1px solid #cfd4d8!important;border-radius:5px!important;color:var(--wprp-gray)!important;font:inherit!important;font-size:.82rem!important;padding:.35rem .6rem!important;cursor:pointer!important;white-space:nowrap!important}
 			.wprp-more-toggle:hover{border-color:var(--wprp-red)!important;color:var(--wprp-red)!important}
@@ -3060,7 +3060,7 @@ function wprp_print_frontend_assets() {
 
 		function noteHtml(n) {
 			var sk = statusKeyOf(n);
-			return '<div class="wprp-note wprp-st-' + sk + (sk === 'resolved' ? ' is-resolved' : '') + '" data-id="' + n.id + '">' +
+			return '<div class="wprp-note wprp-st-' + sk + (sk === 'resolved' ? ' wprp-resolved' : '') + '" data-id="' + n.id + '">' +
 				'<div class="wprp-meta"><span class="wprp-tag"' + (n.typeColor ? ' style="background:' + esc(n.typeColor) + '"' : '') + '>' + esc(n.typeLabel) + '</span>' +
 				'<span class="wprp-prio wprp-prio-' + esc(n.priority || 'normal') + '">' + esc(n.priorityLabel) + '</span>' +
 				(n.severity ? '<span class="wprp-sev wprp-sev-' + esc(n.severity) + '">' + esc(n.severityLabel) + '</span>' : '') +
@@ -3323,7 +3323,7 @@ function wprp_print_frontend_assets() {
 			if (!btn) { return; }
 			var wrap = btn.closest('.wprp-note');
 			var id = wrap.getAttribute('data-id');
-			var resolved = !wrap.classList.contains('is-resolved');
+			var resolved = !wrap.classList.contains('wprp-resolved');
 			btn.disabled = true;
 			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: resolved }) })
 				.then(function () {
