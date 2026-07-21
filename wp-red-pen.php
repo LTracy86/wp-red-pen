@@ -2703,6 +2703,21 @@ function wprp_print_frontend_assets() {
 	$wprp_pin_color = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) );
 	?>
 	<style id="wprp-css">
+		/* ===== Host-page armor =====
+		   Red Pen renders inside the site's own page, so theme rules that style bare
+		   elements (button{}, p{}, a{}, *:focus-visible) - often with !important -
+		   match our DOM too. Namespaced classes can't block element selectors, so the
+		   defense is two-layered: every declaration in this sheet carries !important
+		   (the widget wins any property it declares), and the two rules below pin the
+		   typography/reset properties the component rules don't declare.
+		   :where()/:is() keep the second rule at element specificity (0,0,1) so every
+		   .wprp-* rule further down still overrides it, while theme element rules lose
+		   on cascade order (this sheet prints in the footer, after theme CSS).
+		   Do not add background or display here - background is animated (wprp-flash)
+		   and display is toggled from JS. Known residual gap: rem units track the
+		   site's html font-size (e.g. the 62.5% trick shrinks the panel). */
+		#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif!important;font-size:16px!important;line-height:1.45!important;letter-spacing:normal!important;text-transform:none!important;text-align:left!important;text-shadow:none!important}
+		:where(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) :is(a,button,select,textarea,label,p,span,div,ul,ol,li,img,svg,h1,h2,h3,h4,h5,h6){font-family:inherit!important;font-size:inherit!important;font-weight:inherit!important;font-style:inherit!important;line-height:inherit!important;color:inherit!important;letter-spacing:inherit!important;text-transform:inherit!important;text-shadow:none!important;text-decoration:none!important;box-shadow:none!important;border:none!important;margin:0!important;padding:0!important;min-width:0!important;min-height:0!important;float:none!important;list-style:none!important}
 		#wprp-root{--wprp-red:#D32F2F!important;--wprp-red-dark:#B71C1C!important;--wprp-accent:#FF5252!important;--wprp-ink:#1E2225!important;--wprp-gray:#3A3A3C!important;position:fixed!important;right:20px!important;bottom:20px!important;z-index:99990!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif!important}
 			/* The HTML [hidden] attribute is the weakest possible style, so an id/class rule that
 			   sets display (e.g. #wprp-panel{display:flex!important}) silently defeats it and the toggle does
