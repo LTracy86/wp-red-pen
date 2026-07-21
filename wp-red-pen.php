@@ -2645,7 +2645,7 @@ add_action(
 						<button type="button" class="wprp-x" id="wprp-close" aria-label="<?php esc_attr_e( 'Close', 'wp-red-pen' ); ?>">&times;</button>
 				</header>
 				<div class="wprp-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Filter notes', 'wp-red-pen' ); ?>">
-						<button type="button" class="wprp-tab is-active" id="wprp-tab-open" role="tab" aria-selected="true" aria-controls="wprp-list"><?php esc_html_e( 'Open', 'wp-red-pen' ); ?></button>
+						<button type="button" class="wprp-tab wprp-active" id="wprp-tab-open" role="tab" aria-selected="true" aria-controls="wprp-list"><?php esc_html_e( 'Open', 'wp-red-pen' ); ?></button>
 						<button type="button" class="wprp-tab" id="wprp-tab-progress" role="tab" aria-selected="false" aria-controls="wprp-list"><?php esc_html_e( 'In Progress', 'wp-red-pen' ); ?></button>
 						<button type="button" class="wprp-tab" id="wprp-tab-resolved" role="tab" aria-selected="false" aria-controls="wprp-list"><?php esc_html_e( 'Resolved', 'wp-red-pen' ); ?></button>
 					</div>
@@ -2830,7 +2830,7 @@ function wprp_print_frontend_assets() {
 			#wprp-markup .wprp-mk-tool{display:inline-flex!important;align-items:center!important;gap:.4rem!important;background:#fff!important;border:2px solid #D32F2F!important;color:#D32F2F!important;font:inherit!important;font-size:.9rem!important;font-weight:600!important;padding:.55rem .9rem!important;border-radius:8px!important;cursor:pointer!important;line-height:1!important}
 			#wprp-markup .wprp-mk-tool svg{width:20px!important;height:20px!important;display:block!important;flex:none!important}
 			#wprp-markup .wprp-mk-tool:hover{background:#fde8e8!important}
-			#wprp-markup .wprp-mk-tool.is-active{background:#D32F2F!important;color:#fff!important}
+			#wprp-markup .wprp-mk-tool.wprp-active{background:#D32F2F!important;color:#fff!important}
 			#wprp-markup .wprp-mk-sp{width:1px!important;height:26px!important;background:#cfd4d8!important;margin:0 2px!important}
 			#wprp-markup .wprp-mk-done{background:#D32F2F!important;color:#fff!important;font-weight:700!important}
 			#wprp-markup .wprp-mk-done:hover{background:#B71C1C!important}
@@ -2842,7 +2842,7 @@ function wprp_print_frontend_assets() {
 				/* inactive/light buttons get a dark surface (red border kept, brighter-red text+icon for contrast); active tool + Save stay solid red */
 				#wprp-markup .wprp-mk-tool{background:#26292c!important;color:#FF5252!important}
 				#wprp-markup .wprp-mk-tool:hover{background:#33383c!important}
-				#wprp-markup .wprp-mk-tool.is-active{background:#D32F2F!important;color:#fff!important}
+				#wprp-markup .wprp-mk-tool.wprp-active{background:#D32F2F!important;color:#fff!important}
 				#wprp-markup .wprp-mk-done{background:#D32F2F!important;color:#fff!important}
 				#wprp-markup .wprp-mk-done:hover{background:#B71C1C!important}
 				#wprp-markup .wprp-mk-sp{background:#55585b!important}
@@ -2875,7 +2875,7 @@ function wprp_print_frontend_assets() {
 			.wprp-tabs{display:flex!important;gap:.25rem!important;padding:.4rem .75rem 0!important;background:#fff!important;border-bottom:1px solid #e6e9ec!important}
 			.wprp-tab{flex:1!important;background:none!important;border:none!important;border-bottom:2px solid transparent!important;color:var(--wprp-gray)!important;font:inherit!important;font-size:.8rem!important;font-weight:600!important;padding:.4rem .25rem!important;margin-bottom:-1px!important;cursor:pointer!important}
 			.wprp-tab:hover{color:var(--wprp-red)!important}
-			.wprp-tab.is-active{color:var(--wprp-red)!important;border-bottom-color:var(--wprp-red)!important}
+			.wprp-tab.wprp-active{color:var(--wprp-red)!important;border-bottom-color:var(--wprp-red)!important}
 			/* on the Resolved tab the notes are the content, so don't dim them */
 			.wprp-list-resolved .wprp-note.is-resolved{opacity:1!important}
 			/* collapsible advanced fields in the add-note form */
@@ -3111,9 +3111,9 @@ function wprp_print_frontend_assets() {
 				tabOpenBtn.textContent = TAB_OPEN + ' (' + openCount + ')';
 				tabProgressBtn.textContent = TAB_PROGRESS + ' (' + progressCount + ')';
 				tabResolvedBtn.textContent = TAB_RESOLVED + ' (' + resolvedCount + ')';
-				tabOpenBtn.classList.toggle('is-active', currentTab === 'open');
-				tabProgressBtn.classList.toggle('is-active', currentTab === 'progress');
-				tabResolvedBtn.classList.toggle('is-active', currentTab === 'resolved');
+				tabOpenBtn.classList.toggle('wprp-active', currentTab === 'open');
+				tabProgressBtn.classList.toggle('wprp-active', currentTab === 'progress');
+				tabResolvedBtn.classList.toggle('wprp-active', currentTab === 'resolved');
 				tabOpenBtn.setAttribute('aria-selected', currentTab === 'open' ? 'true' : 'false');
 				tabProgressBtn.setAttribute('aria-selected', currentTab === 'progress' ? 'true' : 'false');
 				tabResolvedBtn.setAttribute('aria-selected', currentTab === 'resolved' ? 'true' : 'false');
@@ -3584,7 +3584,7 @@ function wprp_print_frontend_assets() {
 			overlay.id = 'wprp-markup';
 			overlay.innerHTML =
 				'<div class="wprp-mk-bar">' +
-					'<button type="button" class="wprp-mk-tool is-active" data-tool="pen">' + ICON_PEN + '<span class="wprp-mk-lbl"></span></button>' +
+					'<button type="button" class="wprp-mk-tool wprp-active" data-tool="pen">' + ICON_PEN + '<span class="wprp-mk-lbl"></span></button>' +
 					'<button type="button" class="wprp-mk-tool" data-tool="arrow">' + ICON_ARROW + '<span class="wprp-mk-lbl"></span></button>' +
 					'<button type="button" class="wprp-mk-tool" data-tool="rect">' + ICON_RECT + '<span class="wprp-mk-lbl"></span></button>' +
 					'<span class="wprp-mk-sp"></span>' +
@@ -3689,7 +3689,7 @@ function wprp_print_frontend_assets() {
 				if (t) {
 					tool = t;
 					var all = bar.querySelectorAll('.wprp-mk-tool[data-tool]');
-					for (var i = 0; i < all.length; i++) { all[i].classList.toggle('is-active', all[i] === btn); }
+					for (var i = 0; i < all.length; i++) { all[i].classList.toggle('wprp-active', all[i] === btn); }
 					return;
 				}
 				var act = btn.getAttribute('data-act');
