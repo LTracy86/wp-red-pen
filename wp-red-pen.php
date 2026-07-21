@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.24.0
+ * Version:           0.25.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.24.0' );
+define( 'WPRP_VERSION',     '0.25.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -2749,7 +2749,7 @@ function wprp_print_frontend_assets() {
 			.wprp-resize{position:absolute!important;left:0!important;top:0!important;width:9px!important;height:100%!important;cursor:ew-resize!important;z-index:6!important;touch-action:none!important}
 			.wprp-resize::before{content:""!important;position:absolute!important;left:2px!important;top:50%!important;transform:translateY(-50%)!important;width:3px!important;height:36px!important;border-radius:2px!important;background:#cfd4d8!important;transition:background .12s!important}
 			.wprp-resize:hover::before{background:var(--wprp-red)!important;height:54px!important}
-			#wprp-panel.is-resizing{user-select:none!important}
+			#wprp-panel.wprp-resizing{user-select:none!important}
 		.wprp-head{display:flex!important;align-items:center!important;gap:.5rem!important;padding:.6rem .75rem!important;background:var(--wprp-red)!important;color:#fff!important}
 		.wprp-head .wprp-page{font-size:.78rem!important;opacity:.85!important;margin-left:auto!important;max-width:150px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 		.wprp-x{background:none!important;border:none!important;color:#fff!important;font-size:20px!important;line-height:1!important;cursor:pointer!important;padding:0 0 0 .25rem!important}
@@ -3275,7 +3275,7 @@ function wprp_print_frontend_assets() {
 			function rzUp() {
 				if (!rzActive) { return; }
 				rzActive = false;
-				panel.classList.remove('is-resizing');
+				panel.classList.remove('wprp-resizing');
 				window.removeEventListener('mousemove', rzMove);
 				window.removeEventListener('mouseup', rzUp);
 				window.removeEventListener('touchmove', rzMove);
@@ -3286,7 +3286,7 @@ function wprp_print_frontend_assets() {
 				rzActive = true;
 				rzStartX = rzPoint(e);
 				rzStartW = panel.getBoundingClientRect().width;
-				panel.classList.add('is-resizing');
+				panel.classList.add('wprp-resizing');
 				window.addEventListener('mousemove', rzMove);
 				window.addEventListener('mouseup', rzUp);
 				window.addEventListener('touchmove', rzMove, { passive: false });
