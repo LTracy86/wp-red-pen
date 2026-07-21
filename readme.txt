@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.25.1 =
+* Theme-proofing, round two: attribute-qualified theme rules (e.g. button[type="submit"] { ... !important }) out-rank plain class selectors and were still restyling the Add note / Reply buttons. The whole widget stylesheet now lives one ID tier up - every component rule is scoped under its mount-root ID - so no realistic site selector can out-rank it.
+
 = 0.25.0 =
 * Theme-proofing: the review panel, pins, capture overlay, and markup editor now hold their look on sites whose stylesheets restyle bare elements (button, p, a, focus rings) with !important. Every widget style is asserted at full strength, an armor layer pins the typography properties components inherit, and the last generic state classes (is-active, is-resolved, is-resizing) are namespaced to wprp-*.
 
