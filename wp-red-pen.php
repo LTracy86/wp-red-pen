@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.25.0
+ * Version:           0.25.1
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.25.0' );
+define( 'WPRP_VERSION',     '0.25.1' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -2725,9 +2725,10 @@ function wprp_print_frontend_assets() {
 		#wprp-root .dashicons{font-family:dashicons!important;font-weight:400!important;font-style:normal!important;line-height:1!important}
 		#wprp-root{--wprp-red:#D32F2F!important;--wprp-red-dark:#B71C1C!important;--wprp-accent:#FF5252!important;--wprp-ink:#1E2225!important;--wprp-gray:#3A3A3C!important;position:fixed!important;right:20px!important;bottom:20px!important;z-index:99990!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif!important}
 			/* The HTML [hidden] attribute is the weakest possible style, so an id/class rule that
-			   sets display (e.g. #wprp-panel{display:flex!important}) silently defeats it and the toggle does
-			   nothing. This rule (specificity 1,1,0) outranks those and keeps [hidden] authoritative. */
-			#wprp-root [hidden]{display:none!important}
+			   sets display silently defeats it and the toggle does nothing. The tripled attribute
+			   puts this at 1,3,0 - above every ID-scoped component rule (1,1,0 / 1,2,0), which
+			   would otherwise tie-or-beat it now that the whole sheet is scoped one ID tier up. */
+			#wprp-root [hidden][hidden][hidden]{display:none!important}
 			/* Dark mode (Display settings toggle) - front-end panel only; scoped to #wprp-root.wprp-dark. */
 			#wprp-root.wprp-dark #wprp-panel{background:#23272b!important;color:#e6e9ec!important;border-color:#3a3f44!important}
 			/* background stays normal-weight: the wprp-flash keyframes animate background, and animations lose to !important declarations */
