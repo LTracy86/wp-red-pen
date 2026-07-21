@@ -62,6 +62,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+= 0.25.0 =
+* Theme-proofing: the review panel, pins, capture overlay, and markup editor now hold their look on sites whose stylesheets restyle bare elements (button, p, a, focus rings) with !important. Every widget style is asserted at full strength, an armor layer pins the typography properties components inherit, and the last generic state classes (is-active, is-resolved, is-resizing) are namespaced to wprp-*.
+
 = 0.24.0 =
 * Open source: every feature is now free, including white-label client reports. No license key, no PRO tier, no gate. If Red Pen saves you time, you can back the next release - see the support links above.
 
