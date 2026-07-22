@@ -1,6 +1,6 @@
 # WP Red Pen
 
-A logged-in review layer for WordPress. Editors and admins flip on **Dev Mode** and drop notes, flags, and suggested edits on any post or page from a floating button. Every note collects on the post's edit screen and in a single shared to-do repository.
+A logged-in review layer for WordPress. Editors and admins flip on **Dev Mode** and drop typed notes - ideas, problems, questions - on any post or page from a floating button. Every note collects on the post's edit screen and in a single shared to-do repository under Tools > Red Pen.
 
 Part of the [Tracy Digital Media](https://tracydigitalmedia.com/) free dev-plugin family. Free and open, every feature included - white-label client reports and the multi-site Hub board too. No account, no subscription, no third-party services, no phone-home.
 
