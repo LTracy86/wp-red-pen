@@ -16,18 +16,25 @@ Good for editorial review, client hand-offs, content audits, QA passes, and shar
 
 - **Floating note button** on the front end, shown only to logged-in users who can edit posts. Per-user **Dev Mode** toggle in the admin bar. Works on singular posts/pages **and** archives, taxonomy pages, the home/front page, search, and 404 - controlled by a global **"Where Red Pen appears"** setting (defaults to everywhere).
 - **Reporting level** per note: target **This page** (the exact post or archive you're on) or **This template** (the view type, so the note covers every page rendered the same way). A page shows its own notes plus the template notes that apply to it.
-- **Snip a screenshot** - click Screenshot, drag a box around the area, done. The region is captured client-side (vendored html2canvas) and stored as a small WebP in `uploads/wp-red-pen/`, attached to the note.
-- **Typed notes** - note, suggested edit, bug/problem, or question - attached to the current post/page.
-- **Edit any note after adding it** - change the text, type, priority, or assignee; swap, remove, or add a screenshot; re-pin, move, or clear the attached element.
-- **Element-level pinning** - a "Pin to element" picker attaches a note to a specific element; anchored notes show as numbered markers on the page that jump to the note when clicked.
+- **Reporting level, part two: Site-wide** - a note can also apply to every page of the site, for the "the whole site needs a favicon" kind of flag.
+- **Snip a screenshot** - click Screenshot, drag a box around the area, done. The region is captured client-side (vendored html2canvas) and stored as a small WebP in `uploads/wp-red-pen/`, attached to the note. A markup editor (freehand pen, arrow, rectangle, undo) opens after the snip so you can circle exactly what you mean.
+- **Typed notes** - Note, Idea, Problem, or Question - plus your own custom note types with their own colours, defined in Display settings.
+- **Edit any note after adding it** - change the text, type, priority, or assignee; swap, remove, or add a screenshot; re-pin, move, or clear the attached element. Text and type are also editable inline from the repository table.
+- **Element-level pinning** - a "Pin to element" picker attaches a note to a specific element; anchored notes show as numbered markers on the page that jump to the note when clicked, and a Locate button scrolls to and highlights the pinned element.
+- **Three-state status** - every note is Open, In Progress, or Resolved; the panel has a tab per status and each note has a status dropdown (with Undo).
 - **Threaded replies** - reply to any note from the panel to build a discussion under it.
-- **Priority + assignment** - tag notes Low / Normal / High and assign them to any editor/admin; the repository adds Priority and Assigned columns and an "Assigned to me" filter.
+- **Priority, severity + assignment** - tag notes Low / Normal / High, optionally rate impact (Blocker to Trivial), and assign them to any editor/admin; the repository adds Priority and Assigned columns and an "Assigned to me" filter.
+- **Client reviewer links** - generate a private, token-gated link and a client can leave notes on the live site with no WordPress login. Revocable, optionally expiring, enforced server-side.
+- **White-label client reports** - one click turns the notes into a printable client report; set your own title, logo, and accent colour and hide the Red Pen credit. Free, like everything else.
+- **Red Pen Hub connection** - optionally push (or let the Hub pull) your notes onto a local cross-project board. Outbound-only, no external service; the Hub is a separate free app.
 - **CSV export** of the repository (honouring the active filters) - local, no external service.
 - **Auto-context** - each note records the browser, OS, and viewport it was created in.
 - **Per-post meta box** on the edit screen listing that page's notes.
-- **Shared repository** admin page: every note across the site, filterable by Open / Resolved / All, with one-click resolve/reopen.
+- **Shared repository** under **Tools > Red Pen**: every note across the site, filterable by Open / In Progress / Resolved / All, with per-note status actions, inline quick-edits, bulk actions (reopen / mark in progress / resolve / delete), and delete.
+- **Jump to next open note** - an admin-bar item (and the J key) cycles through the open notes pinned on the current page.
+- **Dark mode** - a Display-settings toggle darkens the front-end panel and the repository page.
 - **Open-note badge** on the admin bar and the floating button.
-- **Clean uninstall** - deleting the plugin removes every note and preference it created and nothing else.
+- **Clean uninstall** - deleting the plugin removes every note, screenshot, option, and preference it created and nothing else.
 
 ## Architecture
 
