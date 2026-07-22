@@ -25,7 +25,7 @@ Built for editorial review, client hand-offs, content audits, and team to-do lis
 * **Snip a screenshot** - click Screenshot, drag a box around the area, done. The region is captured client-side and saved as a small WebP attached to the note (shown on the note, the edit-screen panel, and the repository)
 * **Typed notes** - plain note, idea, problem, or question
 * **Per-post panel** - see and resolve a page's notes from its edit screen
-* **Shared repository** - one admin page listing every note across the site, filterable by Open / Resolved / All
+* **Shared repository** - one admin page listing every note across the site, filterable by Open / In Progress / Resolved / All
 * **Open-note badge** in the admin bar and on the floating button
 * **Resolve / reopen** any note in a click
 * Clean uninstall - deletes every note and preference it created, touches nothing else
