@@ -51,7 +51,7 @@ Single self-contained `wp-red-pen.php` (inline CSS/JS, no build step), in keepin
 2. Activate.
 3. Click **Red Pen: Off** in the admin bar to turn Dev Mode on for your account.
 4. Open any post/page on the front end and use the floating button (bottom right).
-5. Review everything under the **Red Pen** dashboard menu.
+5. Review everything under **Tools > Red Pen**.
 
 ## Roadmap
 
