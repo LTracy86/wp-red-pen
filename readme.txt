@@ -62,6 +62,11 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
+Full release-by-release history lives in the GitHub repo; the highlights are below.
+
+= 0.25.4 =
+* Uninstall now removes every option the plugin created, including the client-report brand settings and the legacy license key. Manual and readme refreshed post-pivot - white-label client reports are free for everyone.
+
 = 0.25.3 =
 * Theme-proofing, round two: attribute-qualified theme rules (e.g. button[type="submit"] { ... !important }) out-rank plain class selectors and were still restyling the Add note / Reply buttons. The whole widget stylesheet now lives one ID tier up - every component rule is scoped under its mount-root ID - so no realistic site selector can out-rank it.
 
