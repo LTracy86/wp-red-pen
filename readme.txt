@@ -40,7 +40,7 @@ WP Red Pen is free forever, and every feature is included - white-label client r
 2. Activate the plugin.
 3. In the admin bar, click **Red Pen: Off** to switch Dev Mode on for your account.
 4. Visit any post or page on the front end and use the floating button (bottom right) to add a note.
-5. Review everything under the **Red Pen** menu in the dashboard.
+5. Review everything under **Tools > Red Pen**.
 
 == Frequently Asked Questions ==
 
