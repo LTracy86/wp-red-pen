@@ -4,8 +4,6 @@ A logged-in review layer for WordPress. Editors and admins flip on **Dev Mode** 
 
 Part of the [Tracy Digital Media](https://tracydigitalmedia.com/) free dev-plugin family. Free and open, every feature included - white-label client reports and the multi-site Hub board too. No account, no subscription, no third-party services, no phone-home.
 
-> WP Red Pen is the one deliberate exception to the TDM "no warm/red" palette rule: the editorial red-pen branding gets a red accent (#D32F2F) on otherwise TDM-neutral (near-black / gray / white) chrome.
-
 ## Why
 
 Reviewing a site usually means a messy spreadsheet, a thread of "the about page has a typo," or comments scattered across email. WP Red Pen puts the note where you found the problem - on the page itself - and collects every note in one place your whole team can see.
