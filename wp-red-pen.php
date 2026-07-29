@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://tracydigitalmedia.com/wp-red-pen/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.25.4
+ * Version:           0.25.5
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.25.4' );
+define( 'WPRP_VERSION',     '0.25.5' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -2761,6 +2761,12 @@ function wprp_print_frontend_assets() {
 		:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-repo-link:hover{opacity:1!important}
 		:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-repo-link .dashicons{font-size:18px!important;width:18px!important;height:18px!important}
 		:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-list{padding:.5rem .75rem!important;overflow-y:auto!important;flex:1!important;min-height:60px!important}
+		/* Anti-squish: the non-scrolling children of #wprp-panel (a flex column) must
+		   not shrink. Without flex:none the browser compresses them past their content
+		   height once the notes overflow the panel max-height. .wprp-list is a block
+		   container so the note cards themselves are already safe - the exposure here
+		   is the header, the tab row and the add form. */
+		:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) :is(.wprp-head,.wprp-tabs,.wprp-form){flex:none!important}
 		:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-muted{color:var(--wprp-gray)!important;font-size:.85rem!important;margin:.4rem 0!important}
 		/* branded empty state for the "No open notes on this page" message (open tab only) */
 		:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-empty{background:var(--wprp-red)!important;color:#fff!important;font-weight:600!important;text-align:center!important;border-radius:6px!important;padding:.55rem .7rem!important}
