@@ -64,6 +64,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 Full release-by-release history lives in the GitHub repo; the highlights are below.
 
+= 0.25.5 =
+* Fixed the panel header, tab row and add form compressing when a page had enough notes to overflow the panel. They inherited flex-shrink from the panel's flex column; they are now pinned at their content height so the note list scrolls instead.
+
 = 0.25.4 =
 * Uninstall now removes every option the plugin created, including the client-report brand settings and the legacy license key. Manual and readme refreshed post-pivot - white-label client reports are free for everyone.
 
