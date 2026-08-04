@@ -71,6 +71,9 @@ define( 'WPRP_META_REVIEW_TOKEN', '_wprp_review_token' );     // note meta: the 
 define( 'WPRP_REVIEW_RATE_MAX',    20 );                      // anti-abuse: max reviewer note/reply creates per IP+token per window
 define( 'WPRP_REVIEW_RATE_WINDOW', 10 * MINUTE_IN_SECONDS );  // anti-abuse: the rolling window for the reviewer create limiter
 
+/* ===== 1. CONFIGURATION AND VOCABULARY ===== */
+/* Statuses, note types, priorities, severities, report branding, agent platforms. Lookup tables and option reads - no side effects. */
+
 /** Workflow statuses: short key -> human label. Single source of truth for the 3-state model. */
 function wprp_statuses() {
 	return array(
@@ -203,6 +206,9 @@ function wprp_report_brand() {
 		'hide_credit' => ! empty( $b['hide_credit'] ),
 	);
 }
+
+/* ===== 2. WHERE RED PEN APPEARS ===== */
+/* View scopes, the global visibility option, and resolving the CURRENT view into the context keys a note is filed against. */
 
 /** View scopes the widget can be shown on (for the global visibility setting). */
 /** Known agent platforms for the Agent Feedback feature: slug => label. */
@@ -415,6 +421,8 @@ function wprp_current_context() {
 	);
 }
 
+/* ===== 3. PEOPLE, PERMISSIONS AND INPUT SANITIZING ===== */
+
 /**
  * Users who may be assigned a note: everyone whose role carries the Red Pen
  * capability (edit_posts). Returned as id => display_name, capped at 200.
@@ -498,6 +506,8 @@ function wprp_user_can() {
 function wprp_devmode_on() {
 	return wprp_user_can() && (bool) get_user_meta( get_current_user_id(), WPRP_USERMETA, true );
 }
+
+/* ===== 4. CLIENT REVIEWER LINKS: THE TOKEN STORE ===== */
 
 /* ---------------------------------------------------------------------------
  * Client reviewer links (Phase 1 of the WordPress Client Reviewer Link feature).
@@ -698,6 +708,9 @@ function wprp_review_set_cookie() {
 }
 add_action( 'init', 'wprp_review_set_cookie' );
 
+/* ===== 5. SCREENSHOTS ===== */
+/* Stored outside the media library in uploads/wp-red-pen, behind deny guards, and served only through a capability-gated reader. */
+
 /** Absolute path to the screenshots folder (uploads/wp-red-pen), created on demand. */
 function wprp_shot_dir( $create = false ) {
 	$up  = wp_upload_dir();
@@ -891,9 +904,7 @@ add_action(
 	}
 );
 
-// ---------------------------------------------------------------------------
-// i18n
-// ---------------------------------------------------------------------------
+/* ===== 6. INTERNATIONALISATION ===== */
 add_action(
 	'init',
 	function () {
@@ -901,9 +912,8 @@ add_action(
 	}
 );
 
-// ---------------------------------------------------------------------------
-// Content model: a private note CPT + two custom statuses
-// ---------------------------------------------------------------------------
+/* ===== 7. CONTENT MODEL ===== */
+/* The private wprp_note CPT and the three custom post statuses that carry the workflow. */
 add_action(
 	'init',
 	function () {
@@ -955,9 +965,8 @@ add_action(
 	}
 );
 
-// ---------------------------------------------------------------------------
-// Note helpers (the shared core all three surfaces call)
-// ---------------------------------------------------------------------------
+/* ===== 8. NOTES: CREATE, REPLY, STATUS, UPDATE, QUERY ===== */
+/* The shared core every surface calls. Replies are child posts; everything else is post meta. */
 
 /**
  * Create a note. Returns the new post id or WP_Error.
@@ -1653,6 +1662,9 @@ function wprp_get_notes_for_agent( $slug, $status = 'any', $exclude = 0 ) {
 	return get_posts( $args );
 }
 
+/* ===== 9. AGENT BRIEFS, REVIEWER VISIBILITY AND THE OPEN-NOTE COUNT ===== */
+/* Read wprp_reviewer_can_see_note() before touching anything a reviewer link can reach. It is the ONE gate every reviewer read path runs through, and it fails closed. */
+
 /**
  * Per-site random secret woven into the agent-brief filename so the briefs are as
  * unguessable as the screenshots. Without this the briefs sit at a KNOWN path
@@ -1977,6 +1989,9 @@ add_action(
 	}
 );
 
+/* ===== 10. NOTE PAYLOADS ===== */
+/* The shapes handed out. wprp_note_to_array() is the dev shape; the *_reviewer() variants are the deliberately narrower client shape. */
+
 /**
  * Lightweight priming payload embedded in data-cfg so a Dev-Mode page load can set the FAB
  * badge + place element pins WITHOUT fetching the full notes payload (bodies, replies,
@@ -2192,8 +2207,8 @@ function wprp_priming_data_reviewer( $keys ) {
 	);
 }
 
-// ---------------------------------------------------------------------------
-// Red Pen Hub - push this site's notes to the local combined board.
+/* ===== 11. RED PEN HUB ===== */
+// Push this site's notes to the local combined board.
 // Outbound only, non-blocking, dev-only. The Hub stores what we send; this site
 // stays the source of truth. No-op unless a Hub URL + token are configured.
 // ---------------------------------------------------------------------------
@@ -2275,9 +2290,8 @@ add_action( 'before_delete_post', function ( $pid ) { if ( WPRP_CPT === get_post
 add_action( 'wp_trash_post', function ( $pid ) { if ( WPRP_CPT === get_post_type( $pid ) ) { wprp_mark_dirty_for_hub(); } } );
 add_action( 'shutdown', function () { if ( ! empty( $GLOBALS['wprp_hub_dirty'] ) ) { wprp_push_to_hub(); } } );
 
-// ---------------------------------------------------------------------------
-// One-time data migration: backfill the page/template context on legacy notes
-// ---------------------------------------------------------------------------
+/* ===== 12. ONE-TIME DATA MIGRATIONS ===== */
+/* Backfills the page/template context on notes that predate the context model. */
 add_action(
 	'init',
 	function () {
@@ -2315,9 +2329,8 @@ add_action(
 	20
 );
 
-// ---------------------------------------------------------------------------
-// REST API - the front-end button talks to this
-// ---------------------------------------------------------------------------
+/* ===== 13. REST API ===== */
+/* Namespace wprp/v1. Edit/status/delete are dev-only; read and create also accept a reviewer token. */
 add_action(
 	'rest_api_init',
 	function () {
@@ -2526,9 +2539,7 @@ add_action(
 	}
 );
 
-// ---------------------------------------------------------------------------
-// Admin bar: Dev Mode toggle + open-note badge
-// ---------------------------------------------------------------------------
+/* ===== 14. ADMIN BAR ===== */
 add_action(
 	'admin_bar_menu',
 	function ( $bar ) {
@@ -2612,9 +2623,8 @@ add_action(
 	}
 );
 
-// ---------------------------------------------------------------------------
-// Front-end: the floating button + popout dialog (Dev Mode on, singular views)
-// ---------------------------------------------------------------------------
+/* ===== 15. FRONT END: THE FLOATING BUTTON, PANEL, CSS AND JS ===== */
+/* The whole widget: markup, then the inline stylesheet, then the inline script. All in this one file by design. */
 add_action(
 	'wp_footer',
 	function () {
@@ -4191,9 +4201,7 @@ add_action(
 	}
 );
 
-// ---------------------------------------------------------------------------
-// Edit-screen meta box: the notes attached to this post
-// ---------------------------------------------------------------------------
+/* ===== 16. EDIT-SCREEN META BOX ===== */
 add_action(
 	'add_meta_boxes',
 	function ( $post_type ) {
@@ -4258,9 +4266,8 @@ function wprp_render_metabox( $post ) {
 	echo '<p style="margin:.4rem 0 0"><a href="' . esc_url( admin_url( 'tools.php?page=wp-red-pen' ) ) . '">' . esc_html__( 'Open the notes repository &rarr;', 'wp-red-pen' ) . '</a></p>';
 }
 
-// ---------------------------------------------------------------------------
-// Admin repository page: every note across the site (the shared to-do list)
-// ---------------------------------------------------------------------------
+/* ===== 17. ADMIN REPOSITORY PAGE ===== */
+/* Tools > Red Pen. The shared to-do list: every note on the site, filtered and acted on. */
 add_action(
 	'admin_menu',
 	function () {
@@ -4771,6 +4778,9 @@ function wprp_render_repo_page() {
 	echo '</tbody></table></form></div>';
 }
 
+/* ===== 18. REPOSITORY ACTION HANDLERS ===== */
+/* admin-post endpoints behind the repository UI: bulk actions, quick-edits, status, delete, settings, reviewer links, CSV export. Every one nonce-checked and capability-checked. */
+
 /** admin-post handler: bulk Resolve / In Progress / Reopen / Delete on the selected notes. */
 add_action(
 	'admin_post_wprp_bulk',
@@ -5140,9 +5150,8 @@ add_action(
 	}
 );
 
-// ---------------------------------------------------------------------------
-// Client report - the branded, printable client deliverable (free for all)
-// ---------------------------------------------------------------------------
+/* ===== 19. CLIENT REPORT ===== */
+/* The printable deliverable a freelancer hands a client. Branding included, no tier. */
 
 /** admin-post handler: save the client-report branding. */
 add_action(
@@ -5358,9 +5367,7 @@ function wprp_render_client_report() {
 	exit;
 }
 
-// ---------------------------------------------------------------------------
-// Admin: load dashicons on our screens (for the menu icon + meta box chrome)
-// ---------------------------------------------------------------------------
+/* ===== 20. ADMIN CHROME ===== */
 add_action(
 	'admin_enqueue_scripts',
 	function () {
