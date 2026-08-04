@@ -66,6 +66,10 @@ Red Pen is free and open, every feature, no gate. If it saves you time, you can 
 
 Supporters are listed at https://redpen.tools/supporters.html.
 
+## Contributing
+
+Bug reports and pull requests are welcome - see [CONTRIBUTING.md](CONTRIBUTING.md). Release history is in [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
 GPLv2 or later. Author: Lincoln Tracy / Tracy Digital Media LLC.
