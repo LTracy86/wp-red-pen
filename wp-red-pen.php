@@ -3607,7 +3607,16 @@ function wprp_print_frontend_assets() {
 			// existing screenshot: show it; kept unless the user replaces or clears it
 			if (n.shot) { shotThumb.src = n.shot; shotPrev.hidden = false; } else { shotPrev.hidden = true; shotThumb.removeAttribute('src'); }
 			// existing element pin: show the indicator; kept unless replaced or cleared
-			if (n.anchor) { pinLabel.textContent = '<?php echo esc_js( __( 'Pinned to element', 'wp-red-pen' ) ); ?>'; pinInfo.hidden = false; } else { pinInfo.hidden = true; pinLabel.textContent = ''; }
+			// Re-resolve the saved selector so the editor shows what the pin actually points at now,
+			// not a generic "element" (and so a pin whose target is gone reads as gone).
+			if (n.anchor) {
+				var pinEl = null;
+				try { var pa = JSON.parse(n.anchor); if (pa && pa.sel) { pinEl = document.querySelector(pa.sel); } } catch (e) { pinEl = null; }
+				pinLabel.textContent = pinEl
+					? PIN_TO + ' ' + describeEl(pinEl)
+					: '<?php echo esc_js( __( 'Pinned (that element is not on this page)', 'wp-red-pen' ) ); ?>';
+				pinInfo.hidden = false;
+			} else { pinInfo.hidden = true; pinLabel.textContent = ''; }
 			editBar.hidden = false;
 			if (moreBox) { moreBox.hidden = false; }
 			if (moreToggle) { moreToggle.setAttribute('aria-expanded', 'true'); }
