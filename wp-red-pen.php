@@ -2278,6 +2278,9 @@ function wprp_push_to_hub( $blocking = false ) {
 		)
 	);
 	$notes = array();
+	// Resolved once outside the loop: includes the user's custom types, so a ct_* slug
+	// reaches the Hub with the label the user actually gave it.
+	$hub_types = wprp_note_types();
 	foreach ( $posts as $p ) {
 		$target    = (int) get_post_meta( $p->ID, WPRP_META_TARGET, true );
 		$type      = (string) get_post_meta( $p->ID, WPRP_META_TYPE, true );
