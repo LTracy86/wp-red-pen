@@ -119,7 +119,7 @@ repository, so they carry no date.
   stylesheet now sits one ID tier up, with every component rule scoped under its
   mount-root ID, so no realistic site selector can out-rank it.
 
-## [0.25.1] - [0.25.2] - 2026-07-21
+## [0.25.1] and [0.25.2] - 2026-07-21
 
 ### Fixed
 

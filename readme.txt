@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.25.5
+Stable tag: 0.26.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,7 +46,13 @@ WP Red Pen is free forever, and every feature is included - white-label client r
 
 = Who can see and add notes? =
 
-Any logged-in user who can edit posts (editors and administrators by default). Visitors and subscribers never see the button or the notes.
+Any logged-in user who can edit posts (editors and administrators by default). Ordinary visitors and subscribers never see the button or the notes.
+
+The one exception is a client reviewer link, which you generate yourself and can revoke at any time. Someone holding that link can leave feedback without a WordPress login, and can read only the notes you have explicitly marked "Visible to client reviewers" plus their own reports.
+
+= Can a client see my internal notes? =
+
+No. Notes are internal by default. A note reaches a reviewer link only if you tick "Visible to client reviewers" on it, and only on public published pages - never on drafts, never site-wide notes, never the agent queue, and never your screenshots.
 
 = Where are the notes stored? =
 
@@ -54,7 +60,7 @@ As a private custom post type in your own WordPress database. They are never sen
 
 = Does it slow down my site for visitors? =
 
-No. The floating button and its code only load for logged-in editors/admins with Dev Mode on. Logged-out visitors get nothing extra.
+No. The floating button and its code only load for logged-in editors/admins with Dev Mode on, or for someone holding a client reviewer link you issued. Ordinary logged-out visitors get nothing extra.
 
 = What happens if I delete the plugin? =
 
@@ -62,7 +68,15 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 
 == Changelog ==
 
-Full release-by-release history lives in the GitHub repo; the highlights are below.
+Full release-by-release history lives in CHANGELOG.md in the GitHub repo; the highlights are below.
+
+= 0.26.0 =
+* Security: notes are now INTERNAL by default. A client reviewer link used to expose every open note on a public page, including your own working notes. A note only reaches a reviewer when you tick "Visible to client reviewers" on it. Existing notes have no flag, so they stay hidden until you share them deliberately - check the repository if you were relying on the old behaviour.
+* Reviewers can now see their own reports after you resolve them, with the date they were fixed. Their Resolved tab could never fill before, so a fixed report looked exactly like one that never saved.
+* Pin mode works on a phone: the page scrolls again (it was locked), a pin is placed with a tap, and there is a visible Cancel control instead of an Esc-key prompt.
+* Pins are labelled with the element's own visible text instead of "Pinned to div".
+* The floating button clears the iOS Safari bottom bar, and form fields no longer make iOS zoom the page.
+* Removed the last of the retired PRO tier: the embedded licence key, its verifier, and every tier branch. Everything was already free; now the code says so too.
 
 = 0.25.5 =
 * Fixed the panel header, tab row and add form compressing when a page had enough notes to overflow the panel. They inherited flex-shrink from the panel's flex column; they are now pinned at their content height so the note list scrolls instead.
