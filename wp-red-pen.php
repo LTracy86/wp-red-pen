@@ -2387,12 +2387,13 @@ add_action(
 						$keys   = (string) $req->get_param( 'keys' );
 							$agent  = (string) $req->get_param( 'agent' );
 						if ( $reviewer ) {
-							// Force OPEN, and pass the requested keys through the reviewer allow-list
-							// server-side: no site-wide notes, no notes on non-public (draft/private)
-							// posts, whatever keys the client asks for. Stops a link holder harvesting
-							// notes beyond the public pages they can already browse.
+							// Pass the requested keys through the reviewer allow-list server-side: no
+							// site-wide notes, no notes on non-public (draft/private) posts, whatever
+							// keys the client asks for. Then run EVERY candidate through the single
+							// visibility gate, which drops internal notes and lets the token holder
+							// see their own reports at any status.
 							$safe  = wprp_reviewer_safe_keys( explode( ',', $keys ) );
-							$notes = $safe ? wprp_get_notes_for_context( $safe, 'open' ) : array();
+							$notes = $safe ? wprp_reviewer_visible_notes( wprp_get_notes_for_context( $safe, 'any' ) ) : array();
 						} else {
 							// scope=all is the Hub's cross-project pull: every note on the site,
 							// not just the target=0 site-wide ones. agent/keys/target paths unchanged.
