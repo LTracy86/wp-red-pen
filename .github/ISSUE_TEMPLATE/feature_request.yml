@@ -1,0 +1,45 @@
+name: Feature request
+description: Suggest something WP Red Pen should do.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Red Pen stays local, private and simple. These are deliberately out of
+        scope and will be closed: email or push notification alerts, external SaaS
+        sync, Jira / Slack / Trello integrations, real-time collaboration, licence
+        servers, per-seat billing, and anything that phones home.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What review or hand-off task is awkward today? Describe the situation, not the solution.
+      placeholder: |
+        When I hand a page back to a client I have no way to tell them which of my
+        notes are for them and which are my own working notes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you would like it to do
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do instead right now
+      description: Workarounds, other plugins, or a manual process.
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: This does not require an external service, an account, or a network call off the site.
+          required: true
+        - label: This can live inside the single wp-red-pen.php file, with no build step.
+          required: true
