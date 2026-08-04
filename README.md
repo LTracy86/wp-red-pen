@@ -22,6 +22,8 @@ Good for editorial review, client hand-offs, content audits, QA passes, and shar
 - **Threaded replies** - reply to any note from the panel to build a discussion under it.
 - **Priority, severity + assignment** - tag notes Low / Normal / High, optionally rate impact (Blocker to Trivial), and assign them to any editor/admin; the repository adds Priority and Assigned columns and an "Assigned to me" filter.
 - **Client reviewer links** - generate a private, token-gated link and a client can leave notes on the live site with no WordPress login. Revocable, optionally expiring, enforced server-side.
+- **Internal by default** - your notes are invisible to reviewer links unless you tick **Visible to client reviewers** on the note. A reviewer only ever sees notes you shared plus their own reports, and their own reports stay visible after you resolve them, with the date they were fixed.
+- **Agent feedback** - enable the AI coding agents you use (Claude, Codex, a custom name) in settings, then assign a note to one. It moves to that agent's queue and is written to a portable JSON brief the agent can read off disk. Local only; no AI keys, nothing leaves the site.
 - **White-label client reports** - one click turns the notes into a printable client report; set your own title, logo, and accent colour and hide the Red Pen credit. Free, like everything else.
 - **Red Pen Hub connection** - optionally push (or let the Hub pull) your notes onto a local cross-project board. Outbound-only, no external service; the Hub is a separate free app.
 - **CSV export** of the repository (honouring the active filters) - local, no external service.
