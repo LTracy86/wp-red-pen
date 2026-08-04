@@ -3989,9 +3989,11 @@ function wprp_print_frontend_assets() {
 				showPinInfo(el);
 				panel.hidden = false;
 			}
-			function key(e) { if (e.key === 'Escape') { teardown(); panel.hidden = false; } }
+			function cancelPin() { teardown(); panel.hidden = false; }
+			function key(e) { if (e.key === 'Escape') { cancelPin(); } }
 			function teardown() {
 				ov.removeEventListener('mousemove', mv);
+					ov.removeEventListener('touchstart', tstart);
 					ov.removeEventListener('touchmove', tmv);
 					ov.removeEventListener('touchend', tend);
 				ov.removeEventListener('click', clk);
@@ -3999,12 +4001,41 @@ function wprp_print_frontend_assets() {
 				if (ov.parentNode) { ov.parentNode.removeChild(ov); }
 			}
 			ov.addEventListener('mousemove', mv);
-				// Touch floor: drag a finger to highlight, lift to pin.
-				function tmv(e) { var t = e.touches && e.touches[0]; if (t) { mv({ clientX: t.clientX, clientY: t.clientY }); if (e.cancelable) { e.preventDefault(); } } }
-				function tend(e) { var t = e.changedTouches && e.changedTouches[0]; if (t) { clk({ clientX: t.clientX, clientY: t.clientY, preventDefault: function () {}, stopPropagation: function () {} }); } }
-				ov.addEventListener('touchmove', tmv, { passive: false });
-				ov.addEventListener('touchend', tend);
+				// Touch: the page has to keep scrolling, or a phone reviewer can only ever pin what
+				// happens to be on screen. So nothing here calls preventDefault on touchmove. A pin
+				// is a deliberate TAP; any drag past TAP_SLOP is the user scrolling to reach the
+				// element they actually mean, and is left alone.
+				var TAP_SLOP = 12;
+				var tsx = 0, tsy = 0, tmoved = false;
+				function tstart(e) {
+					var t = e.touches && e.touches[0];
+					if (!t) { return; }
+					tsx = t.clientX; tsy = t.clientY; tmoved = false;
+					if (e.target && cancelBtn.contains(e.target)) { return; }
+					mv({ clientX: t.clientX, clientY: t.clientY }); // preview what a tap here would pin
+				}
+				function tmv(e) {
+					var t = e.touches && e.touches[0];
+					if (!t || tmoved) { return; }
+					if (Math.abs(t.clientX - tsx) > TAP_SLOP || Math.abs(t.clientY - tsy) > TAP_SLOP) {
+						tmoved = true;
+						hl.style.display = 'none'; // scrolling, not aiming
+					}
+				}
+				function tend(e) {
+					var t = e.changedTouches && e.changedTouches[0];
+					if (!t || tmoved) { return; }
+					if (e.target && cancelBtn.contains(e.target)) { cancelPin(); return; }
+					// Swallow the synthetic click a tap generates, or it lands on the page underneath
+					// once the overlay is gone and follows whatever link was there.
+					if (e.cancelable) { e.preventDefault(); }
+					clk({ clientX: t.clientX, clientY: t.clientY, preventDefault: function () {}, stopPropagation: function () {} });
+				}
+				ov.addEventListener('touchstart', tstart, { passive: true });
+				ov.addEventListener('touchmove', tmv, { passive: true });
+				ov.addEventListener('touchend', tend, { passive: false });
 			ov.addEventListener('click', clk);
+			cancelBtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); cancelPin(); });
 			window.addEventListener('keydown', key);
 		}
 
