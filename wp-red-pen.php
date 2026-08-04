@@ -2537,6 +2537,7 @@ add_action(
 						array(
 							'body'          => (string) $req->get_param( 'body' ),
 							'type'          => $req->get_param( 'type' ),
+							'client_visible' => $req->get_param( 'client_visible' ),
 							'priority'      => $req->get_param( 'priority' ),
 							'severity'      => $req->get_param( 'severity' ),
 							'assignee'      => $req->get_param( 'assignee' ),
