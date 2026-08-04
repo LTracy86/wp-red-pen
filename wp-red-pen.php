@@ -2813,6 +2813,9 @@ add_action(
 						<label class="wprp-levellabel"><?php esc_html_e( 'Reporting level', 'wp-red-pen' ); ?>
 							<select id="wprp-level" aria-label="<?php esc_attr_e( 'Reporting level', 'wp-red-pen' ); ?>"><?php echo $level_opts; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_* above ?></select>
 						</label>
+						<?php if ( ! $reviewer ) : ?>
+						<label class="wprp-cvlabel" title="<?php esc_attr_e( 'Off by default. Your notes stay internal unless you share them.', 'wp-red-pen' ); ?>"><input type="checkbox" id="wprp-client-visible"> <?php esc_html_e( 'Visible to client reviewers', 'wp-red-pen' ); ?></label>
+						<?php endif; ?>
 						<?php if ( $agents ) : ?>
 						<input type="text" id="wprp-codescope" maxlength="300" placeholder="<?php esc_attr_e( 'Code scope for agent (optional) e.g. includes/foo.php:42', 'wp-red-pen' ); ?>" aria-label="<?php esc_attr_e( 'Code scope', 'wp-red-pen' ); ?>">
 						<?php endif; ?>
