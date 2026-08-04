@@ -8,10 +8,10 @@ Versions below 1.0.0 are pre-release: 1.0.0 marks the first build considered
 ready for a public wp.org-style release.
 
 Entries from 0.12.0 onward were reconstructed from `readme.txt` and the git
-history. Releases before 0.12.0 were not kept in a changelog and are not
-reconstructed here rather than guessed at. Release dates come from the tag or
-commit that shipped each version; 0.12.0 and 0.12.1 predate the surviving
-history in this repository, so they carry no date.
+history. Releases before 0.12.0 were never written down, so they are left out
+rather than guessed at. Release dates come from the tag or commit that shipped
+each version; 0.12.0 and 0.12.1 predate the surviving history in this
+repository, so they carry no date.
 
 ## [Unreleased]
 
