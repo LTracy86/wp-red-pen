@@ -3019,7 +3019,11 @@ function wprp_print_frontend_assets() {
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pin-info{font-size:.78rem!important;color:var(--wprp-gray)!important;display:inline-flex!important;align-items:center!important;gap:.3rem!important;background:#eef1f3!important;border:1px solid #dfe3e6!important;border-radius:4px!important;padding:.1rem .2rem .1rem .45rem!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pin-clear{border:none!important;background:var(--wprp-ink)!important;color:#fff!important;width:16px!important;height:16px!important;border-radius:50%!important;font-size:12px!important;line-height:1!important;cursor:pointer!important;padding:0!important}
 			/* element-pin: full-screen picker */
-			#wprp-pinmode{position:fixed!important;inset:0!important;z-index:99999!important;cursor:crosshair!important;background:rgba(30,34,37,.10)!important}
+			/* touch-action:pan-y keeps the page scrollable under the picker - the overlay covers the
+			   whole viewport, so without it a phone user can only pin what is already on screen. */
+			#wprp-pinmode{position:fixed!important;inset:0!important;z-index:99999!important;cursor:crosshair!important;background:rgba(30,34,37,.10)!important;touch-action:pan-y!important}
+			#wprp-pinmode .wprp-pincancel{position:fixed!important;left:50%!important;bottom:calc(16px + env(safe-area-inset-bottom,0px))!important;transform:translateX(-50%)!important;z-index:100001!important;background:#1E2225!important;color:#fff!important;border:1px solid #55585b!important;border-radius:6px!important;font-family:-apple-system,sans-serif!important;font-size:.9rem!important;font-weight:600!important;padding:.55rem 1.4rem!important;cursor:pointer!important;box-shadow:0 4px 14px rgba(30,34,37,.45)!important}
+			#wprp-pinmode .wprp-pincancel:hover{background:#3A3A3C!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pinhl{position:fixed!important;border:2px solid var(--wprp-red)!important;background:rgba(211,47,47,.12)!important;pointer-events:none!important;z-index:99999!important;box-sizing:border-box!important}
 			/* element-pin: the placed markers */
 			#wprp-pinlayer{position:fixed!important;inset:0!important;z-index:99988!important;pointer-events:none!important}
