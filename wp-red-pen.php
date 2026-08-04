@@ -2509,13 +2509,17 @@ add_action(
 					if ( is_wp_error( $res ) ) {
 						return $res;
 					}
-					// Return the parent note shaped for the caller (stripped for reviewers).
+					// Return the parent note shaped for the caller (stripped for reviewers). The echo
+					// re-checks the visibility gate rather than assuming wprp_create_reply()'s own
+					// check still holds - a past bug in exactly this spot leaked internal notes.
 					$reviewer = ! wprp_user_can() && wprp_can_review();
-					return rest_ensure_response(
-						$reviewer
-							? wprp_note_to_array_reviewer( get_post( (int) $req['id'] ) )
-							: wprp_note_to_array( get_post( (int) $req['id'] ) )
-					);
+					$parent   = get_post( (int) $req['id'] );
+					if ( $reviewer ) {
+						return rest_ensure_response(
+							wprp_reviewer_can_see_note( $parent ) ? wprp_note_to_array_reviewer( $parent ) : array( 'id' => (int) $req['id'] )
+						);
+					}
+					return rest_ensure_response( wprp_note_to_array( $parent ) );
 				},
 			)
 		);
