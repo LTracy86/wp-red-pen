@@ -1398,6 +1398,12 @@ function wprp_set_status( $note_id, $status ) {
 			'post_status' => $status,
 		)
 	);
+	// Stamp WHEN the status last moved, whatever it moved to. This is the cross-surface
+	// contract field: the Hub's conflict resolver compares it against the time of its own
+	// pending write-back, and a surface that never sends one gets held in a degraded path
+	// where a Hub-side click can keep reverting a later change made here. Unlike
+	// _wprp_resolved_at this is never cleared - reopening is itself a status change.
+	update_post_meta( (int) $note_id, WPRP_META_STATUS_AT, gmdate( 'c' ) );
 	// Stamp who/when on resolve so the note carries an audit trail across surfaces
 	// (the Hub board reads these); clear both if the note is reopened.
 	if ( WPRP_STATUS_DONE === $status ) {
