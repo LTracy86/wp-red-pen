@@ -1297,6 +1297,10 @@ function wprp_create_reply( $parent_id, $body, $reviewer_name = '' ) {
 	);
 	if ( ! is_wp_error( $reply_id ) && $reviewer ) {
 		update_post_meta( $reply_id, WPRP_META_VIA_REVIEW, 1 );
+		$tok_id = wprp_current_review_token_id();
+		if ( '' !== $tok_id ) {
+			update_post_meta( $reply_id, WPRP_META_REVIEW_TOKEN, $tok_id );
+		}
 		$reviewer_name = sanitize_text_field( (string) $reviewer_name );
 		if ( '' !== $reviewer_name ) {
 			update_post_meta( $reply_id, WPRP_META_REVIEWER, mb_substr( $reviewer_name, 0, 80 ) );
