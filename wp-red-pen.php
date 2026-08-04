@@ -3184,10 +3184,18 @@ function wprp_print_frontend_assets() {
 				var EMPTY_RESOLVED = '<?php echo esc_js( __( 'No resolved notes on this page.', 'wp-red-pen' ) ); ?>';
 				var TAB_PROGRESS = '<?php echo esc_js( __( 'In Progress', 'wp-red-pen' ) ); ?>';
 				var EMPTY_PROGRESS = '<?php echo esc_js( __( 'No in-progress notes on this page.', 'wp-red-pen' ) ); ?>';
+				// A reviewer's other two tabs only ever hold their OWN reports, so say so - the old
+				// wording read as "nothing was ever fixed here" on a tab that could not fill.
+				var EMPTY_R_RESOLVED = '<?php echo esc_js( __( 'None of your reports on this page have been marked fixed yet.', 'wp-red-pen' ) ); ?>';
+				var EMPTY_R_PROGRESS = '<?php echo esc_js( __( 'None of your reports on this page are being worked on yet.', 'wp-red-pen' ) ); ?>';
 				var STATUS_LABELS = { open: TAB_OPEN, progress: TAB_PROGRESS, resolved: TAB_RESOLVED };
 				/* translators: %s: a status label (Open / In Progress / Resolved) */
 				var MARKED_MSG = '<?php echo esc_js( __( 'Marked %s.', 'wp-red-pen' ) ); ?>';
-				function emptyMsgFor(tab) { return tab === 'resolved' ? EMPTY_RESOLVED : (tab === 'progress' ? EMPTY_PROGRESS : EMPTY_OPEN); }
+				function emptyMsgFor(tab) {
+					if (tab === 'resolved') { return isReviewer ? EMPTY_R_RESOLVED : EMPTY_RESOLVED; }
+					if (tab === 'progress') { return isReviewer ? EMPTY_R_PROGRESS : EMPTY_PROGRESS; }
+					return EMPTY_OPEN;
+				}
 				function statusKeyOf(n) { return n.statusKey || (n.resolved ? 'resolved' : 'open'); }
 				var RESOLVED_MSG = '<?php echo esc_js( __( 'Note resolved.', 'wp-red-pen' ) ); ?>';
 				var REOPENED_MSG = '<?php echo esc_js( __( 'Note reopened.', 'wp-red-pen' ) ); ?>';
