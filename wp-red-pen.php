@@ -4589,6 +4589,7 @@ function wprp_render_repo_page() {
 				echo '<option value="' . esc_attr( $tk ) . '"' . selected( $tk, ( '' !== $etype ? $etype : 'note' ), false ) . '>' . esc_html( $tl ) . '</option>';
 			}
 			echo '</select></label></p>';
+			echo '<p style="margin:.4rem 0"><label><input type="checkbox" name="client_visible" value="1"' . checked( wprp_note_is_client_visible( $edit_id ), true, false ) . '> ' . esc_html__( 'Visible to client reviewers', 'wp-red-pen' ) . '</label><br><span class="description">' . esc_html__( 'Off by default. Notes stay internal until you share them.', 'wp-red-pen' ) . '</span></p>';
 			echo '<p style="margin:.4rem 0 0"><button type="submit" class="button button-primary">' . esc_html__( 'Save changes', 'wp-red-pen' ) . '</button> <a class="button" href="' . esc_url( $cancel_url ) . '">' . esc_html__( 'Cancel', 'wp-red-pen' ) . '</a></p>';
 			echo '</form>';
 		}
