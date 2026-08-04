@@ -15,6 +15,19 @@ repository, so they carry no date.
 
 ## [Unreleased]
 
+### Fixed
+
+- **WordPress now reports `statusAt` to the Hub.** It was the only surface that
+  never said when a note's status last moved, so the Hub could not tell whether
+  its own pending write-back or a later change made here was newer, and held
+  every WordPress note in a degraded path where a Hub-side click could keep
+  reverting a change made on the site. Stamped on every status change in either
+  direction, emitted on both the push payload and the REST shape the Hub pulls,
+  and falling back to `createdAt` for notes that predate the stamp.
+- The Hub push payload sent `typeColor` but not `typeLabel`, so a pushed custom
+  `ct_` type badged as its raw slug while the same note pulled over REST showed
+  the label the user gave it.
+
 ## [0.26.0] - 2026-08-04
 
 ### Security
