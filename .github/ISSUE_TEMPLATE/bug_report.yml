@@ -1,0 +1,101 @@
+name: Bug report
+description: Something in WP Red Pen does not work the way it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do NOT use this form for a security issue -
+        especially anything that lets a client reviewer link read notes it should
+        not. Email lincolnmtracy@gmail.com instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+      placeholder: |
+        I ticked "Visible to client reviewers" and saved, but the badge did not appear.
+        I expected the note to show a Client visible badge in the repository.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The shortest path from a clean install to the problem.
+      placeholder: |
+        1. Turn Dev Mode on
+        2. Open any published page on the front end
+        3. Add a note with More > Visible to client reviewers ticked
+        4. Open Tools > Red Pen
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: WP Red Pen version
+      description: Shown on the Plugins screen, or the Version line at the top of wp-red-pen.php.
+      placeholder: "0.26.0"
+    validations:
+      required: true
+
+  - type: input
+    id: wp-version
+    attributes:
+      label: WordPress version
+      placeholder: "6.8"
+    validations:
+      required: true
+
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: "8.2"
+    validations:
+      required: true
+
+  - type: input
+    id: theme
+    attributes:
+      label: Theme
+      description: Red Pen renders inside your theme's page, so the theme matters for anything visual.
+      placeholder: "Twenty Twenty-Five / Oxygen 6 / Astra"
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where does it happen
+      multiple: true
+      options:
+        - Front-end panel (logged in, Dev Mode)
+        - Client reviewer link
+        - Element pinning
+        - Screenshots or markup
+        - Repository page (Tools > Red Pen)
+        - Edit-screen meta box
+        - Client report or CSV export
+        - Red Pen Hub connection
+        - Agent feedback queue
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console or PHP errors
+      description: Paste anything relevant. This is rendered as code, so no backticks needed.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I reproduced this with other plugins deactivated, or I have said above which plugin is involved.
+        - label: I am not reporting a security issue here.
+          required: true
