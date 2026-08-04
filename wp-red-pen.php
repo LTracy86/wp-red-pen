@@ -28,8 +28,8 @@
  * end to end, diff it, and delete it, with nothing hiding elsewhere. Keep it
  * that way - see CONTRIBUTING.md.
  *
- * The file is divided by /* ===== N. SECTION ===== *|/ banners. Search for the
- * number to jump.
+ * The file is divided by numbered "===== N. SECTION =====" comment banners.
+ * Search for "===== 9." to jump straight to section 9.
  *
  *   1. CONFIGURATION AND VOCABULARY .... statuses, note types, priorities,
  *                                        severities, report branding, agents
