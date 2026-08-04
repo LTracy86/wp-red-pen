@@ -2205,26 +2205,33 @@ function wprp_reply_to_array_reviewer( $reply ) {
  * @return array
  */
 function wprp_priming_data_reviewer( $keys ) {
-	$notes = wprp_get_notes_for_context( $keys, 'open' );
+	// Same gate as the GET, applied to the same candidate set - the priming payload is a
+	// read path like any other, so it must not be able to show a note the GET would hide.
+	$notes = wprp_reviewer_visible_notes( wprp_get_notes_for_context( $keys, 'any' ) );
 	$types = wprp_note_types();
 	$pins  = array();
+	$open  = 0;
 	foreach ( $notes as $n ) {
+		$sk = wprp_status_key( $n->post_status );
+		if ( 'open' === $sk ) {
+			++$open;
+		}
 		$anchor = (string) get_post_meta( $n->ID, WPRP_META_ANCHOR, true );
-		if ( '' === $anchor ) {
-			continue;
+		if ( '' === $anchor || 'resolved' === $sk ) {
+			continue; // resolved notes keep their entry in the list but drop their map pin
 		}
 		$type   = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
 		$pins[] = array(
 			'id'        => (int) $n->ID,
 			'anchor'    => $anchor,
-			'statusKey' => 'open',
+			'statusKey' => $sk,
 			'resolved'  => false,
 			'typeLabel' => isset( $types[ $type ] ) ? $types[ $type ] : $types['note'],
 			'body'      => wp_trim_words( wp_strip_all_tags( $n->post_content ), 14, '...' ),
 		);
 	}
 	return array(
-		'openCount' => count( $notes ),
+		'openCount' => $open,
 		'pins'      => $pins,
 	);
 }
