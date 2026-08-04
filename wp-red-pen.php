@@ -3063,6 +3063,14 @@ function wprp_print_frontend_assets() {
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-note.wprp-st-progress{border-left-color:#E8A100!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pin-progress{background:#E8A100!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pin-progress:hover{background:#C98A00!important}
+			/* Touch devices: iOS zooms the whole page when a focused control is under 16px, which
+			   throws off every pin coordinate afterwards. Float the form controls to 16px there,
+			   and give the panel + tap targets a little more room. Desktop sizing is untouched. */
+			@media (pointer: coarse){
+				:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) :is(.wprp-form select,.wprp-form textarea,.wprp-form input,.wprp-replytext){font-size:16px!important}
+				:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) :is(.wprp-shotbtn,.wprp-more-toggle,.wprp-submit,.wprp-replysend){font-size:16px!important;padding:.5rem .9rem!important}
+				#wprp-root #wprp-panel{max-height:min(70vh,calc(100vh - 140px))!important}
+			}
 			/* Respect the user's reduced-motion preference: kill transitions, the flash, and the resize accent grow. */
 			@media (prefers-reduced-motion: reduce){
 				#wprp-fab,#wprp-fab:hover{transition:none!important;transform:none!important}
