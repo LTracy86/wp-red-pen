@@ -32,7 +32,7 @@ Built for editorial review, client hand-offs, content audits, and team to-do lis
 
 = Free and open =
 
-WP Red Pen is free forever, and every feature is included - white-label client reports and the multi-site Hub board too, with no key and no paid tier. It deliberately leaves out the things competitors paywall: no email alerts, no external SaaS sync, no per-seat fees. Your notes live in your database and nowhere else. If it saves you time, you can back the next release - Buy Me a Coffee (buymeacoffee.com/lincolntracy) or GitHub Sponsors (github.com/sponsors/LTracy86). Supporters go on the wall at redpen.tools/supporters.html.
+WP Red Pen is free forever, and every feature is included - white-label client reports and the multi-site Hub board too, with no key and no paid tier. It deliberately leaves out the things competitors paywall: no email alerts, no external SaaS sync, no per-seat fees. Your notes live in your database and nowhere else. If it saves you time, you can back the next release at Buy Me a Coffee (buymeacoffee.com/lincolntracy). Supporters go on the wall at redpen.tools/supporters.html.
 
 == Installation ==
 
