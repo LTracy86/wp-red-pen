@@ -4661,7 +4661,9 @@ function wprp_render_repo_page() {
 		$agent_html = '' !== $agent_slug ? '<div style="font-size:.72rem;color:#7a4ad6;font-weight:600;margin-top:.35rem"><span class="dashicons dashicons-superhero-alt" style="font-size:14px;width:14px;height:14px;vertical-align:text-top"></span> ' . esc_html( wprp_agent_label( $agent_slug ) ? wprp_agent_label( $agent_slug ) : $agent_slug ) . '</div>' : '';
 		$cs         = (string) get_post_meta( $n->ID, WPRP_META_CODESCOPE, true );
 		$cs_html    = '' !== $cs ? '<div style="font-size:.72rem;color:#3A3A3C;margin-top:.2rem;font-family:monospace">' . esc_html__( 'Code:', 'wp-red-pen' ) . ' ' . esc_html( $cs ) . '</div>' : '';
-		echo '<td>' . wprp_kses_note( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . $agent_html . $cs_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
+		// Client visibility is opt-in, so the badge marks the notes a reviewer link can read.
+		$cv_html    = wprp_note_is_client_visible( $n->ID ) ? '<div style="margin-top:.35rem"><span style="background:#14569B;color:#fff;border-radius:3px;padding:.05rem .35rem;font-size:.68rem;font-weight:600" title="' . esc_attr__( 'Client reviewers can read this note', 'wp-red-pen' ) . '">' . esc_html__( 'Client visible', 'wp-red-pen' ) . '</span></div>' : '';
+		echo '<td>' . wprp_kses_note( wpautop( $n->post_content ) ) . $shot_html . $ctx_html . $reply_html . $anchor_html . $agent_html . $cs_html . $cv_html . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- *_html built with esc_* above
 		$ctx_label = (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true );
 		$level     = (string) get_post_meta( $n->ID, WPRP_META_LEVEL, true );
 		$level     = in_array( $level, array( 'template', 'global' ), true ) ? $level : 'page';
