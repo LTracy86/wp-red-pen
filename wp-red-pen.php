@@ -1197,11 +1197,23 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	if ( $reviewer ) {
 		// Mark the note as reviewer feedback and attribute it; ignore assignee/agent/codescope/shot.
 		update_post_meta( $id, WPRP_META_VIA_REVIEW, 1 );
+		// A note the client wrote is client-visible by definition, so the reviewer can always
+		// see their own report back. Stamping the token record id is what lets the read path
+		// tell "their own" from "some other client's" later on.
+		update_post_meta( $id, WPRP_META_CLIENT_VISIBLE, 1 );
+		$tok_id = wprp_current_review_token_id();
+		if ( '' !== $tok_id ) {
+			update_post_meta( $id, WPRP_META_REVIEW_TOKEN, $tok_id );
+		}
 		$reviewer_name = sanitize_text_field( (string) $reviewer_name );
 		if ( '' !== $reviewer_name ) {
 			update_post_meta( $id, WPRP_META_REVIEWER, mb_substr( $reviewer_name, 0, 80 ) );
 		}
 	} else {
+		// Dev-filed notes are INTERNAL unless the author ticks "Visible to client reviewers".
+		if ( ! empty( $client_visible ) ) {
+			update_post_meta( $id, WPRP_META_CLIENT_VISIBLE, 1 );
+		}
 		$assignee = (int) $assignee;
 		if ( $assignee > 0 && user_can( $assignee, WPRP_CAP ) ) {
 			update_post_meta( $id, WPRP_META_ASSIGNEE, $assignee );
