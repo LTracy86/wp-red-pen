@@ -2117,6 +2117,11 @@ function wprp_note_to_array( $note, $replies = null ) {
 		'author'     => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
 		'date'       => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
 		'createdAt'  => get_the_time( 'c', $note ), // ISO 8601, for cross-tool consumers (the Hub); 'date' stays localized for our own UI
+		// When the status last moved, in any direction. The Hub's conflict resolver compares
+		// this against its own pending write-back; a source that omits it gets held in a
+		// degraded path where a Hub-side click can revert a later change made here. Falls
+		// back to createdAt for notes that predate the stamp.
+		'statusAt'   => (string) get_post_meta( $note->ID, WPRP_META_STATUS_AT, true ) ?: get_the_time( 'c', $note ),
 		'resolvedAt' => (string) get_post_meta( $note->ID, WPRP_META_RESOLVED_AT, true ),
 		'resolvedBy' => $rbu ? $rbu->display_name : '',
 		'target'     => (int) get_post_meta( $note->ID, WPRP_META_TARGET, true ),
