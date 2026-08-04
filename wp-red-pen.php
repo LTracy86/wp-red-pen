@@ -57,9 +57,7 @@ define( 'WPRP_DARK_OPT',     'wprp_dark' );       // global: dark mode for the f
 define( 'WPRP_CUSTOM_TYPES_OPT', 'wprp_custom_types' ); // global: user-defined note types ("Label|#hexcolor" per line)
 define( 'WPRP_HUB_URL_OPT',   'wprp_hub_url' );    // global: Red Pen Hub URL this site pushes notes to
 define( 'WPRP_HUB_TOKEN_OPT', 'wprp_hub_token' );  // global: Red Pen Hub connect token
-define( 'WPRP_BRAND_OPT',     'wprp_brand' );       // global (PRO): client-report branding (array: title, logo, color, hide_credit)
-define( 'WPRP_PRO_KEY_OPT',   'wprp_pro_key' );      // global (PRO): the offline-signed license key the buyer pastes in
-define( 'WPRP_PRO_PUBKEY',    'wFHUq3h8K8Kw8zKfpN7sjFT49529e8ACkbXJYmnR8h4=' ); // PRO license: Ed25519 public key, base64 of the raw 32 bytes. VERIFY-ONLY - safe to ship in the open; it can check a key, never mint one.
+define( 'WPRP_BRAND_OPT',     'wprp_brand' );       // global: client-report branding (array: title, logo, color, hide_credit). Free, like everything else - the paid tier was removed for good on 2026-07-14.
 define( 'WPRP_META_AGENT',     '_wprp_agent' );     // agent feedback: target agent slug ('' = a human note)
 define( 'WPRP_META_CODESCOPE', '_wprp_codescope' ); // agent feedback: optional code scope / file reference (free text)
 define( 'WPRP_AGENTS_OPT',     'wprp_agents' );      // global: enabled agent platform slugs (agent feedback dormant when empty)
