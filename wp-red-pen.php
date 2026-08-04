@@ -2290,6 +2290,10 @@ function wprp_push_to_hub( $blocking = false ) {
 			'id'           => (int) $p->ID,
 			'body'         => wp_strip_all_tags( $p->post_content ),
 			'type'         => $type,
+			// The Hub falls back to a four-entry label map when this is absent, so a custom
+			// ct_* type would badge as its raw slug. The pull path has always sent it; the
+			// push path did not, which is why pushed custom types looked different.
+			'typeLabel'    => isset( $hub_types[ $type ] ) ? $hub_types[ $type ] : $hub_types['note'],
 			'typeColor'    => wprp_note_type_color( $type ),
 			'priority'     => (string) get_post_meta( $p->ID, WPRP_META_PRIORITY, true ),
 			// Keep the push payload in step with the pull shape (wprp_note_to_array) so a
