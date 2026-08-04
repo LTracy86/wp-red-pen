@@ -2132,6 +2132,8 @@ function wprp_note_to_array( $note, $replies = null ) {
 		'level'       => $level,
 		'ctxKey'      => (string) get_post_meta( $note->ID, WPRP_META_CTXKEY, true ),
 		'ctxLabel'    => (string) get_post_meta( $note->ID, WPRP_META_CTXLABEL, true ),
+		'clientVisible' => wprp_note_is_client_visible( $note->ID ),
+		'viaReview'   => '1' === (string) get_post_meta( $note->ID, WPRP_META_VIA_REVIEW, true ),
 		'agent'       => (string) get_post_meta( $note->ID, WPRP_META_AGENT, true ),
 		'agentLabel'  => wprp_agent_label( (string) get_post_meta( $note->ID, WPRP_META_AGENT, true ) ),
 		'codeScope'   => (string) get_post_meta( $note->ID, WPRP_META_CODESCOPE, true ),
