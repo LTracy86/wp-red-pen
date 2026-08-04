@@ -2179,6 +2179,10 @@ function wprp_note_to_array_reviewer( $note, $replies = null ) {
 		'priorityLabel' => isset( $prios[ $priority ] ) ? $prios[ $priority ] : $prios['normal'],
 		'anchor'        => (string) get_post_meta( $note->ID, WPRP_META_ANCHOR, true ),
 		'level'         => $level,
+		// Their own reports come back at any status, so the client can see a thing was fixed
+		// instead of guessing whether it ever saved. Resolved-at is a plain date, no dev identity.
+		'mine'          => wprp_reviewer_owns_note( $note->ID ),
+		'resolvedAt'    => ( WPRP_STATUS_DONE === $note->post_status ) ? wprp_format_resolved_date( (string) get_post_meta( $note->ID, WPRP_META_RESOLVED_AT, true ) ) : '',
 		// A reviewer-attributed display name only - never a logged-in dev's identity.
 		'author'        => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
 		'date'          => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
