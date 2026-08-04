@@ -79,11 +79,24 @@
   <img src="img/wp-review-link.jpg" alt="">
   <figcaption>Generating a review link. Copy it at creation - it is not shown again.</figcaption>
 </figure>
-<p>A link holder gets a deliberately narrow version of the panel: they can read open notes, write notes, pin, and reply - and nothing else. No resolving, no admin access, no screenshots, no user lists. The boundary is enforced on the server, and reviewer submissions are rate-limited.</p>
+<p>A link holder gets a deliberately narrow version of the panel: they can read the notes shared with them, write notes, pin, and reply - and nothing else. No resolving, no admin access, no screenshots, no user lists. The boundary is enforced on the server, and reviewer submissions are rate-limited.</p>
 <figure>
   <img src="img/wp-reviewer.jpg" alt="">
   <figcaption>What the client sees through a review link: notes and pins, none of the controls.</figcaption>
 </figure>
+
+<h3>What a reviewer can see (changed in 0.26.0)</h3>
+<div class="callout">
+  <b>Sharing a note with a reviewer is now something you do on purpose.</b>
+  Before 0.26.0, any open note on a public page was readable by anyone holding a review link - your own working notes included. Notes are now internal by default and reach a reviewer only when you tick <b>Visible to client reviewers</b> on the note. The check fails closed, so <b>every note written before you upgraded is invisible to review links</b> until you share it deliberately.
+</div>
+<p>Tick the box on the front-end panel's More drawer or in the repository's edit panel. A shared note carries a <b>Client visible</b> badge in the front-end list, on the edit screen and in the repository table, and a <b>Client visible</b> column in the CSV export, so you can always tell at a glance what a client can read.</p>
+<p>Reviewers see their own reports at any status, with the date the report was marked fixed. Before, reviewer reads were pinned to open notes, so a client's Resolved tab could never fill and a report you had fixed looked identical to one that never saved. A one-time migration on upgrade restores the flag on notes the client themselves filed through a review link, so their own feedback stays visible to the link that filed it. Notes old enough to predate the token stamp keep exactly the visibility they had before - open-only - rather than gaining the new behaviour.</p>
+<p>Reviewers never see agent-queue notes, site-wide notes, or notes on drafts, private or pending posts. Those constraints were there before and still are; the visibility tick is an extra gate on top of them, never a replacement.</p>
+<div class="callout">
+  <b>Two links on one site are not isolated from each other.</b>
+  A note a client files through their link is client-visible by definition, so while it is open, any other review link on the same site can read it and the name typed on it. That has been true since review links shipped and is deliberate - a second reviewer at the same client picking up the thread is usually what you want. If you hand links to two clients who must not see each other's feedback, use two sites, or keep the second client's round until the first client's notes are resolved.
+</div>
 
 <h2>The client report</h2>
 <p>One click in the repository turns the notes into a printable report - totals, then every note grouped by status, ready for "Print / Save as PDF". Internal fields (assignees, agent queues, browser context) stay out; the report is written for the client's eyes.</p>
