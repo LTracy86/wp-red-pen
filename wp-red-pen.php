@@ -2154,6 +2154,22 @@ function wprp_note_to_array( $note, $replies = null ) {
  * @param WP_Post[]|null $replies Pre-fetched replies, or null to query.
  * @return array
  */
+/**
+ * Turn the stored ISO 8601 resolved-at stamp into the site's own date format for display.
+ * Returns '' when there is no stamp (notes resolved before the stamp existed).
+ *
+ * @param string $iso ISO 8601 timestamp, UTC.
+ * @return string
+ */
+function wprp_format_resolved_date( $iso ) {
+	$iso = trim( (string) $iso );
+	if ( '' === $iso ) {
+		return '';
+	}
+	$ts = strtotime( $iso );
+	return $ts ? date_i18n( (string) get_option( 'date_format' ), $ts ) : '';
+}
+
 function wprp_note_to_array_reviewer( $note, $replies = null ) {
 	$type     = (string) get_post_meta( $note->ID, WPRP_META_TYPE, true );
 	$types    = wprp_note_types();
