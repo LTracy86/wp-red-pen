@@ -5077,6 +5077,7 @@ add_action(
 					isset( $severities[ $severity ] ) ? $severities[ $severity ] : '',
 					$level,
 					$statuses_lbl[ wprp_status_key( $n->post_status ) ],
+					wprp_note_is_client_visible( $n->ID ) ? 'Yes' : 'No',
 					wprp_csv_cell( wp_strip_all_tags( $n->post_content ) ),
 					wprp_csv_cell( '' !== $ctx_label ? $ctx_label : ( $target ? get_the_title( $target ) : '' ) ),
 					wprp_csv_cell( $target ? get_permalink( $target ) : (string) get_post_meta( $n->ID, WPRP_META_URL, true ) ),
