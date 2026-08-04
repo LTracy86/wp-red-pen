@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security issue
+    url: https://github.com/LTracy86/wp-red-pen/blob/main/CONTRIBUTING.md#reporting-a-security-issue
+    about: Do not file security issues publicly. Email lincolnmtracy@gmail.com instead.
+  - name: Documentation and downloads
+    url: https://redpen.tools/
+    about: The Red Pen product site, manual, and the rest of the surface family.
