@@ -4183,6 +4183,9 @@ function wprp_render_metabox( $post ) {
 			if ( isset( $prios[ $priority ] ) && 'normal' !== $priority ) {
 				echo '<span style="border:1px solid #dfe3e6;border-radius:3px;padding:0 .3rem;font-size:.68rem;font-weight:600;color:#3A3A3C">' . esc_html( $prios[ $priority ] ) . '</span> ';
 			}
+			if ( wprp_note_is_client_visible( $n->ID ) ) {
+				echo '<span style="background:#14569B;color:#fff;border-radius:3px;padding:0 .3rem;font-size:.68rem;font-weight:600" title="' . esc_attr__( 'Client reviewers can read this note', 'wp-red-pen' ) . '">' . esc_html__( 'Client visible', 'wp-red-pen' ) . '</span> ';
+			}
 			$assignee = (int) get_post_meta( $n->ID, WPRP_META_ASSIGNEE, true );
 			$au       = $assignee ? get_userdata( $assignee ) : false;
 			echo '<small>' . esc_html( $author ? $author->display_name : '' ) . ' &middot; ' . esc_html( get_the_time( get_option( 'date_format' ), $n ) ) . ( $au ? ' &middot; &rarr; ' . esc_html( $au->display_name ) : '' ) . '</small>';
