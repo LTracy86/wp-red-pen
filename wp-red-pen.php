@@ -1087,8 +1087,11 @@ function wprp_kses_note( $content ) {
  * limited - this helper is only ever called when the actor is a reviewer.
  *
  * A transient-backed sliding-window counter keyed by a hash of the visitor IP AND the raw
- * reviewer token (so two clients on the same office NAT do not share a budget, and a single
- * leaked token cannot be spread across IPs to multiply the cap). The transient TTL is the
+ * reviewer token, so two clients on the same office NAT do not share a budget. Note the
+ * trade-off that cuts the other way: because the IP is part of the key, a leaked token DOES
+ * get a fresh budget per source address, so the cap is per IP-and-token, not per token. This
+ * throttles honest bursts and casual abuse; it is not a defence against a distributed one.
+ * Revoking the token is the answer there. The transient TTL is the
  * window, so it self-expires - no cron, no cleanup. Returns true when the actor is OVER the
  * cap (caller should refuse with 429); false when there is still budget (and increments).
  *
