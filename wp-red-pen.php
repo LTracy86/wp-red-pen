@@ -90,6 +90,7 @@ define( 'WPRP_META_CTXKEY', '_wprp_ctx_key' );  // context key: post:ID | term:t
 define( 'WPRP_META_CTXLABEL', '_wprp_ctx_label' ); // human label for the context
 define( 'WPRP_META_LEVEL',  '_wprp_level' );    // page | template | global
 define( 'WPRP_META_RESOLVED_AT', '_wprp_resolved_at' ); // ISO 8601 timestamp stamped when a note is resolved (cleared on reopen)
+define( 'WPRP_META_STATUS_AT',   '_wprp_status_at' );   // ISO 8601 timestamp of the LAST status change, any direction (never cleared; the Hub's conflict resolver reads this)
 define( 'WPRP_META_RESOLVED_BY', '_wprp_resolved_by' ); // user id who resolved the note (cleared on reopen)
 define( 'WPRP_GLOBAL_KEY',  'site' );           // reserved ctx key for site-wide (every view) notes
 define( 'WPRP_SHOT_DIR',    'wp-red-pen' );     // uploads subfolder for screenshots
