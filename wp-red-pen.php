@@ -3227,6 +3227,11 @@ function wprp_print_frontend_assets() {
 				(n.severity ? '<span class="wprp-sev wprp-sev-' + esc(n.severity) + '">' + esc(n.severityLabel) + '</span>' : '') +
 				(n.level === 'template' ? '<span class="wprp-level" title="' + esc(n.ctxLabel || '') + '"><?php echo esc_js( __( 'Template', 'wp-red-pen' ) ); ?></span>' : '') +
 					(n.level === 'global' ? '<span class="wprp-level" title="' + esc(n.ctxLabel || '') + '"><?php echo esc_js( __( 'Site-wide', 'wp-red-pen' ) ); ?></span>' : '') +
+				// Dev view: who can read this note. Internal is the default, so the badge marks the exception.
+				(!isReviewer && n.clientVisible ? '<span class="wprp-cv" title="<?php echo esc_js( __( 'Client reviewers can read this note', 'wp-red-pen' ) ); ?>"><?php echo esc_js( __( 'Client visible', 'wp-red-pen' ) ); ?></span>' : '') +
+				// Reviewer view: their own report, and when it was marked done.
+				(isReviewer && sk !== 'open' ? '<span class="wprp-level">' + esc(n.statusLabel || '') + '</span>' : '') +
+				(isReviewer && n.resolvedAt ? '<span class="wprp-level"><?php echo esc_js( __( 'Fixed', 'wp-red-pen' ) ); ?> ' + esc(n.resolvedAt) + '</span>' : '') +
 				'<span>' + esc(n.author) + '</span><span>' + esc(n.date) + '</span>' +
 				(n.assigneeName ? '<span class="wprp-assignee">&rarr; ' + esc(n.assigneeName) + '</span>' : '') +
 				'<span class="wprp-actions">' +
