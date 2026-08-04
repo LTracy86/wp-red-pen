@@ -4815,7 +4815,10 @@ add_action(
 		// Raw (unslashed) body - wprp_update_note runs wprp_kses_note + the empty-body guard itself.
 		$body = isset( $_POST['body'] ) ? wp_unslash( $_POST['body'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized in wprp_update_note via wprp_kses_note
 		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'note';
-		wprp_update_note( $note, array( 'body' => $body, 'type' => $type ) );
+		// The checkbox is absent from the POST when unticked, so send an explicit 0 - that is
+		// how a dev takes a note back off the client-reviewer surface.
+		$cvis = ! empty( $_POST['client_visible'] ) ? 1 : 0;
+		wprp_update_note( $note, array( 'body' => $body, 'type' => $type, 'client_visible' => $cvis ) );
 		$ref = wp_get_referer();
 		wp_safe_redirect( $ref ? remove_query_arg( 'wprp_edit', $ref ) : admin_url( 'tools.php?page=wp-red-pen' ) );
 		exit;
