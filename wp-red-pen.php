@@ -3943,9 +3943,19 @@ function wprp_print_frontend_assets() {
 			hl.style.display = 'none';
 			var hint = document.createElement('div');
 			hint.className = 'wprp-hint';
-			hint.textContent = '<?php echo esc_js( __( 'Click an element to pin this note to it. Esc to cancel.', 'wp-red-pen' ) ); ?>';
+			// A phone has no Esc key and the old copy told the user to press one, so the hint
+			// (and the Cancel control below) follow the input the device actually has.
+			var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+			hint.textContent = isTouch
+				? '<?php echo esc_js( __( 'Scroll to what you mean, then tap it to pin this note.', 'wp-red-pen' ) ); ?>'
+				: '<?php echo esc_js( __( 'Click an element to pin this note to it. Esc to cancel.', 'wp-red-pen' ) ); ?>';
+			var cancelBtn = document.createElement('button');
+			cancelBtn.type = 'button';
+			cancelBtn.className = 'wprp-pincancel';
+			cancelBtn.textContent = '<?php echo esc_js( __( 'Cancel', 'wp-red-pen' ) ); ?>';
 			ov.appendChild(hl);
 			ov.appendChild(hint);
+			ov.appendChild(cancelBtn);
 			document.body.appendChild(ov);
 
 			// The overlay is on top, so drop pointer-events for the hit-test then restore.
