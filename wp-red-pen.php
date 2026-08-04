@@ -1486,6 +1486,16 @@ function wprp_update_note( $note_id, $args ) {
 		update_post_meta( $note_id, WPRP_META_PRIORITY, $priority );
 	}
 
+	// Client visibility. Only touched when the caller actually sends the key, so a partial
+	// update never silently exposes an internal note (or hides a client's own report).
+	if ( isset( $args['client_visible'] ) ) {
+		if ( ! empty( $args['client_visible'] ) ) {
+			update_post_meta( $note_id, WPRP_META_CLIENT_VISIBLE, 1 );
+		} else {
+			delete_post_meta( $note_id, WPRP_META_CLIENT_VISIBLE );
+		}
+	}
+
 	if ( isset( $args['severity'] ) ) {
 		$sevs = wprp_severities();
 		if ( isset( $sevs[ $args['severity'] ] ) ) {
