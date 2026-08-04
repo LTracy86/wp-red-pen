@@ -68,6 +68,8 @@ define( 'WPRP_REVIEW_TOKENS_OPT', 'wprp_review_tokens' ); // global: client-revi
 define( 'WPRP_REVIEW_COOKIE',   'wprp_review' );      // reviewer-mode cookie name (persists reviewer mode across navigation; revalidated every hit)
 define( 'WPRP_META_REVIEWER',   '_wprp_reviewer' );   // note meta: the reviewer's typed name/identity for attribution (defined now, consumed in a later phase)
 define( 'WPRP_META_VIA_REVIEW', '_wprp_via_review' ); // note meta: 1 = note created through reviewer mode (defined now, consumed in a later phase)
+define( 'WPRP_META_CLIENT_VISIBLE', '_wprp_client_visible' ); // note meta: 1 = the author marked this note visible to client reviewers. ABSENT MEANS INTERNAL - the gate fails closed, so a dev's working notes never reach a reviewer link unless they are opted in explicitly.
+define( 'WPRP_META_REVIEW_TOKEN', '_wprp_review_token' );     // note meta: the reviewer-link token record id the note was filed through. The only reliable identity a reviewer has, so it is what scopes "their own notes".
 define( 'WPRP_REVIEW_RATE_MAX',    20 );                      // anti-abuse: max reviewer note/reply creates per IP+token per window
 define( 'WPRP_REVIEW_RATE_WINDOW', 10 * MINUTE_IN_SECONDS );  // anti-abuse: the rolling window for the reviewer create limiter
 
