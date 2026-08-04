@@ -2894,6 +2894,7 @@ function wprp_print_frontend_assets() {
 			#wprp-root.wprp-dark .wprp-status,#wprp-root.wprp-dark .wprp-more-toggle,#wprp-root.wprp-dark .wprp-shotbtn{background:#1a1d20!important;color:#cfd4d8!important;border-color:#3a3f44!important}
 			#wprp-root.wprp-dark .wprp-pin-info{background:#2a2f34!important;color:#cfd4d8!important;border-color:#3a3f44!important}
 			#wprp-root.wprp-dark .wprp-editbar{background:#3a2526!important;border-color:#6b3a3c!important;color:#ff8a80!important}
+			#wprp-root.wprp-dark .wprp-cvlabel,#wprp-root.wprp-dark .wprp-levellabel{color:#aeb4ba!important}
 		#wprp-root #wprp-fab{width:52px!important;height:52px!important;border-radius:50%!important;border:none!important;background:var(--wprp-red)!important;color:#fff!important;cursor:pointer!important;box-shadow:0 4px 14px rgba(211,47,47,.45)!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;transition:transform .12s,background .12s!important}
 		#wprp-root #wprp-fab:hover{transform:translateY(-2px)!important;background:var(--wprp-red-dark)!important}
 		#wprp-fab .wprp-nib{width:25px!important;height:25px!important;display:block!important}
