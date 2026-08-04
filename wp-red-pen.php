@@ -3933,8 +3933,44 @@ function wprp_print_frontend_assets() {
 			return path.join(' > ');
 		}
 
+		// "Pinned to div" tells a client nothing and hides a mis-aimed pin. Describe the element
+		// the way they see it: its own visible text first, then a labelling attribute, then a
+		// human word for the tag, and only then the raw tag name.
+		var PIN_TO = '<?php echo esc_js( __( 'Pinned to', 'wp-red-pen' ) ); ?>';
+		var PIN_TAG_WORDS = {
+			img: '<?php echo esc_js( __( 'an image', 'wp-red-pen' ) ); ?>',
+			svg: '<?php echo esc_js( __( 'an image', 'wp-red-pen' ) ); ?>',
+			picture: '<?php echo esc_js( __( 'an image', 'wp-red-pen' ) ); ?>',
+			video: '<?php echo esc_js( __( 'a video', 'wp-red-pen' ) ); ?>',
+			iframe: '<?php echo esc_js( __( 'an embed', 'wp-red-pen' ) ); ?>',
+			input: '<?php echo esc_js( __( 'a form field', 'wp-red-pen' ) ); ?>',
+			textarea: '<?php echo esc_js( __( 'a form field', 'wp-red-pen' ) ); ?>',
+			select: '<?php echo esc_js( __( 'a form field', 'wp-red-pen' ) ); ?>',
+			form: '<?php echo esc_js( __( 'a form', 'wp-red-pen' ) ); ?>',
+			button: '<?php echo esc_js( __( 'a button', 'wp-red-pen' ) ); ?>',
+			a: '<?php echo esc_js( __( 'a link', 'wp-red-pen' ) ); ?>',
+			hr: '<?php echo esc_js( __( 'a divider', 'wp-red-pen' ) ); ?>',
+			table: '<?php echo esc_js( __( 'a table', 'wp-red-pen' ) ); ?>'
+		};
+		var PIN_ELEMENT_WORD = '<?php echo esc_js( __( 'an element', 'wp-red-pen' ) ); ?>';
+		function pinSnip(s) {
+			s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+			if (!s) { return ''; }
+			return '"' + (s.length <= 60 ? s : s.slice(0, 57).trim() + '...') + '"';
+		}
+		function describeEl(el) {
+			if (!el || el.nodeType !== 1) { return PIN_ELEMENT_WORD; }
+			var txt = pinSnip(el.textContent);
+			if (txt) { return txt; }
+			var attr = el.getAttribute('alt') || el.getAttribute('aria-label') || el.getAttribute('title')
+				|| el.getAttribute('placeholder') || (typeof el.value === 'string' ? el.value : '');
+			var lbl = pinSnip(attr);
+			if (lbl) { return lbl; }
+			var tag = el.tagName.toLowerCase();
+			return PIN_TAG_WORDS[tag] || tag;
+		}
 		function showPinInfo(el) {
-			pinLabel.textContent = '<?php echo esc_js( __( 'Pinned to', 'wp-red-pen' ) ); ?> ' + (el.tagName ? el.tagName.toLowerCase() : 'element');
+			pinLabel.textContent = PIN_TO + ' ' + describeEl(el);
 			pinInfo.hidden = false;
 		}
 
