@@ -2373,6 +2373,55 @@ add_action(
 	20
 );
 
+/*
+ * Backfills the client-visible flag on notes the CLIENT wrote, and only those.
+ *
+ * 0.26.0 made reviewer visibility opt-in and fail-closed, which is right for dev
+ * notes but silently took a client's own past reports away from them - they filed
+ * feedback through a link, and after the upgrade that feedback was invisible to
+ * the link that produced it. This restores exactly the pre-0.26.0 behaviour for
+ * that one set of notes and opens nothing else.
+ *
+ * The scope is deliberately narrow: _wprp_via_review is written in exactly one
+ * place (the reviewer branch of wprp_create_note), so no note a developer wrote
+ * can carry it. Legacy notes predate the token stamp, so they will not satisfy
+ * wprp_reviewer_owns_note() and stay open-only rather than gaining the
+ * see-your-own-at-any-status behaviour - which is what they had before.
+ */
+add_action(
+	'init',
+	function () {
+		if ( version_compare( (string) get_option( WPRP_DBVER_OPT, '0' ), '0.26.0', '>=' ) ) {
+			return;
+		}
+		$client_filed = get_posts(
+			array(
+				'post_type'      => WPRP_CPT,
+				'post_status'    => wprp_all_statuses(),
+				'post_parent'    => 0,
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'meta_query'     => array(
+					array(
+						'key'   => WPRP_META_VIA_REVIEW,
+						'value' => '1',
+					),
+					array(
+						'key'     => WPRP_META_CLIENT_VISIBLE,
+						'compare' => 'NOT EXISTS',
+					),
+				),
+			)
+		);
+		foreach ( $client_filed as $nid ) {
+			update_post_meta( $nid, WPRP_META_CLIENT_VISIBLE, 1 );
+		}
+		update_option( WPRP_DBVER_OPT, '0.26.0', false );
+	},
+	20
+);
+
 /* ===== 13. REST API ===== */
 /* Namespace wprp/v1. Edit/status/delete are dev-only; read and create also accept a reviewer token. */
 add_action(
