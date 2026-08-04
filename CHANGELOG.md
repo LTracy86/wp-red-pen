@@ -30,6 +30,13 @@ repository, so they carry no date.
   create echo and the reply echo - now runs through one gate,
   `wprp_reviewer_can_see_note()`, instead of each scoping itself. The reply
   endpoint re-checks the gate before echoing a note back.
+- A one-time migration backfills the client-visible flag on notes that carry the
+  via-review stamp, so feedback a client filed before this release stays visible
+  to the link that filed it. The scope is only those notes: `_wprp_via_review` is
+  written in a single place, the reviewer branch of `wprp_create_note()`, so no
+  note written by a developer can carry it. Legacy notes predate the token stamp,
+  so they remain open-only rather than gaining the new see-your-own-at-any-status
+  behaviour, which is exactly what they had before.
 - Notes filed through a reviewer link now record which link they came from, so
   one client's link cannot surface another client's history.
 
