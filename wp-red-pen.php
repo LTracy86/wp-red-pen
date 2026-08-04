@@ -3565,7 +3565,7 @@ function wprp_print_frontend_assets() {
 			if (clientVisChk) { createPayload.client_visible = clientVisChk.checked ? 1 : 0; }
 			if (isReviewer) { createPayload.reviewer = reviewerName; }
 			api('/notes', { method: 'POST', body: JSON.stringify(createPayload) })
-				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
+				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } if (clientVisChk) { clientVisChk.checked = false; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
 				.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
 		});
 
