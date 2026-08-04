@@ -183,77 +183,13 @@ function wprp_severities() {
 }
 
 /**
- * Every feature is free and open. This used to gate the white-label client-report
- * branding behind a license; it now returns true unconditionally so every install
- * gets the full feature set. The 'wprp_is_pro' filter is still applied so a site
- * can override in the unlikely case it needs to. The license helpers below are
- * retained but unreferenced, so any legacy stored key stays inert.
- */
-function wprp_is_pro() {
-	return (bool) apply_filters( 'wprp_is_pro', true );
-}
-
-/**
- * Decode the stored license key and return its info, or false if there is no key
- * or it does not verify. Info is array( 'email' => string ). Verified live off the
- * stored key so there is no separate "unlocked" flag to fall out of sync.
+ * Client-report branding. Saved values with safe defaults; the accent falls back to
+ * the app red so a half-filled brand never renders a broken report.
  *
- * @return array{email:string}|false
- */
-function wprp_license_info() {
-	$key = (string) get_option( WPRP_PRO_KEY_OPT, '' );
-	return '' === trim( $key ) ? false : wprp_verify_license( $key );
-}
-
-/** URL-safe base64 decode (accepts missing padding). Returns raw bytes or false. */
-function wprp_b64url_decode( $s ) {
-	$s   = strtr( (string) $s, '-_', '+/' );
-	$pad = strlen( $s ) % 4;
-	if ( $pad ) {
-		$s .= str_repeat( '=', 4 - $pad );
-	}
-	return base64_decode( $s, true );
-}
-
-/**
- * Verify a Red Pen PRO license key against the embedded Ed25519 public key. The key
- * is "base64url(payload).base64url(signature)" where payload is "email|YYYYMMDD".
- * Returns array( 'email' => ... ) on a genuine signature, or false on anything wrong
- * (malformed, tampered, unsigned, or sodium unavailable). No network, no clock.
- *
- * @param string $key The pasted license key.
- * @return array{email:string}|false
- */
-function wprp_verify_license( $key ) {
-	$key = trim( (string) $key );
-	if ( '' === $key || 1 !== substr_count( $key, '.' ) ) {
-		return false;
-	}
-	if ( ! function_exists( 'sodium_crypto_sign_verify_detached' ) ) {
-		return false; // fail closed - WP 5.2+ bundles sodium_compat, so this is belt-and-braces
-	}
-	list( $p_enc, $s_enc ) = explode( '.', $key, 2 );
-	$payload = wprp_b64url_decode( $p_enc );
-	$sig     = wprp_b64url_decode( $s_enc );
-	$pub     = base64_decode( WPRP_PRO_PUBKEY, true );
-	if ( false === $payload || false === $sig || false === $pub
-		|| 64 !== strlen( $sig ) || 32 !== strlen( $pub ) ) {
-		return false;
-	}
-	if ( ! sodium_crypto_sign_verify_detached( $sig, $payload, $pub ) ) {
-		return false;
-	}
-	// The licensee is the payload's first field: a buyer email for hand-issued keys,
-	// or an opaque license id for pooled/batch keys (storefront auto-delivery). Accept
-	// either - sanitize as text, not as an email, so id-form keys validate too.
-	$licensee = sanitize_text_field( (string) strtok( $payload, '|' ) );
-	return '' !== $licensee ? array( 'email' => $licensee ) : false; // key stays 'email' for cross-surface parity; holds the licensee (email or id)
-}
-
-/**
- * Client-report branding (PRO). Saved values with safe defaults; the accent falls
- * back to the app red so a half-filled brand never renders a broken report. These
- * values are only APPLIED when wprp_is_pro() - the free report is always plain.
+ * There is no tier check here or anywhere else. Red Pen had a paid PRO tier that gated
+ * this branding; the 2026-07-14 pivot removed it permanently, so the embedded license
+ * public key, the Ed25519 verifier, the wprp_pro_key option read and every wprp_is_pro()
+ * branch are gone - the branded report is simply what the plugin does now.
  *
  * @return array{title:string,logo:string,color:string,hide_credit:bool}
  */
@@ -2257,7 +2193,7 @@ function wprp_priming_data_reviewer( $keys ) {
 }
 
 // ---------------------------------------------------------------------------
-// Red Pen Hub - push this site's notes to the local combined board (PRO).
+// Red Pen Hub - push this site's notes to the local combined board.
 // Outbound only, non-blocking, dev-only. The Hub stores what we send; this site
 // stays the source of truth. No-op unless a Hub URL + token are configured.
 // ---------------------------------------------------------------------------
@@ -5235,9 +5171,9 @@ add_action( 'admin_post_wprp_report', 'wprp_render_client_report' );
 /**
  * Render the client report: a standalone, printable HTML document of the site's
  * notes grouped by status - the deliverable a freelancer hands a client ("here is
- * what you asked for, here is what is done"). The PLAIN report is FREE (export is
- * never gated); the branded layer (logo, accent colour, custom title, hidden Red
- * Pen credit) is applied only when wprp_is_pro(). Capability-gated; meant to be
+ * what you asked for, here is what is done"). The report and its branded layer (logo,
+ * accent colour, custom title, hidden Red Pen credit) are both free and always applied.
+ * Capability-gated; meant to be
  * printed to PDF from the browser via the Print button. Agent-queue notes and
  * internal-only fields (assignee, agent, code scope, browser context) are omitted
  * so it stays a clean, client-appropriate deliverable.
@@ -5272,16 +5208,12 @@ function wprp_render_client_report() {
 		)
 	);
 
-	$pro    = wprp_is_pro();
 	$brand  = wprp_report_brand();
-	$accent = '#D32F2F';
-	if ( $pro ) {
-		$c      = sanitize_hex_color( $brand['color'] );
-		$accent = $c ? $c : '#D32F2F';
-	}
-	$site  = get_bloginfo( 'name' );
+	$c      = sanitize_hex_color( $brand['color'] );
+	$accent = $c ? $c : '#D32F2F';
+	$site   = get_bloginfo( 'name' );
 	/* translators: %s: site name. */
-	$title = ( $pro && '' !== $brand['title'] ) ? $brand['title'] : sprintf( __( '%s - Review Report', 'wp-red-pen' ), $site );
+	$title  = ( '' !== $brand['title'] ) ? $brand['title'] : sprintf( __( '%s - Review Report', 'wp-red-pen' ), $site );
 
 	$buckets = array( 'open' => array(), 'progress' => array(), 'resolved' => array() );
 	foreach ( $notes as $n ) {
@@ -5345,7 +5277,7 @@ function wprp_render_client_report() {
 
 	// Header.
 	echo '<div class="head">';
-	if ( $pro && '' !== $brand['logo'] ) {
+	if ( '' !== $brand['logo'] ) {
 		echo '<img class="logo" src="' . esc_url( $brand['logo'] ) . '" alt="' . esc_attr( $site ) . '">';
 	}
 	echo '<h1>' . esc_html( $title ) . '</h1>';
@@ -5418,7 +5350,7 @@ function wprp_render_client_report() {
 		echo '</section>';
 	}
 
-	if ( ! ( $pro && $brand['hide_credit'] ) ) {
+	if ( ! $brand['hide_credit'] ) {
 		echo '<div class="credit">' . esc_html__( 'Generated with Red Pen', 'wp-red-pen' ) . '</div>';
 	}
 
