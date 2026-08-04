@@ -2305,6 +2305,10 @@ function wprp_push_to_hub( $blocking = false ) {
 			'url'          => $target ? get_permalink( $target ) : home_url( '/' ),
 			'anchor'       => (string) get_post_meta( $p->ID, WPRP_META_ANCHOR, true ),
 			'createdAt'    => get_post_time( 'c', true, $p ),
+			// When the status last moved. Without it the Hub cannot tell whether its own
+			// pending write-back or a later change made here is newer, and holds the note
+			// in a degraded path. Falls back to createdAt for notes that predate the stamp.
+			'statusAt'     => (string) get_post_meta( $p->ID, WPRP_META_STATUS_AT, true ) ?: get_post_time( 'c', true, $p ),
 			'resolvedAt'   => (string) get_post_meta( $p->ID, WPRP_META_RESOLVED_AT, true ),
 			'resolvedBy'   => $rby_u ? $rby_u->display_name : '',
 			'assigneeName' => $asg_u ? $asg_u->display_name : '',
