@@ -1761,14 +1761,71 @@ function wprp_reviewer_safe_keys( $keys ) {
 }
 
 /**
- * Would a reviewer's scoped GET have returned this note? Reviewers may only READ (and
- * therefore reply to) OPEN, non-agent notes whose context is a public page/template - the
- * exact set wprp_get_notes_for_context() + wprp_reviewer_safe_keys() expose on the GET path.
+ * The reviewer-link token record id in effect on this request, or '' when there is no
+ * valid token. This id is the ONLY durable identity an anonymous reviewer has - they
+ * have no account and the typed display name is free text - so it is what scopes "my
+ * own notes" on the read path.
  *
- * This is the guard for the reply endpoint, which echoes the parent note back through
- * wprp_note_to_array_reviewer(). Without it a token holder could reach a site-wide/global
- * dev note, a note on a draft/private page, or an agent-queue note by its id and read it
- * (and spam replies onto internal notes), defeating the v0.18.0 read scoping.
+ * @return string
+ */
+function wprp_current_review_token_id() {
+	$rec = wprp_reviewer_token_valid();
+	return ( is_array( $rec ) && isset( $rec['id'] ) ) ? (string) $rec['id'] : '';
+}
+
+/**
+ * Has this note been explicitly opted in to the client-reviewer surface?
+ *
+ * FAILS CLOSED on purpose. A missing flag means internal, so a note that predates the
+ * flag - or one a dev filed without ticking the box - stays invisible to every reviewer
+ * link. The dev's own working notes on a live client page are the default, not the
+ * exception, which is why the default has to be the safe one.
+ *
+ * @param int $note_id Note post id.
+ * @return bool
+ */
+function wprp_note_is_client_visible( $note_id ) {
+	return '1' === (string) get_post_meta( (int) $note_id, WPRP_META_CLIENT_VISIBLE, true );
+}
+
+/**
+ * Did the reviewer holding THIS request's link file this note themselves? Requires both
+ * the via-review stamp and a matching token record id, so one client's link never surfaces
+ * another client's notes and a revoked/reissued link does not inherit the old one's history.
+ *
+ * @param int $note_id Note post id.
+ * @return bool
+ */
+function wprp_reviewer_owns_note( $note_id ) {
+	$note_id = (int) $note_id;
+	if ( '1' !== (string) get_post_meta( $note_id, WPRP_META_VIA_REVIEW, true ) ) {
+		return false;
+	}
+	$tok = wprp_current_review_token_id();
+	if ( '' === $tok ) {
+		return false;
+	}
+	return $tok === (string) get_post_meta( $note_id, WPRP_META_REVIEW_TOKEN, true );
+}
+
+/**
+ * THE single reviewer visibility gate. Every reviewer read path runs through this, so a
+ * note is either visible to the token holder everywhere or nowhere - the GET, the priming
+ * payload, the create/reply echo, and anything added later cannot drift apart.
+ *
+ * A note is visible when ALL of the structural constraints hold:
+ *   - it is a top-level note (never a reply post, never another post type)
+ *   - it is not an agent-queue note (that is an internal surface)
+ *   - its context key is one wprp_reviewer_safe_keys() allows - never site-wide, never a
+ *     draft/private/pending post
+ * AND either:
+ *   - the token holder filed it themselves, at ANY status (so a client can see that what
+ *     they reported was fixed instead of assuming it was lost), or
+ *   - it carries the explicit client-visible flag AND is still open.
+ *
+ * The flag is an ADDITIONAL gate on top of the older constraints, never a replacement for
+ * them. Without it, any open note on any public page was readable by any link holder - a
+ * developer's internal notes included.
  *
  * @param WP_Post|null $note A top-level note post.
  * @return bool
@@ -1777,14 +1834,37 @@ function wprp_reviewer_can_see_note( $note ) {
 	if ( ! $note || WPRP_CPT !== $note->post_type || 0 !== (int) $note->post_parent ) {
 		return false;
 	}
-	if ( WPRP_STATUS_OPEN !== $note->post_status ) {
-		return false; // reviewers only ever see open notes
-	}
 	if ( '' !== (string) get_post_meta( $note->ID, WPRP_META_AGENT, true ) ) {
 		return false; // agent notes are an internal surface, never shown to reviewers
 	}
 	$key = (string) get_post_meta( $note->ID, WPRP_META_CTXKEY, true );
-	return (bool) wprp_reviewer_safe_keys( array( $key ) );
+	if ( ! wprp_reviewer_safe_keys( array( $key ) ) ) {
+		return false;
+	}
+	if ( wprp_reviewer_owns_note( $note->ID ) ) {
+		return true; // their own report, at whatever status it has reached
+	}
+	if ( ! wprp_note_is_client_visible( $note->ID ) ) {
+		return false; // not opted in = internal
+	}
+	return WPRP_STATUS_OPEN === $note->post_status;
+}
+
+/**
+ * Narrow a list of note posts to the ones the current reviewer may read. Use this on every
+ * reviewer read path instead of trusting the query's own scoping.
+ *
+ * @param WP_Post[] $notes Candidate notes.
+ * @return WP_Post[]
+ */
+function wprp_reviewer_visible_notes( $notes ) {
+	$out = array();
+	foreach ( (array) $notes as $n ) {
+		if ( wprp_reviewer_can_see_note( $n ) ) {
+			$out[] = $n;
+		}
+	}
+	return $out;
 }
 
 /**
