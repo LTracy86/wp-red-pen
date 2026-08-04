@@ -3974,6 +3974,7 @@ function wprp_print_frontend_assets() {
 				hl.style.width = r.width + 'px'; hl.style.height = r.height + 'px';
 			}
 			function clk(e) {
+				if (e.target && cancelBtn.contains(e.target)) { return; } // the Cancel control is not a pin target
 				e.preventDefault(); e.stopPropagation();
 				var el = elAt(e);
 				teardown();
