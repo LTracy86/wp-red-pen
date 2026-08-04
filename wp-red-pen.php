@@ -3580,6 +3580,7 @@ function wprp_print_frontend_assets() {
 			assigneeSel.value = n.agent ? ('agent:' + n.agent) : String(n.assignee || 0);
 			if (levelSel) { levelSel.value = (n.level === 'global') ? 'global' : ((n.level === 'template' && cfg.template && cfg.template.key) ? 'template' : 'page'); }
 			if (codeScopeInput) { codeScopeInput.value = n.codeScope || ''; }
+			if (clientVisChk) { clientVisChk.checked = !!n.clientVisible; }
 			body.value = (n.raw != null ? n.raw : '').trim();
 			// existing screenshot: show it; kept unless the user replaces or clears it
 			if (n.shot) { shotThumb.src = n.shot; shotPrev.hidden = false; } else { shotPrev.hidden = true; shotThumb.removeAttribute('src'); }
