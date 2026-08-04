@@ -1813,8 +1813,18 @@ function wprp_note_is_client_visible( $note_id ) {
 
 /**
  * Did the reviewer holding THIS request's link file this note themselves? Requires both
- * the via-review stamp and a matching token record id, so one client's link never surfaces
- * another client's notes and a revoked/reissued link does not inherit the old one's history.
+ * the via-review stamp and a matching token record id, so a revoked or reissued link does
+ * not inherit the old one's history.
+ *
+ * SCOPE WARNING - this function is token-scoped, but the gate that calls it is not the only
+ * way a reviewer reaches a note. Reviewer-filed notes are stamped client-visible on creation
+ * (see wprp_create_note), so while such a note is OPEN it passes the client-visible branch of
+ * wprp_reviewer_can_see_note() for EVERY link holder on the site, not just its author. Two
+ * different clients holding two different links to one site can therefore read each other's
+ * open feedback and typed names. That is pre-0.26.0 behaviour, deliberately left unchanged
+ * here because it is a product decision (a second reviewer from the same client org sharing a
+ * thread is often WANTED), not an oversight. If per-client isolation is ever required, the
+ * change is to make the client-visible branch defer to this function for via-review notes.
  *
  * @param int $note_id Note post id.
  * @return bool
