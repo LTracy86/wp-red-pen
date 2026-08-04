@@ -118,9 +118,14 @@
   <tr><td>Overlay missing on a page</td><td>Dev Mode is off (check the admin-bar toggle), or that view is excluded under Display settings.</td></tr>
   <tr><td>A pin doesn't show</td><td>The element it was pinned to no longer exists on the page - the note itself is still in the panel and repository.</td></tr>
   <tr><td>Client says the review link doesn't work</td><td>The link was revoked or expired, or it was mistyped - the full token is part of the URL. Generate a fresh one.</td></tr>
+  <tr><td>Client's panel is empty, or a note you expected them to see is missing</td><td>The note is internal. Since 0.26.0 a note reaches a review link only when <b>Visible to client reviewers</b> is ticked, and every note written before the upgrade starts internal. Tick the box on the notes you want shared.</td></tr>
+  <tr><td>Client can't see the note they filed</td><td>Their own reports are visible to them at any status. If one is missing, it was filed through a different review link - a note belongs to the link that wrote it.</td></tr>
 </table>
 
-<p class="meta" style="margin-top:20pt">Red Pen for WordPress 0.25.4 - built by Lincoln Tracy. Part of the Red Pen family: WordPress, Express, static sites, Blender, Ableton Live, and the Red Pen Hub. redpen.tools</p>
+<h2>The rest of the family</h2>
+<p>Red Pen also runs on Express apps, static sites, Blender and Ableton Live, with the Red Pen Hub collecting them onto one board. The surfaces are separate ports of one model rather than one codebase, so they do not all have the same features at the same time. The <b>Surface matrix</b> at <code>docs.redpen.tools/matrix.html</code> is the per-feature answer for which surface has what today.</p>
+
+<p class="meta" style="margin-top:20pt">Red Pen for WordPress 0.26.0 - built by Lincoln Tracy. Part of the Red Pen family: WordPress, Express, static sites, Blender, Ableton Live, and the Red Pen Hub. redpen.tools</p>
 
 </body>
 </html>
