@@ -3604,6 +3604,7 @@ function wprp_print_frontend_assets() {
 			typeSel.value = 'note'; prioSel.value = 'normal'; assigneeSel.value = '0';
 			if (levelSel) { levelSel.value = 'page'; }
 			if (codeScopeInput) { codeScopeInput.value = ''; }
+			if (clientVisChk) { clientVisChk.checked = false; }
 			applyPrefs();
 			shotPrev.hidden = true; shotThumb.removeAttribute('src');
 			pinInfo.hidden = true; pinLabel.textContent = '';
