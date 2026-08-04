@@ -3562,6 +3562,7 @@ function wprp_print_frontend_assets() {
 			// with the reviewer name. The server ignores any smuggled assignee/agent/shot regardless.
 			var caa = assigneeSel ? splitAssignee(assigneeSel.value) : { assignee: '0', agent: '' };
 			var createPayload = { body: text, type: typeSel.value, url: cfg.url, shot: pendingShot || '', ctx: buildCtx(), priority: prioSel.value, severity: sevSel ? sevSel.value : '', assignee: caa.assignee, anchor: pendingAnchor ? JSON.stringify(pendingAnchor) : '', level: lvl, ctx_key: lctx.key, ctx_label: lctx.label, target: (lvl === 'page' ? (cfg.page.target || 0) : 0), agent: caa.agent, codescope: codeScopeInput ? codeScopeInput.value : '' };
+			if (clientVisChk) { createPayload.client_visible = clientVisChk.checked ? 1 : 0; }
 			if (isReviewer) { createPayload.reviewer = reviewerName; }
 			api('/notes', { method: 'POST', body: JSON.stringify(createPayload) })
 				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
