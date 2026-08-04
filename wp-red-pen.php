@@ -18,6 +18,50 @@
  * Note: WP Red Pen is the one deliberate exception to the TDM "no warm/red"
  * palette rule - the editorial red-pen branding gets a red accent (#D32F2F) on
  * an otherwise TDM-neutral (near-black / gray / white) chrome.
+ *
+ * ---------------------------------------------------------------------------
+ * ONE FILE, ON PURPOSE
+ *
+ * All of the plugin's PHP, CSS and JavaScript live here. There is no build step
+ * and no sibling include; the stylesheet and script are printed inline from
+ * wprp_print_frontend_assets() in section 15. Anyone can read the whole plugin
+ * end to end, diff it, and delete it, with nothing hiding elsewhere. Keep it
+ * that way - see CONTRIBUTING.md.
+ *
+ * The file is divided by /* ===== N. SECTION ===== *|/ banners. Search for the
+ * number to jump.
+ *
+ *   1. CONFIGURATION AND VOCABULARY .... statuses, note types, priorities,
+ *                                        severities, report branding, agents
+ *   2. WHERE RED PEN APPEARS ........... view scopes + resolving the current
+ *                                        view into note context keys
+ *   3. PEOPLE, PERMISSIONS AND INPUT ... assignable users, capability checks,
+ *      SANITIZING                        Dev Mode, the anchor sanitizer
+ *   4. CLIENT REVIEWER LINKS ........... the hash-only token store, validation,
+ *                                        the reviewer cookie
+ *   5. SCREENSHOTS ..................... uploads/wp-red-pen storage, deny
+ *                                        guards, the capability-gated reader
+ *   6. INTERNATIONALISATION ............ text domain loading
+ *   7. CONTENT MODEL ................... the wprp_note CPT + custom statuses
+ *   8. NOTES ........................... create, reply, status, update, and the
+ *                                        queries every surface runs on
+ *   9. AGENT BRIEFS, REVIEWER .......... the ONE gate every reviewer read runs
+ *      VISIBILITY, OPEN-NOTE COUNT       through; read it before touching any
+ *                                        path a reviewer link can reach
+ *  10. NOTE PAYLOADS ................... the dev shape and the narrower shape
+ *                                        handed to reviewers
+ *  11. RED PEN HUB .................... outbound push to the local board
+ *  12. ONE-TIME DATA MIGRATIONS ....... schema backfills, keyed on wprp_db_version
+ *  13. REST API ....................... namespace wprp/v1
+ *  14. ADMIN BAR ...................... Dev Mode toggle, open-note badge, jump
+ *  15. FRONT END ...................... the floating button, panel, inline CSS
+ *                                       and inline JS
+ *  16. EDIT-SCREEN META BOX ........... this post's notes
+ *  17. ADMIN REPOSITORY PAGE .......... Tools > Red Pen
+ *  18. REPOSITORY ACTION HANDLERS ..... the nonced admin-post endpoints behind it
+ *  19. CLIENT REPORT .................. the printable client deliverable
+ *  20. ADMIN CHROME ................... dashicons on our own screens
+ * ---------------------------------------------------------------------------
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
