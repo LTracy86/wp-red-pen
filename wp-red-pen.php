@@ -5056,7 +5056,7 @@ add_action(
 		header( 'Content-Disposition: attachment; filename=' . $filename );
 
 		$out = fopen( 'php://output', 'w' );
-		fputcsv( $out, array( 'ID', 'Type', 'Priority', 'Severity', 'Level', 'Status', 'Note', 'Where', 'URL', 'Assignee', 'Author', 'Environment', 'When' ) );
+		fputcsv( $out, array( 'ID', 'Type', 'Priority', 'Severity', 'Level', 'Status', 'Client visible', 'Note', 'Where', 'URL', 'Assignee', 'Author', 'Environment', 'When' ) );
 		foreach ( $notes as $n ) {
 			$type      = (string) get_post_meta( $n->ID, WPRP_META_TYPE, true );
 			$priority  = (string) get_post_meta( $n->ID, WPRP_META_PRIORITY, true );
