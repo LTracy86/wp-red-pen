@@ -15,6 +15,10 @@ repository, so they carry no date.
 
 ## [Unreleased]
 
+### Added
+
+- **Credit and tip-jar footer on the notes repository screen.** The repository page ended on the last table row with nothing crediting the plugin or pointing anywhere. It now closes with `Made by Lincoln Tracy. redpen.tools · Buy me a coffee`, the same line Smooth Moves and Media Mage already carry, styled for both the light screen and the dark repository skin.
+
 ### Fixed
 
 - **WordPress now reports `statusAt` to the Hub.** It was the only surface that
