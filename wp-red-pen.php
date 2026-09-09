@@ -4476,6 +4476,9 @@ function wprp_render_repo_page() {
 	$prios = wprp_priorities();
 
 	$wprp_dark = (bool) get_option( WPRP_DARK_OPT );
+
+	// Credit + tip-jar footer, light by default and toned down under dark mode.
+	echo '<style id="wprp-repo-credit">.wrap .wprp-credit{margin-top:1.6rem;padding-top:.9rem;border-top:1px solid #dcdfe2;font-size:.82rem;color:#6b7177}.wrap.wprp-dark .wprp-credit{border-top-color:#3a3f44;color:#8d949b}</style>';
 	if ( $wprp_dark ) {
 		// Dark mode for the repository page (wp-admin). Scoped to .wrap.wprp-dark so it
 		// only restyles Red Pen's own content, never the rest of the WordPress dashboard.
@@ -4904,7 +4907,20 @@ function wprp_render_repo_page() {
 		echo '<a class="button button-small button-link-delete" style="color:#b32d2e" href="' . esc_url( $delete_url ) . '" onclick="return confirm(\'' . esc_js( __( 'Delete this note permanently, including its replies and screenshot? This cannot be undone.', 'wp-red-pen' ) ) . '\');">' . esc_html__( 'Delete', 'wp-red-pen' ) . '</a></td>';
 		echo '</tr>';
 	}
-	echo '</tbody></table></form></div>';
+	echo '</tbody></table></form>';
+
+	// Footer card: credits + tip jar.
+	echo '<p class="wprp-credit">';
+	printf(
+		/* translators: 1: author link, 2: plugin site link, 3: Buy Me a Coffee link */
+		esc_html__( 'Made by %1$s. %2$s · %3$s', 'wp-red-pen' ),
+		'<a href="https://tracydigitalmedia.com/" target="_blank" rel="noopener">Lincoln Tracy</a>',
+		'<a href="https://redpen.tools/" target="_blank" rel="noopener">redpen.tools</a>',
+		'<a href="https://buymeacoffee.com/lincolntracy" target="_blank" rel="noopener">' . esc_html__( 'Buy me a coffee', 'wp-red-pen' ) . '</a>'
+	);
+	echo '</p>';
+
+	echo '</div>';
 }
 
 /* ===== 18. REPOSITORY ACTION HANDLERS ===== */
