@@ -13,6 +13,17 @@ rather than guessed at. Release dates come from the tag or commit that shipped
 each version; 0.12.0 and 0.12.1 predate the surviving history in this
 repository, so they carry no date.
 
+## [0.26.2] - 2026-09-15
+
+### Fixed
+
+- **The panel's reads also dodge a CDN that already holds a copy.** 0.26.1
+  stopped the browser caching the notes list, but Hostinger's edge had already
+  stored the reviewer's exact `GET /notes` URL as a public hit, and a browser
+  `no-store` cannot reach past the browser. Every read now carries a
+  per-request timestamp in its query string, so the edge never sees the same
+  URL twice and the stale copy is simply never asked for again.
+
 ## [0.26.1] - 2026-09-15
 
 ### Added

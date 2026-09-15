@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://redpen.tools/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.26.1
+ * Version:           0.26.2
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -68,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.26.1' );
+define( 'WPRP_VERSION',     '0.26.2' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -3257,6 +3257,9 @@ function wprp_print_frontend_assets() {
 			// Bypass the browser's HTTP cache outright: a host can stamp a public Cache-Control on
 			// the anonymous reviewer GET, and the notes list must always be what the server holds now.
 			if (!opts.cache) { opts.cache = 'no-store'; }
+			// And make every read a URL the edge has never seen: no-store only governs the browser,
+			// while a CDN that already holds a public copy of GET /notes would keep serving it.
+			if (!opts.method || opts.method === 'GET') { path += (path.indexOf('?') > -1 ? '&' : '?') + '_=' + Date.now(); }
 			return fetch(cfg.root + path, opts).then(function (r) {
 				if (!r.ok) { throw new Error('HTTP ' + r.status); }
 				return r.json();

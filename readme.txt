@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.26.1
+Stable tag: 0.26.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,6 +69,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 == Changelog ==
 
 Full release-by-release history lives in CHANGELOG.md in the GitHub repo; the highlights are below.
+
+= 0.26.2 =
+* Fixed: the panel's notes reads now carry a per-request timestamp, so a CDN that already stored a copy of the list can never serve it again.
 
 = 0.26.1 =
 * Fixed: a client reviewer's notes no longer disappear when the panel is closed and reopened. Reviewer links are anonymous to WordPress, so some hosts stamped a week-long public cache on the panel's first notes request and the browser kept replaying that first, empty, list. The plugin now sends no-cache headers on every reviewer request and the panel fetches with the browser cache switched off.
