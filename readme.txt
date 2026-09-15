@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.26.0
+Stable tag: 0.26.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,6 +69,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 == Changelog ==
 
 Full release-by-release history lives in CHANGELOG.md in the GitHub repo; the highlights are below.
+
+= 0.26.1 =
+* Fixed: a client reviewer's notes no longer disappear when the panel is closed and reopened. Reviewer links are anonymous to WordPress, so some hosts stamped a week-long public cache on the panel's first notes request and the browser kept replaying that first, empty, list. The plugin now sends no-cache headers on every reviewer request and the panel fetches with the browser cache switched off.
 
 = 0.26.0 =
 * Security: notes are now INTERNAL by default. A client reviewer link used to expose every open note on a public page, including your own working notes. A note only reaches a reviewer when you tick "Visible to client reviewers" on it. Existing notes have no flag, so they stay hidden until you share them deliberately - check the repository if you were relying on the old behaviour.

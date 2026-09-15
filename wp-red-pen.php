@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://redpen.tools/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.26.0
+ * Version:           0.26.1
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -68,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.26.0' );
+define( 'WPRP_VERSION',     '0.26.1' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -2460,6 +2460,23 @@ add_action(
 
 /* ===== 13. REST API ===== */
 /* Namespace wprp/v1. Edit/status/delete are dev-only; read and create also accept a reviewer token. */
+
+/**
+ * Never let a reviewer's REST read be cached. WordPress only sends its nocache headers on
+ * REST responses for logged-in users, and a token reviewer is anonymous to WordPress, so a
+ * host that stamps a public Cache-Control on header-less responses (Hostinger's edge does:
+ * public, max-age=604800) turns the panel's first GET /notes into a week-long browser cache
+ * entry. The reviewer then saw every later panel open replay that first, usually empty, list
+ * while the server held all their notes. Logged-in devs never hit it because their nonce path
+ * already gets the nocache headers.
+ */
+add_filter(
+	'rest_send_nocache_headers',
+	function ( $send ) {
+		return $send || wprp_can_review();
+	}
+);
+
 add_action(
 	'rest_api_init',
 	function () {
@@ -3237,6 +3254,9 @@ function wprp_print_frontend_assets() {
 			// logged-in devs send the nonce. The two paths are mutually exclusive.
 			var auth = cfg.reviewToken ? { 'X-WPRP-Review-Token': cfg.reviewToken } : { 'X-WP-Nonce': cfg.nonce };
 			opts.headers = Object.assign({ 'Content-Type': 'application/json' }, auth, opts.headers || {});
+			// Bypass the browser's HTTP cache outright: a host can stamp a public Cache-Control on
+			// the anonymous reviewer GET, and the notes list must always be what the server holds now.
+			if (!opts.cache) { opts.cache = 'no-store'; }
 			return fetch(cfg.root + path, opts).then(function (r) {
 				if (!r.ok) { throw new Error('HTTP ' + r.status); }
 				return r.json();

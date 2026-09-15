@@ -13,7 +13,7 @@ rather than guessed at. Release dates come from the tag or commit that shipped
 each version; 0.12.0 and 0.12.1 predate the surviving history in this
 repository, so they carry no date.
 
-## [Unreleased]
+## [0.26.1] - 2026-09-15
 
 ### Added
 
@@ -21,6 +21,17 @@ repository, so they carry no date.
 
 ### Fixed
 
+- **A client reviewer's notes no longer vanish when the panel is closed and
+  reopened.** Found on the first real client review (2026-09-15): the reviewer
+  filed eight notes, each showed after Add note, and every one was gone the
+  next time the panel opened, with the button count going with it. The server
+  held them all. WordPress only sends its no-cache headers on REST responses
+  for logged-in users, and a reviewer link is anonymous to WordPress, so the
+  host's edge stamped a public seven-day `Cache-Control` on the panel's first
+  `GET /notes` and the browser replayed that first, empty, list from then on.
+  Two fixes: the plugin now sends no-cache headers on every REST response made
+  with a reviewer token, and the panel's own fetches run with `cache: no-store`
+  so a host that overwrites headers cannot bring it back.
 - **WordPress now reports `statusAt` to the Hub.** It was the only surface that
   never said when a note's status last moved, so the Hub could not tell whether
   its own pending write-back or a later change made here was newer, and held
