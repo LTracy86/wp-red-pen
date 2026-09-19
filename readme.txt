@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.26.2
+Stable tag: 0.27.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,6 +69,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 == Changelog ==
 
 Full release-by-release history lives in CHANGELOG.md in the GitHub repo; the highlights are below.
+
+= 0.27.0 =
+* Added: a client reviewer can edit or delete their own notes while they are still Open. Once you move a note to In Progress or Resolved it locks for them. A deleted note goes to the Trash, so you can restore it.
 
 = 0.26.2 =
 * Fixed: the panel's notes reads now carry a per-request timestamp, so a CDN that already stored a copy of the list can never serve it again.

@@ -13,6 +13,19 @@ rather than guessed at. Release dates come from the tag or commit that shipped
 each version; 0.12.0 and 0.12.1 predate the surviving history in this
 repository, so they carry no date.
 
+## [0.27.0] - 2026-09-18
+
+### Added
+
+- **Client reviewers can edit and delete their own notes.** Each of a reviewer's
+  own notes gets Edit and Delete buttons while it is still Open. Edit rewrites the
+  text in place and nothing else; Delete asks for a second click, then moves the
+  note to the Trash, so a note removed by mistake can be restored. Once a dev moves
+  a note to In Progress or Resolved it locks for the reviewer. The server checks the
+  same rule on both routes (`POST` and `DELETE /notes/{id}`): it has to be a note
+  filed with that reviewer link, and it has to be Open. First asked for by a client
+  mid-review, who had changed his mind on notes he had already filed.
+
 ## [0.26.2] - 2026-09-15
 
 ### Fixed

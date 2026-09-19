@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://redpen.tools/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.26.2
+ * Version:           0.27.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -68,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.26.2' );
+define( 'WPRP_VERSION',     '0.27.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -1845,6 +1845,24 @@ function wprp_reviewer_owns_note( $note_id ) {
 }
 
 /**
+ * May the reviewer on THIS request edit or delete this note? Only their own top-level note,
+ * and only while it is still Open: once a dev moves it to In Progress or Resolved it is part
+ * of the dev's record and locks. Logged-in devs never take this path.
+ *
+ * @param WP_Post|null $note A note post.
+ * @return bool
+ */
+function wprp_reviewer_can_change_note( $note ) {
+	if ( wprp_user_can() || ! wprp_can_review() ) {
+		return false;
+	}
+	if ( ! $note || WPRP_CPT !== $note->post_type || 0 !== (int) $note->post_parent ) {
+		return false;
+	}
+	return WPRP_STATUS_OPEN === $note->post_status && wprp_reviewer_owns_note( $note->ID );
+}
+
+/**
  * THE single reviewer visibility gate. Every reviewer read path runs through this, so a
  * note is either visible to the token holder everywhere or nowhere - the GET, the priming
  * payload, the create/reply echo, and anything added later cannot drift apart.
@@ -2216,6 +2234,9 @@ function wprp_note_to_array_reviewer( $note, $replies = null ) {
 		// Their own reports come back at any status, so the client can see a thing was fixed
 		// instead of guessing whether it ever saved. Resolved-at is a plain date, no dev identity.
 		'mine'          => wprp_reviewer_owns_note( $note->ID ),
+		// Their own still-open note can be edited or deleted; raw is the edit box's source text.
+		'canChange'     => wprp_reviewer_can_change_note( $note ),
+		'raw'           => wprp_reviewer_can_change_note( $note ) ? (string) $note->post_content : '',
 		'resolvedAt'    => ( WPRP_STATUS_DONE === $note->post_status ) ? wprp_format_resolved_date( (string) get_post_meta( $note->ID, WPRP_META_RESOLVED_AT, true ) ) : '',
 		// A reviewer-attributed display name only - never a logged-in dev's identity.
 		'author'        => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
@@ -2459,7 +2480,7 @@ add_action(
 );
 
 /* ===== 13. REST API ===== */
-/* Namespace wprp/v1. Edit/status/delete are dev-only; read and create also accept a reviewer token. */
+/* Namespace wprp/v1. Status is dev-only; read, create and reply accept a reviewer token, and a reviewer may edit or delete their own still-open notes. */
 
 /**
  * Never let a reviewer's REST read be cached. WordPress only sends its nocache headers on
@@ -2647,13 +2668,34 @@ add_action(
 		);
 
 		// Update an existing note (edit text / type / priority / assignee / screenshot / pin).
+		// A reviewer may also rewrite the TEXT of their own still-open note, nothing else;
+		// DELETE lets them trash it. wprp_reviewer_can_change_note() is the only gate for both.
 		register_rest_route(
 			WPRP_REST_NS,
 			'/notes/(?P<id>\d+)',
 			array(
+				array(
 				'methods'             => 'POST',
-				'permission_callback' => $perm,
+				'permission_callback' => $perm_contribute,
 				'callback'            => function ( $req ) {
+					if ( ! wprp_user_can() ) {
+						$note = get_post( (int) $req['id'] );
+						if ( ! wprp_reviewer_can_change_note( $note ) ) {
+							return new WP_Error( 'wprp_forbidden', __( 'You can only edit your own open notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
+						}
+						$body = trim( wprp_kses_note( (string) $req->get_param( 'body' ) ) );
+						if ( '' === $body ) {
+							return new WP_Error( 'wprp_empty', __( 'The note is empty.', 'wp-red-pen' ), array( 'status' => 400 ) );
+						}
+						wp_update_post(
+							array(
+								'ID'           => $note->ID,
+								'post_content' => $body,
+								'post_title'   => wp_trim_words( wp_strip_all_tags( $body ), 8, '...' ),
+							)
+						);
+						return rest_ensure_response( wprp_note_to_array_reviewer( get_post( $note->ID ) ) );
+					}
 					$res = wprp_update_note(
 						(int) $req['id'],
 						array(
@@ -2680,6 +2722,23 @@ add_action(
 					}
 					return rest_ensure_response( wprp_note_to_array( get_post( (int) $req['id'] ) ) );
 				},
+				),
+				array(
+					'methods'             => 'DELETE',
+					'permission_callback' => $perm_contribute,
+					'callback'            => function ( $req ) {
+						// Reviewer-only for now; devs delete from the repository screen. Trash, not a
+						// permanent delete, so a note a client removes by mistake can be restored.
+						$note = get_post( (int) $req['id'] );
+						if ( ! wprp_reviewer_can_change_note( $note ) ) {
+							return new WP_Error( 'wprp_forbidden', __( 'You can only delete your own open notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
+						}
+						if ( ! wp_trash_post( $note->ID ) ) {
+							return new WP_Error( 'wprp_delete_failed', __( 'Could not delete the note.', 'wp-red-pen' ), array( 'status' => 500 ) );
+						}
+						return rest_ensure_response( array( 'id' => (int) $note->ID, 'deleted' => true ) );
+					},
+				),
 			)
 		);
 	}
@@ -2977,10 +3036,10 @@ function wprp_print_frontend_assets() {
 			#wprp-root.wprp-dark .wprp-note{background:#2a2f34;border-color:#3a3f44!important}
 			#wprp-root.wprp-dark .wprp-muted,#wprp-root.wprp-dark .wprp-meta,#wprp-root.wprp-dark .wprp-ctx,#wprp-root.wprp-dark .wprp-reply-meta,#wprp-root.wprp-dark .wprp-assignee,#wprp-root.wprp-dark .wprp-levellabel{color:#9aa0a6!important}
 			#wprp-root.wprp-dark .wprp-form{background:#1f2327!important;border-top-color:#3a3f44!important}
-			#wprp-root.wprp-dark .wprp-form select,#wprp-root.wprp-dark .wprp-form textarea,#wprp-root.wprp-dark .wprp-replytext{background:#1a1d20!important;color:#e6e9ec!important;border-color:#3a3f44!important}
+			#wprp-root.wprp-dark .wprp-form select,#wprp-root.wprp-dark .wprp-form textarea,#wprp-root.wprp-dark .wprp-replytext,#wprp-root.wprp-dark .wprp-redittext{background:#1a1d20!important;color:#e6e9ec!important;border-color:#3a3f44!important}
 			#wprp-root.wprp-dark .wprp-reply{background:#1f2327!important}
 			#wprp-root.wprp-dark .wprp-replies{border-top-color:#3a3f44!important}
-			#wprp-root.wprp-dark .wprp-resolve,#wprp-root.wprp-dark .wprp-locate,#wprp-root.wprp-dark .wprp-edit,#wprp-root.wprp-dark .wprp-replysend,#wprp-root.wprp-dark .wprp-shotbtn{background:#2a2f34!important;color:#aeb4ba!important;border-color:#3a3f44!important}
+			#wprp-root.wprp-dark .wprp-resolve,#wprp-root.wprp-dark .wprp-locate,#wprp-root.wprp-dark .wprp-edit,#wprp-root.wprp-dark .wprp-redit,#wprp-root.wprp-dark .wprp-rdel,#wprp-root.wprp-dark .wprp-rsave,#wprp-root.wprp-dark .wprp-rcancel,#wprp-root.wprp-dark .wprp-replysend,#wprp-root.wprp-dark .wprp-shotbtn{background:#2a2f34!important;color:#aeb4ba!important;border-color:#3a3f44!important}
 			#wprp-root.wprp-dark .wprp-prio-normal,#wprp-root.wprp-dark .wprp-note .wprp-level{background:#3a3f44!important;color:#cfd4d8!important;border-color:#4a4f55!important}
 			#wprp-root.wprp-dark .wprp-tabs{background:#23272b!important;border-bottom-color:#3a3f44!important}
 			#wprp-root.wprp-dark .wprp-status,#wprp-root.wprp-dark .wprp-more-toggle,#wprp-root.wprp-dark .wprp-shotbtn{background:#1a1d20!important;color:#cfd4d8!important;border-color:#3a3f44!important}
@@ -3037,6 +3096,9 @@ function wprp_print_frontend_assets() {
 		#wprp-locate-hl{position:fixed!important;z-index:99987!important;border:3px solid var(--wprp-red)!important;border-radius:4px!important;background:rgba(211,47,47,.08)!important;box-shadow:0 0 0 2px rgba(255,255,255,.5)!important;pointer-events:none!important;transition:opacity .25s!important}
 		:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-edit{background:none!important;border:1px solid #cfd4d8!important;border-radius:4px!important;color:var(--wprp-gray)!important;font-size:.72rem!important;cursor:pointer!important;padding:.1rem .4rem!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-edit:hover{border-color:var(--wprp-red)!important;color:var(--wprp-red)!important}
+			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) :is(.wprp-redit,.wprp-rdel,.wprp-rsave,.wprp-rcancel){background:none!important;border:1px solid #cfd4d8!important;border-radius:4px!important;color:var(--wprp-gray)!important;font-size:.72rem!important;cursor:pointer!important;padding:.1rem .4rem!important;margin-left:.25rem!important}
+			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) :is(.wprp-redit,.wprp-rdel,.wprp-rsave,.wprp-rcancel):hover,:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-rdel.wprp-armed{border-color:var(--wprp-red)!important;color:var(--wprp-red)!important}
+			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-redittext{width:100%!important;border:1px solid #cfd4d8!important;border-radius:4px!important;padding:.3rem .45rem!important;font:inherit!important;font-size:.85rem!important;resize:vertical!important;box-sizing:border-box!important;margin:.3rem 0!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-editbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:.5rem!important;font-size:.78rem!important;color:var(--wprp-red)!important;background:#fff4f4!important;border:1px solid #f3c0c0!important;border-radius:5px!important;padding:.25rem .5rem!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-edit-cancel{background:none!important;border:none!important;color:var(--wprp-gray)!important;text-decoration:underline!important;cursor:pointer!important;font-size:.78rem!important;padding:0!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-edit-cancel:hover{color:var(--wprp-red)!important}
@@ -3359,8 +3421,11 @@ function wprp_print_frontend_assets() {
 				(n.assigneeName ? '<span class="wprp-assignee">&rarr; ' + esc(n.assigneeName) + '</span>' : '') +
 				'<span class="wprp-actions">' +
 				(n.anchor ? '<button type="button" class="wprp-locate" title="<?php echo esc_js( __( 'Highlight the pinned element', 'wp-red-pen' ) ); ?>" aria-label="<?php echo esc_js( __( 'Highlight the pinned element', 'wp-red-pen' ) ); ?>"><span class="dashicons dashicons-search"></span></button>' : '') +
-				// Status dropdown + Edit are dev-only mutate controls; a reviewer sees notes read-only.
-				(isReviewer ? '' : (
+				// Status dropdown + Edit are dev-only mutate controls. A reviewer gets Edit + Delete on
+				// their own still-open notes only (the server re-checks both).
+				(isReviewer ? (n.canChange ?
+					'<button type="button" class="wprp-redit"><?php echo esc_js( __( 'Edit', 'wp-red-pen' ) ); ?></button>' +
+					'<button type="button" class="wprp-rdel"><?php echo esc_js( __( 'Delete', 'wp-red-pen' ) ); ?></button>' : '') : (
 					'<select class="wprp-status" aria-label="<?php echo esc_js( __( 'Status', 'wp-red-pen' ) ); ?>">' +
 						'<option value="open"' + (sk === 'open' ? ' selected' : '') + '>' + esc(TAB_OPEN) + '</option>' +
 						'<option value="progress"' + (sk === 'progress' ? ' selected' : '') + '>' + esc(TAB_PROGRESS) + '</option>' +
@@ -3593,6 +3658,55 @@ function wprp_print_frontend_assets() {
 			// Keep an explicit width within bounds when the viewport shrinks.
 			window.addEventListener('resize', function () { if (panel.style.width) { applyW(parseInt(panel.style.width, 10) || MIN_W); } });
 		}
+
+		// ---- reviewer: inline edit + delete of their own open notes ----
+		var R_DEL_CONFIRM = '<?php echo esc_js( __( 'Confirm delete', 'wp-red-pen' ) ); ?>';
+		var R_DELETED = '<?php echo esc_js( __( 'Note deleted.', 'wp-red-pen' ) ); ?>';
+		var R_SAVE = '<?php echo esc_js( __( 'Save', 'wp-red-pen' ) ); ?>';
+		var R_CANCEL = '<?php echo esc_js( __( 'Cancel', 'wp-red-pen' ) ); ?>';
+		function noteById(nid) { var i = lastNotesIndex(nid); return i >= 0 ? lastNotes[i] : null; }
+		list.addEventListener('click', function (e) {
+			if (!isReviewer) { return; }
+			var rb = e.target.closest('.wprp-redit, .wprp-rdel, .wprp-rsave, .wprp-rcancel');
+			if (!rb) { return; }
+			var wrap = rb.closest('.wprp-note'), nid = wrap.getAttribute('data-id'), n = noteById(nid);
+			if (!n) { return; }
+			if (rb.classList.contains('wprp-redit')) {
+				var bodyEl = wrap.querySelector('.wprp-body');
+				if (!bodyEl || wrap.querySelector('.wprp-reditform')) { return; }
+				var f = document.createElement('div');
+				f.className = 'wprp-reditform';
+				f.innerHTML = '<textarea class="wprp-redittext" rows="4"></textarea>' +
+					'<button type="button" class="wprp-rsave">' + esc(R_SAVE) + '</button> ' +
+					'<button type="button" class="wprp-rcancel">' + esc(R_CANCEL) + '</button>';
+				f.querySelector('textarea').value = (n.raw || '').trim();
+				bodyEl.hidden = true;
+				bodyEl.parentNode.insertBefore(f, bodyEl.nextSibling);
+				f.querySelector('textarea').focus();
+			} else if (rb.classList.contains('wprp-rcancel')) {
+				patchNoteInPlace(n);
+			} else if (rb.classList.contains('wprp-rsave')) {
+				var txt = wrap.querySelector('.wprp-redittext').value.trim();
+				if (!txt) { return; }
+				rb.disabled = true;
+				api('/notes/' + nid, { method: 'POST', body: JSON.stringify({ body: txt }) })
+					.then(function (data) { patchNoteInPlace(data); })
+					.catch(function () { rb.disabled = false; toast(SAVE_FAILED); });
+			} else if (!rb.classList.contains('wprp-armed')) {
+				// First click arms the button; a second click within 4 seconds deletes.
+				rb.classList.add('wprp-armed'); rb.textContent = R_DEL_CONFIRM;
+				setTimeout(function () { if (rb.isConnected) { rb.classList.remove('wprp-armed'); rb.textContent = '<?php echo esc_js( __( 'Delete', 'wp-red-pen' ) ); ?>'; } }, 4000);
+			} else {
+				rb.disabled = true;
+				api('/notes/' + nid, { method: 'DELETE' })
+					.then(function () {
+						var ix = lastNotesIndex(nid); if (ix >= 0) { lastNotes.splice(ix, 1); }
+						if (wrap.parentNode) { wrap.parentNode.removeChild(wrap); }
+						showEmptyIfNeeded(); refreshCounts(); buildPins(lastNotes); toast(R_DELETED);
+					})
+					.catch(function () { rb.disabled = false; toast(SAVE_FAILED); });
+			}
+		});
 
 		list.addEventListener('click', function (e) {
 			var lbtn = e.target.closest('.wprp-locate');
