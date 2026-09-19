@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.27.0
+Stable tag: 0.27.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,6 +69,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 == Changelog ==
 
 Full release-by-release history lives in CHANGELOG.md in the GitHub repo; the highlights are below.
+
+= 0.27.1 =
+* Fixed: a client reviewer no longer loses the panel on every page except the one their link opens. Reviewer mode now lasts two weeks and renews on every page they view, and while a site has a live reviewer link its pages tell the browser not to keep stored copies, so a page saved without the panel cannot keep showing up.
 
 = 0.27.0 =
 * Added: a client reviewer can edit or delete their own notes while they are still Open. Once you move a note to In Progress or Resolved it locks for them. A deleted note goes to the Trash, so you can restore it.

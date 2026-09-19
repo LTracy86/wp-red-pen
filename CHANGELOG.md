@@ -13,6 +13,20 @@ rather than guessed at. Release dates come from the tag or commit that shipped
 each version; 0.12.0 and 0.12.1 predate the surviving history in this
 repository, so they carry no date.
 
+## [0.27.1] - 2026-09-19
+
+### Fixed
+
+- **The panel shows on every page for a client reviewer, not just the one their link
+  opens.** Two causes stacked. The reviewer cookie lasted four hours and was renewed
+  only by the link itself, so the next day every page except the link's landing page
+  loaded without the panel. And the host told browsers to keep pages for a week, so a
+  page stored while the cookie was missing kept showing no panel after the reviewer
+  reopened their link. The cookie now lasts two weeks and renews on every valid page
+  view. While the site has at least one live reviewer link, front-end pages send
+  no-cache headers. Pages a browser already stored before this release still need
+  one hard reload.
+
 ## [0.27.0] - 2026-09-18
 
 ### Added

@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://redpen.tools/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.27.0
+ * Version:           0.27.1
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -68,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.27.0' );
+define( 'WPRP_VERSION',     '0.27.1' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -729,20 +729,21 @@ function wprp_review_set_cookie() {
 	if ( is_admin() ) {
 		return;
 	}
-	if ( ! isset( $_GET[ WPRP_REVIEW_COOKIE ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- bearer token, validated below
-		return;
-	}
-	$raw = sanitize_text_field( wp_unslash( $_GET[ WPRP_REVIEW_COOKIE ] ) );
+	// The link (?wprp_review=) starts reviewer mode; the cookie it leaves keeps it going. Both
+	// renew the cookie, so a reviewer who browses from page to page never falls out of review
+	// mode mid-session. A 4-hour cookie renewed only by the link made every page except the one
+	// the link lands on lose the panel by the next day.
+	$raw = wprp_current_review_raw();
 	if ( ! $raw || ! wprp_find_review_token( $raw ) ) {
 		return; // only set the cookie for a token that currently validates
 	}
-	// A few-hours TTL; refreshed on every valid hit. httponly TRUE - the token is passed
-	// to JS via the page config in a later phase, not read from the cookie by script.
+	// Two weeks, renewed on every valid page view. httponly TRUE - the token is passed
+	// to JS via the page config, never read from the cookie by script.
 	setcookie(
 		WPRP_REVIEW_COOKIE,
 		$raw,
 		array(
-			'expires'  => time() + ( 4 * HOUR_IN_SECONDS ),
+			'expires'  => time() + ( 14 * DAY_IN_SECONDS ),
 			'path'     => defined( 'COOKIEPATH' ) ? COOKIEPATH : '/',
 			'domain'   => defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '',
 			'secure'   => is_ssl(),
@@ -752,6 +753,35 @@ function wprp_review_set_cookie() {
 	);
 }
 add_action( 'init', 'wprp_review_set_cookie' );
+
+/** Does the site have at least one enabled, unexpired reviewer link? */
+function wprp_has_live_review_link() {
+	foreach ( wprp_review_tokens() as $t ) {
+		if ( ! empty( $t['enabled'] ) && ( empty( $t['expires'] ) || (int) $t['expires'] > time() ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Keep browsers from holding onto front-end pages while a site is out for review. The panel is
+ * part of the page HTML, so a page the browser stored without it (visited before the reviewer
+ * cookie existed, or after it lapsed) kept showing no panel for as long as the host said to
+ * keep it; Hostinger says a week. Only sites with a live reviewer link are affected, which in
+ * practice means staging and review sites.
+ */
+add_action(
+	'send_headers',
+	function () {
+		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+			return;
+		}
+		if ( wprp_can_review() || wprp_has_live_review_link() ) {
+			nocache_headers();
+		}
+	}
+);
 
 /* ===== 5. SCREENSHOTS ===== */
 /* Stored outside the media library in uploads/wp-red-pen, behind deny guards, and served only through a capability-gated reader. */
