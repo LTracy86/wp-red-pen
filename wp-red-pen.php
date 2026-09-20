@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://redpen.tools/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.27.1
+ * Version:           0.27.2
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -68,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.27.1' );
+define( 'WPRP_VERSION',     '0.27.2' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -109,6 +109,7 @@ define( 'WPRP_AGENTS_OPT',     'wprp_agents' );      // global: enabled agent pl
 define( 'WPRP_AGENT_CUSTOM_OPT', 'wprp_agent_custom' ); // global: one optional custom agent label
 define( 'WPRP_REVIEW_TOKENS_OPT', 'wprp_review_tokens' ); // global: client-reviewer link tokens (array of hash-only records)
 define( 'WPRP_REVIEW_COOKIE',   'wprp_review' );      // reviewer-mode cookie name (persists reviewer mode across navigation; revalidated every hit)
+define( 'WPRP_REVIEW_BYPASS_COOKIE', 'wordpress_logged_in_wprp_review' ); // cache-bypass marker, set beside the cookie above. Carries no authority: WordPress reads the exact name 'wordpress_logged_in_' . COOKIEHASH and never this one, so it is inert at the origin. It exists to speak to caches, which bypass on the prefix.
 define( 'WPRP_META_REVIEWER',   '_wprp_reviewer' );   // note meta: the reviewer's typed name/identity for attribution (defined now, consumed in a later phase)
 define( 'WPRP_META_VIA_REVIEW', '_wprp_via_review' ); // note meta: 1 = note created through reviewer mode (defined now, consumed in a later phase)
 define( 'WPRP_META_CLIENT_VISIBLE', '_wprp_client_visible' ); // note meta: 1 = the author marked this note visible to client reviewers. ABSENT MEANS INTERNAL - the gate fails closed, so a dev's working notes never reach a reviewer link unless they are opted in explicitly.
@@ -735,15 +736,39 @@ function wprp_review_set_cookie() {
 	// the link lands on lose the panel by the next day.
 	$raw = wprp_current_review_raw();
 	if ( ! $raw || ! wprp_find_review_token( $raw ) ) {
+		// A stale bypass cookie would keep pushing this browser past every cache long after
+		// the link died, so drop it on the way out.
+		if ( isset( $_COOKIE[ WPRP_REVIEW_BYPASS_COOKIE ] ) ) {
+			wprp_review_cookie( WPRP_REVIEW_BYPASS_COOKIE, '', time() - DAY_IN_SECONDS );
+		}
 		return; // only set the cookie for a token that currently validates
 	}
 	// Two weeks, renewed on every valid page view. httponly TRUE - the token is passed
 	// to JS via the page config, never read from the cookie by script.
+	$expires = time() + ( 14 * DAY_IN_SECONDS );
+	wprp_review_cookie( WPRP_REVIEW_COOKIE, $raw, $expires );
+	// Companion marker, same lifetime. The no-cache headers below are the correct request and
+	// most caches honour them; a CDN that decides cacheability from the request alone does not.
+	// Hostinger's edge serves a reviewer a cached anonymous page - HTML rendered before the
+	// panel existed - on whichever nodes hold one, which reads in the field as the panel being
+	// missing from a random subset of pages. Every WordPress-aware cache passes a request
+	// through when it sees this cookie prefix, so this is what actually carries the intent.
+	wprp_review_cookie( WPRP_REVIEW_BYPASS_COOKIE, '1', $expires );
+}
+
+/**
+ * Set one reviewer cookie with the site's own path, domain and scheme settings.
+ *
+ * @param string $name    Cookie name.
+ * @param string $value   Cookie value.
+ * @param int    $expires Expiry timestamp.
+ */
+function wprp_review_cookie( $name, $value, $expires ) {
 	setcookie(
-		WPRP_REVIEW_COOKIE,
-		$raw,
+		$name,
+		$value,
 		array(
-			'expires'  => time() + ( 14 * DAY_IN_SECONDS ),
+			'expires'  => $expires,
 			'path'     => defined( 'COOKIEPATH' ) ? COOKIEPATH : '/',
 			'domain'   => defined( 'COOKIE_DOMAIN' ) ? COOKIE_DOMAIN : '',
 			'secure'   => is_ssl(),

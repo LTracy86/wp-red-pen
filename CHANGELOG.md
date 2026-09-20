@@ -13,6 +13,22 @@ rather than guessed at. Release dates come from the tag or commit that shipped
 each version; 0.12.0 and 0.12.1 predate the surviving history in this
 repository, so they carry no date.
 
+## [0.27.2] - 2026-09-20
+
+### Fixed
+
+- **A client reviewer gets the panel on every page even behind a CDN that caches pages.**
+  0.27.1 told browsers and caches not to keep front-end pages while a reviewer link was
+  live, which is the correct request and most caches honour it. Some CDNs decide whether
+  a page is cacheable from the request alone and ignore what the site sends back. On one,
+  a reviewer was served a stored anonymous copy of a page, rendered before the panel
+  existed, by whichever edge servers happened to hold one. Reloading landed on a different
+  server and the panel came back, so it read as the panel being missing from a random
+  handful of pages. Reviewer mode now also sets a marker cookie that every
+  WordPress-aware cache treats as a reason to skip the cache. The marker grants nothing
+  and WordPress itself ignores it; it exists so the cache layer hears what the headers
+  were already saying. It is dropped as soon as the reviewer link stops validating.
+
 ## [0.27.1] - 2026-09-19
 
 ### Fixed
