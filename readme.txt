@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.27.2
+Stable tag: 0.28.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,6 +69,9 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 == Changelog ==
 
 Full release-by-release history lives in CHANGELOG.md in the GitHub repo; the highlights are below.
+
+= 0.28.0 =
+* Added: each note in the panel list carries the same number as its pin on the page, so a note and its pin can be matched without the magnifying glass. The numbers follow the pins as notes are resolved or reopened, and take the custom pin colour when one is set.
 
 = 0.27.2 =
 * Fixed: a client reviewer gets the panel on every page even when the site sits behind a CDN that stores pages. Some CDNs ignore what a site sends back and judge a request on its own, so a reviewer was handed a stored copy of a page saved before the panel existed, and only by some of the CDN's servers, which made the panel look like it was missing from a random handful of pages. Reviewer mode now sets a marker that caches read as a reason to skip the cache. It grants no access of any kind and is dropped when the link stops working.

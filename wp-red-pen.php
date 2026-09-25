@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://redpen.tools/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.27.2
+ * Version:           0.28.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -68,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.27.2' );
+define( 'WPRP_VERSION',     '0.28.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -3236,9 +3236,10 @@ function wprp_print_frontend_assets() {
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pinhl{position:fixed!important;border:2px solid var(--wprp-red)!important;background:rgba(211,47,47,.12)!important;pointer-events:none!important;z-index:99999!important;box-sizing:border-box!important}
 			/* element-pin: the placed markers */
 			#wprp-pinlayer{position:fixed!important;inset:0!important;z-index:99988!important;pointer-events:none!important}
-			<?php if ( $wprp_pin_color ) { echo '#wprp-pinlayer{--wprp-pin:' . $wprp_pin_color . '}'; } // custom pin colour, scoped to the layer the markers actually live in ?>
+			<?php if ( $wprp_pin_color ) { echo '#wprp-pinlayer,#wprp-root .wprp-pinno{--wprp-pin:' . $wprp_pin_color . '}'; } // custom pin colour, scoped to the pin layer and the matching list badges ?>
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pin{position:fixed!important;transform:translate(-50%,-50%)!important;min-width:22px!important;height:22px!important;padding:0 5px!important;border-radius:11px!important;background:var(--wprp-pin,#D32F2F)!important;color:#fff!important;border:2px solid #fff!important;box-shadow:0 2px 6px rgba(30,34,37,.4)!important;font-size:11px!important;font-weight:700!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;pointer-events:auto!important;box-sizing:border-box!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pin:hover{filter:brightness(0.9)!important}
+			#wprp-root .wprp-pinno{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:20px!important;height:20px!important;padding:0 5px!important;border-radius:10px!important;background:var(--wprp-pin,#D32F2F)!important;color:#fff!important;font-size:11px!important;font-weight:700!important;line-height:1!important;box-sizing:border-box!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-pin.wprp-resolved{background:var(--wprp-gray)!important;opacity:.65!important}
 			:is(#wprp-root,#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast) .wprp-note.wprp-flash{animation:wprp-flash 1.3s ease!important}
 			@keyframes wprp-flash{0%{background:rgba(211,47,47,.20)}100%{background:transparent}}
@@ -3354,6 +3355,7 @@ function wprp_print_frontend_assets() {
 		var pendingAnchor = null;
 		var pinLayer = null;
 		var pins = [];
+		var pinNo = {};           // note id -> the number on its page pin, rebuilt by buildPins()
 		var focusId = null;
 		var editingId = null;     // null = create mode; a note id = editing that note
 		var shotRemove = false;   // edit mode: user cleared the existing screenshot
@@ -3459,10 +3461,23 @@ function wprp_print_frontend_assets() {
 				return parts.length ? parts.join(' / ') : ua.slice(0, 120);
 			}
 
+		// The same number the note's pin shows on the page, so a list entry and its pin can be matched at a glance.
+		function pinNoHtml(num) { return '<span class="wprp-pinno" aria-label="' + esc(PIN_PREFIX + ' ' + num) + '">' + num + '</span>'; }
+		function syncPinNos() {
+			if (!list) { return; }
+			Array.prototype.forEach.call(list.querySelectorAll('.wprp-note'), function (el) {
+				var num = pinNo[el.getAttribute('data-id')];
+				var badge = el.querySelector('.wprp-meta > .wprp-pinno');
+				if (num && badge) { badge.textContent = num; badge.setAttribute('aria-label', PIN_PREFIX + ' ' + num); }
+				else if (num) { var meta = el.querySelector('.wprp-meta'); if (meta) { meta.insertAdjacentHTML('afterbegin', pinNoHtml(num)); } }
+				else if (badge) { badge.parentNode.removeChild(badge); }
+			});
+		}
+
 		function noteHtml(n) {
 			var sk = statusKeyOf(n);
 			return '<div class="wprp-note wprp-st-' + sk + (sk === 'resolved' ? ' wprp-resolved' : '') + '" data-id="' + n.id + '">' +
-				'<div class="wprp-meta"><span class="wprp-tag"' + (n.typeColor ? ' style="background:' + esc(n.typeColor) + '"' : '') + '>' + esc(n.typeLabel) + '</span>' +
+				'<div class="wprp-meta">' + (pinNo[n.id] ? pinNoHtml(pinNo[n.id]) : '') + '<span class="wprp-tag"' + (n.typeColor ? ' style="background:' + esc(n.typeColor) + '"' : '') + '>' + esc(n.typeLabel) + '</span>' +
 				'<span class="wprp-prio wprp-prio-' + esc(n.priority || 'normal') + '">' + esc(n.priorityLabel) + '</span>' +
 				(n.severity ? '<span class="wprp-sev wprp-sev-' + esc(n.severity) + '">' + esc(n.severityLabel) + '</span>' : '') +
 				(n.level === 'template' ? '<span class="wprp-level" title="' + esc(n.ctxLabel || '') + '"><?php echo esc_js( __( 'Template', 'wp-red-pen' ) ); ?></span>' : '') +
@@ -4376,6 +4391,7 @@ function wprp_print_frontend_assets() {
 			if (!pinLayer) { pinLayer = document.createElement('div'); pinLayer.id = 'wprp-pinlayer'; document.body.appendChild(pinLayer); }
 			pinLayer.innerHTML = '';
 			pins = [];
+			pinNo = {};
 			var i = 0;
 			notes.forEach(function (n) {
 				if (statusKeyOf(n) === 'resolved') { return; } // resolved notes drop off the active list, so their pin marker goes too (open + in-progress keep pins)
@@ -4383,6 +4399,7 @@ function wprp_print_frontend_assets() {
 				var a; try { a = JSON.parse(n.anchor); } catch (e) { return; }
 				if (!a || !a.sel) { return; }
 				i++;
+				pinNo[n.id] = i;
 				var marker = document.createElement('button');
 				marker.type = 'button';
 				marker.className = 'wprp-pin' + (statusKeyOf(n) === 'progress' ? ' wprp-pin-progress' : '');
@@ -4394,6 +4411,7 @@ function wprp_print_frontend_assets() {
 				pinLayer.appendChild(marker);
 				pins.push({ sel: a.sel, x: typeof a.x === 'number' ? a.x : 0.5, y: typeof a.y === 'number' ? a.y : 0.5, el: marker });
 			});
+			syncPinNos();
 			positionPins();
 		}
 

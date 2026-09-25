@@ -13,6 +13,16 @@ rather than guessed at. Release dates come from the tag or commit that shipped
 each version; 0.12.0 and 0.12.1 predate the surviving history in this
 repository, so they carry no date.
 
+## [0.28.0] - 2026-09-25
+
+### Added
+
+- **Pin numbers in the note list.** Each pinned note in the panel now starts with the
+  number its pin shows on the page, in the pin's colour, so a reviewer can match a note
+  to its pin at a glance instead of pressing the magnifying glass on each one. The
+  numbers are rebuilt with the pins, so they stay correct when a note is resolved,
+  reopened, added or deleted. Asked for by the first client reviewer.
+
 ## [0.27.2] - 2026-09-20
 
 ### Fixed
