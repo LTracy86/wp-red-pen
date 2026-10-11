@@ -5,7 +5,7 @@ Tags: editorial, review, notes, annotations, workflow
 Requires at least: 5.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.28.0
+Stable tag: 0.29.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,6 +69,15 @@ Deleting (not just deactivating) removes every note and the per-user Dev Mode pr
 == Changelog ==
 
 Full release-by-release history lives in CHANGELOG.md in the GitHub repo; the highlights are below.
+
+= 0.29.0 =
+* Fixed: the pop-up messages (saved, could not save, undo) and the hint shown while pinning could not be read. They took their colours from the panel and drew white text on no background. They are readable again.
+* Fixed: a failed save says why in plain words, such as a review link that has stopped working or too many notes in a few minutes, instead of always blaming the connection, and says that what was typed is still in the box.
+* Fixed: a page left open for more than a day keeps saving. The panel fetches a fresh WordPress token and tries again, and says plainly when you have been logged out.
+* Fixed: opening a review link that has expired or been switched off now tells the client so, instead of showing the site with no panel and no explanation.
+* Fixed: a screenshot that cannot be taken now says so. Client notes show the client's name in your panel instead of "Unknown", and your replies show to a client as "Website team" instead of "Reviewer".
+* Added: a client is told when their note is saved and that the website team can see it.
+* Changed: Display settings and report branding are for administrators only, since they change things for the whole site. Tighter checks on what a review link can do.
 
 = 0.28.0 =
 * Added: each note in the panel list carries the same number as its pin on the page, so a note and its pin can be matched without the magnifying glass. The numbers follow the pins as notes are resolved or reopened, and take the custom pin colour when one is set.

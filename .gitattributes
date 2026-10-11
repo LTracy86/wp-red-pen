@@ -7,3 +7,5 @@ psalm.xml export-ignore
 psalm-baseline.xml export-ignore
 CONTRIBUTING.md export-ignore
 .github export-ignore
+tools export-ignore
+tests export-ignore

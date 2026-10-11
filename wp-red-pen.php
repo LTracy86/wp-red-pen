@@ -3,7 +3,7 @@
  * Plugin Name:       WP Red Pen
  * Plugin URI:        https://redpen.tools/
  * Description:       A logged-in review layer. Editors and admins flip on Dev Mode and drop notes, flags, and suggested edits on any post or page from a floating button. Notes collect on the post's edit screen and in a shared to-do repository.
- * Version:           0.28.0
+ * Version:           0.29.0
  * Requires at least: 5.5
  * Requires PHP:      7.4
  * Author:            Lincoln Tracy
@@ -68,7 +68,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'WPRP_VERSION',     '0.28.0' );
+define( 'WPRP_VERSION',     '0.29.0' );
 define( 'WPRP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
 define( 'WPRP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WPRP_CPT',         'wprp_note' );      // private note CPT
@@ -1171,6 +1171,18 @@ function wprp_review_rate_exceeded() {
 	return false;
 }
 
+/**
+ * A note's page address without the reviewer link's own query argument. The address a note
+ * records is for finding the page again; the link argument is not part of the page.
+ *
+ * @param string $url Page URL.
+ * @return string
+ */
+function wprp_note_page_url( $url ) {
+	$url = (string) $url;
+	return '' === $url ? '' : (string) remove_query_arg( WPRP_REVIEW_COOKIE, $url );
+}
+
 function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array(), $agent = '', $codescope = '', $reviewer_name = '', $severity = '', $client_visible = false ) {
 	if ( ! wprp_can_contribute() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
@@ -1223,7 +1235,7 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	}
 	update_post_meta( $id, WPRP_META_TARGET, (int) $target_id );
 	update_post_meta( $id, WPRP_META_TYPE, $type );
-	update_post_meta( $id, WPRP_META_URL, esc_url_raw( $url ) );
+	update_post_meta( $id, WPRP_META_URL, esc_url_raw( wprp_note_page_url( $url ) ) );
 	wprp_save_context( $id, $context, (int) $target_id );
 
 	$ctx = sanitize_text_field( (string) $ctx );
@@ -1424,13 +1436,31 @@ function wprp_reply_counts( $parent_ids ) {
 	return $out;
 }
 
+/**
+ * Who wrote a note or reply, for the dev surfaces. A client reviewer has no account, so
+ * their typed name (or "Client" when they gave none) stands in for the user name.
+ *
+ * @param WP_Post $post A note or reply post.
+ * @return string
+ */
+function wprp_author_label( $post ) {
+	$author = get_userdata( (int) $post->post_author );
+	if ( $author ) {
+		return $author->display_name;
+	}
+	if ( '1' === (string) get_post_meta( $post->ID, WPRP_META_VIA_REVIEW, true ) ) {
+		$name = (string) get_post_meta( $post->ID, WPRP_META_REVIEWER, true );
+		return '' !== $name ? $name : __( 'Client', 'wp-red-pen' );
+	}
+	return __( 'Unknown', 'wp-red-pen' );
+}
+
 /** Shape a reply post into the plain array the JS consumes. */
 function wprp_reply_to_array( $reply ) {
-	$author = get_userdata( $reply->post_author );
 	return array(
 		'id'     => (int) $reply->ID,
 		'body'   => wpautop( wprp_kses_note( $reply->post_content ) ),
-		'author' => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
+		'author' => wprp_author_label( $reply ),
 		'date'   => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $reply ),
 	);
 }
@@ -2011,7 +2041,7 @@ function wprp_build_agent_brief( $slug, $exclude = 0 ) {
 			'priority'   => $priority,
 			'body'       => wp_strip_all_tags( $n->post_content ),
 			'codeScope'  => (string) get_post_meta( $n->ID, WPRP_META_CODESCOPE, true ),
-			'url'        => (string) get_post_meta( $n->ID, WPRP_META_URL, true ),
+			'url'        => wprp_note_page_url( (string) get_post_meta( $n->ID, WPRP_META_URL, true ) ),
 			'where'      => (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true ),
 			'anchor'     => (string) get_post_meta( $n->ID, WPRP_META_ANCHOR, true ),
 			'screenshot' => (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ),
@@ -2176,7 +2206,6 @@ function wprp_priming_data( $keys ) {
 function wprp_note_to_array( $note, $replies = null ) {
 	$type     = (string) get_post_meta( $note->ID, WPRP_META_TYPE, true );
 	$types    = wprp_note_types();
-	$author   = get_userdata( $note->post_author );
 	$priority = (string) get_post_meta( $note->ID, WPRP_META_PRIORITY, true );
 	$prios    = wprp_priorities();
 	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
@@ -2200,7 +2229,7 @@ function wprp_note_to_array( $note, $replies = null ) {
 		'statusKey'  => wprp_status_key( $note->post_status ),
 		'statusLabel' => wprp_statuses()[ wprp_status_key( $note->post_status ) ],
 		'resolved'   => WPRP_STATUS_DONE === $note->post_status,
-		'author'     => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
+		'author'     => wprp_author_label( $note ),
 		'date'       => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
 		'createdAt'  => get_the_time( 'c', $note ), // ISO 8601, for cross-tool consumers (the Hub); 'date' stays localized for our own UI
 		// When the status last moved, in any direction. The Hub's conflict resolver compares
@@ -2294,11 +2323,26 @@ function wprp_note_to_array_reviewer( $note, $replies = null ) {
 		'raw'           => wprp_reviewer_can_change_note( $note ) ? (string) $note->post_content : '',
 		'resolvedAt'    => ( WPRP_STATUS_DONE === $note->post_status ) ? wprp_format_resolved_date( (string) get_post_meta( $note->ID, WPRP_META_RESOLVED_AT, true ) ) : '',
 		// A reviewer-attributed display name only - never a logged-in dev's identity.
-		'author'        => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
+		'author'        => wprp_author_label_reviewer( $note, $reviewer ),
 		'date'          => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
-		'url'           => $target ? get_permalink( $target ) : (string) get_post_meta( $note->ID, WPRP_META_URL, true ),
+		'url'           => $target ? get_permalink( $target ) : wprp_note_page_url( (string) get_post_meta( $note->ID, WPRP_META_URL, true ) ),
 		'replies'       => array_map( 'wprp_reply_to_array_reviewer', $rep_list ),
 	);
+}
+
+/**
+ * Who wrote a note or reply, as a reviewer may see it. Anything the site's own people wrote
+ * carries one neutral label, never their user name; a reviewer's words keep the typed name.
+ *
+ * @param WP_Post $post     A note or reply post.
+ * @param string  $reviewer The typed reviewer name stored on it, if any.
+ * @return string
+ */
+function wprp_author_label_reviewer( $post, $reviewer ) {
+	if ( '1' !== (string) get_post_meta( $post->ID, WPRP_META_VIA_REVIEW, true ) ) {
+		return __( 'Website team', 'wp-red-pen' );
+	}
+	return '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' );
 }
 
 /** Strip a reply for reviewer eyes: body + reviewer-attributed name + date only (no dev author identity). */
@@ -2307,7 +2351,7 @@ function wprp_reply_to_array_reviewer( $reply ) {
 	return array(
 		'id'     => (int) $reply->ID,
 		'body'   => wpautop( wprp_kses_note( $reply->post_content ) ),
-		'author' => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
+		'author' => wprp_author_label_reviewer( $reply, $reviewer ),
 		'date'   => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $reply ),
 	);
 }
@@ -2564,8 +2608,16 @@ add_action(
 		// The token is read from the X-WPRP-Review-Token header inside wprp_can_review();
 		// it is NOT a wp_rest nonce, which is why these routes are intentionally nonce-free
 		// for the reviewer path. wprp_create_note / wprp_create_reply force the safe shape.
-		$perm_contribute = function () {
-			return wprp_can_contribute();
+		$perm_contribute = function ( $req ) {
+			if ( wprp_user_can() ) {
+				return true;
+			}
+			if ( ! wprp_can_review() ) {
+				return false;
+			}
+			// Reviewer writes are accepted only as real POST or DELETE requests.
+			$http = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_key( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : 'GET';
+			return in_array( $req->get_method(), array( 'GET', 'HEAD' ), true ) || ! in_array( $http, array( 'GET', 'HEAD' ), true );
 		};
 
 		register_rest_route(
@@ -2956,7 +3008,7 @@ add_action(
 					'nonce'       => '',
 					'reviewer'    => true,
 					'reviewToken' => wprp_current_review_raw(),
-					'url'         => esc_url_raw( home_url( add_query_arg( array() ) ) ),
+					'url'         => esc_url_raw( wprp_note_page_url( home_url( add_query_arg( array() ) ) ) ),
 					'page'        => $ctx['page'],     // { key, label, target }
 					'template'    => $ctx['template'], // { key, label }
 					// No 'global' for reviewers: they never see or file site-wide notes.
@@ -2968,7 +3020,8 @@ add_action(
 			array(
 				'root'     => esc_url_raw( rest_url( WPRP_REST_NS ) ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'url'      => esc_url_raw( home_url( add_query_arg( array() ) ) ),
+				'ajax'     => esc_url_raw( admin_url( 'admin-ajax.php' ) ), // renews the nonce for a tab left open past its lifetime
+				'url'      => esc_url_raw( wprp_note_page_url( home_url( add_query_arg( array() ) ) ) ),
 				'page'     => $ctx['page'],     // { key, label, target }
 				'template' => $ctx['template'], // { key, label }
 				'global'   => $ctx['global'],   // { key, label } - site-wide, every view
@@ -3049,6 +3102,26 @@ add_action(
 	}
 );
 
+/**
+ * A review link that no longer works used to open the site with no panel and no word of
+ * why, so a client could not tell a dead link from a broken site. Say so in plain words.
+ * Only on the link itself (the query argument), never for ordinary visitors.
+ */
+add_action(
+	'wp_footer',
+	function () {
+		if ( ! isset( $_GET[ WPRP_REVIEW_COOKIE ] ) || wprp_user_can() || wprp_can_review() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- presence check only
+			return;
+		}
+		?>
+		<div id="wprp-linknote" role="status" style="position:fixed!important;left:16px!important;right:16px!important;bottom:calc(16px + env(safe-area-inset-bottom,0px))!important;z-index:99991!important;max-width:520px!important;margin:0 auto!important;padding:14px 16px!important;background:#fff!important;color:#1E2225!important;border:1px solid #d6dade!important;border-left:4px solid #D32F2F!important;border-radius:8px!important;box-shadow:0 6px 24px rgba(30,34,37,.25)!important;font:16px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif!important;text-align:left!important">
+			<p style="margin:0 0 10px!important;padding:0!important;font:inherit!important;color:inherit!important"><?php esc_html_e( 'This review link has stopped working. It may have expired or been switched off. Ask the person who sent it to you for a new link.', 'wp-red-pen' ); ?></p>
+			<button type="button" onclick="this.parentNode.parentNode.removeChild(this.parentNode)" style="margin:0!important;padding:6px 14px!important;background:#D32F2F!important;color:#fff!important;border:none!important;border-radius:6px!important;font:inherit!important;font-weight:600!important;cursor:pointer!important"><?php esc_html_e( 'Close', 'wp-red-pen' ); ?></button>
+		</div>
+		<?php
+	}
+);
+
 /** Inline CSS + JS for the floating widget (single-file family pattern). */
 function wprp_print_frontend_assets() {
 	// Custom pin colour ('' = use the theme red default). Emitted as a rule on #wprp-pinlayer
@@ -3079,6 +3152,10 @@ function wprp_print_frontend_assets() {
 		#wprp-root .dashicons{font-family:dashicons!important;font-weight:400!important;font-style:normal!important;line-height:1!important}
 		/* env(safe-area-inset-*) resolves to 0 wherever there is no inset, so these are unconditional:
 		   without them the FAB sits under the iOS Safari bottom bar / home indicator and cannot be tapped. */
+		/* The palette, on every mount. The toast, overlays, pin layer and locate ring are appended to
+		   <body>, outside #wprp-root, so a property set only on the root never reaches them and every
+		   var(--wprp-*) they use resolves to nothing (the toast was white text on no background). */
+		:is(#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast,#wprp-locate-hl){--wprp-red:#D32F2F!important;--wprp-red-dark:#B71C1C!important;--wprp-accent:#FF5252!important;--wprp-ink:#1E2225!important;--wprp-gray:#3A3A3C!important}
 		#wprp-root{--wprp-red:#D32F2F!important;--wprp-red-dark:#B71C1C!important;--wprp-accent:#FF5252!important;--wprp-ink:#1E2225!important;--wprp-gray:#3A3A3C!important;position:fixed!important;right:calc(20px + env(safe-area-inset-right,0px))!important;bottom:calc(20px + env(safe-area-inset-bottom,0px))!important;z-index:99990!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif!important}
 			/* The HTML [hidden] attribute is the weakest possible style, so an id/class rule that
 			   sets display silently defeats it and the toggle does nothing. The doubled root ID
@@ -3367,8 +3444,18 @@ function wprp_print_frontend_assets() {
 		var ADD_LABEL = submitBtn ? submitBtn.textContent : 'Add note';
 		var SAVE_LABEL = '<?php echo esc_js( __( 'Save changes', 'wp-red-pen' ) ); ?>';
 
-		function api(path, opts) {
+		// The wp_rest nonce lasts about a day, so a tab left open longer would fail every save.
+		// WordPress hands a still-logged-in user a fresh one; take it and let the caller retry once.
+		function renewNonce() {
+			if (isReviewer || !cfg.ajax) { return Promise.resolve(false); }
+			return fetch(cfg.ajax + '?action=rest-nonce', { credentials: 'same-origin', cache: 'no-store' })
+				.then(function (r) { return r.ok ? r.text() : ''; })
+				.then(function (t) { t = String(t || '').trim(); if (/^[a-f0-9]{10}$/.test(t)) { cfg.nonce = t; return true; } return false; })
+				.catch(function () { return false; });
+		}
+		function api(path, opts, retried) {
 			opts = opts || {};
+			var origPath = path;
 			// Reviewers authenticate with the bearer token header (they have no wp_rest nonce);
 			// logged-in devs send the nonce. The two paths are mutually exclusive.
 			var auth = cfg.reviewToken ? { 'X-WPRP-Review-Token': cfg.reviewToken } : { 'X-WP-Nonce': cfg.nonce };
@@ -3380,8 +3467,21 @@ function wprp_print_frontend_assets() {
 			// while a CDN that already holds a public copy of GET /notes would keep serving it.
 			if (!opts.method || opts.method === 'GET') { path += (path.indexOf('?') > -1 ? '&' : '?') + '_=' + Date.now(); }
 			return fetch(cfg.root + path, opts).then(function (r) {
-				if (!r.ok) { throw new Error('HTTP ' + r.status); }
-				return r.json();
+				if (r.ok) { return r.json(); }
+				// Keep the server's reason, so a refused save is not reported as a bad connection.
+				return r.json().catch(function () { return {}; }).then(function (j) {
+					var err = new Error('HTTP ' + r.status);
+					err.status = r.status;
+					err.code = (j && j.code) ? String(j.code) : '';
+					err.serverMsg = (j && j.message) ? String(j.message) : '';
+					if (!retried && err.code === 'rest_cookie_invalid_nonce') {
+						return renewNonce().then(function (ok) {
+							if (!ok) { throw err; }
+							return api(origPath, { method: opts.method, body: opts.body }, true);
+						});
+					}
+					throw err;
+				});
 			});
 		}
 		function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
@@ -3399,9 +3499,26 @@ function wprp_print_frontend_assets() {
 					}
 				toastEl.style.display = 'block';
 				if (toastTimer) { clearTimeout(toastTimer); }
-				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, actionLabel ? 6000 : 4000);
+				// Longer messages stay up long enough to read.
+				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, Math.max(actionLabel ? 6000 : 4000, String(msg).length * 70));
 			}
-			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save - check your connection and try again.', 'wp-red-pen' ) ); ?>';
+			// A client needs to hear that their words arrived and who can read them.
+			var R_SAVED = '<?php echo esc_js( __( 'Saved. The website team can see your note now.', 'wp-red-pen' ) ); ?>';
+			var R_REPLY_SAVED = '<?php echo esc_js( __( 'Saved. The website team can see your reply now.', 'wp-red-pen' ) ); ?>';
+			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save. Check your internet connection and try again. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
+			var LINK_STOPPED = '<?php echo esc_js( __( 'This review link has stopped working, so this was not saved. Ask the person who sent you the link for a new one. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
+			var LINK_STOPPED_LOAD = '<?php echo esc_js( __( 'This review link has stopped working. Ask the person who sent you the link for a new one.', 'wp-red-pen' ) ); ?>';
+			var LOGGED_OUT = '<?php echo esc_js( __( 'You have been logged out of WordPress. Log in again in another tab, then try again here. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
+			var LOAD_FAILED = '<?php echo esc_js( __( 'Could not load the notes. Check your internet connection and reload the page.', 'wp-red-pen' ) ); ?>';
+			// The plain reason a request failed: the review link stopped working, a rule the server
+			// applied (too many notes at once, a note that is no longer open), or the connection.
+			function failMsg(err) {
+				err = err || {};
+				if (isReviewer && (err.status === 401 || err.code === 'rest_forbidden')) { return LINK_STOPPED; }
+				if (!isReviewer && (err.status === 401 || err.code === 'rest_cookie_invalid_nonce')) { return LOGGED_OUT; }
+				if (err.code && err.code.indexOf('wprp_') === 0 && err.serverMsg) { return err.serverMsg; }
+				return SAVE_FAILED;
+			}
 				// a11y strings + reduced-motion check (built once).
 				var FAB_LABEL = '<?php echo esc_js( __( 'Red Pen notes', 'wp-red-pen' ) ); ?>';
 				var FAB_LABEL_N = '<?php echo esc_js( __( 'Red Pen notes, %d open', 'wp-red-pen' ) ); ?>';
@@ -3431,6 +3548,7 @@ function wprp_print_frontend_assets() {
 				var UNDO_LABEL = '<?php echo esc_js( __( 'Undo', 'wp-red-pen' ) ); ?>';
 				/* translators: %s: agent name */
 				var MARKED_AGENT_MSG = '<?php echo esc_js( __( 'Sent to %s (in the agent queue).', 'wp-red-pen' ) ); ?>';
+				var SHOT_FAILED = '<?php echo esc_js( __( 'Could not take the screenshot. Try a smaller area, or describe what you see in the note instead.', 'wp-red-pen' ) ); ?>';
 				var SHOT_UNAVAILABLE = '<?php echo esc_js( __( 'Screenshot tool failed to load - reload the page and try again.', 'wp-red-pen' ) ); ?>';
 				function reduceMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 				function updateFabLabel(open) { fab.setAttribute('aria-label', open > 0 ? FAB_LABEL_N.replace('%d', open) : FAB_LABEL); }
@@ -3564,8 +3682,8 @@ function wprp_print_frontend_assets() {
 				render();
 				buildPins(notes);
 				return notes;
-			}).catch(function () {
-				list.innerHTML = '<p class="wprp-muted"><?php echo esc_js( __( 'Could not load notes.', 'wp-red-pen' ) ); ?></p>';
+			}).catch(function (e) {
+				list.innerHTML = '<p class="wprp-muted">' + esc(failMsg(e) === LINK_STOPPED ? LINK_STOPPED_LOAD : LOAD_FAILED) + '</p>';
 					list.setAttribute('aria-busy', 'false');
 			});
 		}
@@ -3761,7 +3879,7 @@ function wprp_print_frontend_assets() {
 				rb.disabled = true;
 				api('/notes/' + nid, { method: 'POST', body: JSON.stringify({ body: txt }) })
 					.then(function (data) { patchNoteInPlace(data); })
-					.catch(function () { rb.disabled = false; toast(SAVE_FAILED); });
+					.catch(function (e) { rb.disabled = false; toast(failMsg(e)); });
 			} else if (!rb.classList.contains('wprp-armed')) {
 				// First click arms the button; a second click within 4 seconds deletes.
 				rb.classList.add('wprp-armed'); rb.textContent = R_DEL_CONFIRM;
@@ -3774,7 +3892,7 @@ function wprp_print_frontend_assets() {
 						if (wrap.parentNode) { wrap.parentNode.removeChild(wrap); }
 						showEmptyIfNeeded(); refreshCounts(); buildPins(lastNotes); toast(R_DELETED);
 					})
-					.catch(function () { rb.disabled = false; toast(SAVE_FAILED); });
+					.catch(function (e) { rb.disabled = false; toast(failMsg(e)); });
 			}
 		});
 
@@ -3801,10 +3919,10 @@ function wprp_print_frontend_assets() {
 			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: resolved }) })
 				.then(function () {
 					toast(resolved ? RESOLVED_MSG : REOPENED_MSG, UNDO_LABEL, function () {
-						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: !resolved }) }).then(function () { applyStatusLocally(id, !resolved); }).catch(function () { toast(SAVE_FAILED); });
+						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: !resolved }) }).then(function () { applyStatusLocally(id, !resolved); }).catch(function (e) { toast(failMsg(e)); });
 					});
 					applyStatusLocally(id, resolved);
-				}).catch(function () { btn.disabled = false; toast(SAVE_FAILED); });
+				}).catch(function (e) { btn.disabled = false; toast(failMsg(e)); });
 		});
 
 		// Status dropdown on each note: change moves it between Open / In Progress / Resolved (with Undo).
@@ -3819,10 +3937,10 @@ function wprp_print_frontend_assets() {
 			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ status: to }) })
 				.then(function () {
 					toast(MARKED_MSG.replace('%s', STATUS_LABELS[to] || to), UNDO_LABEL, function () {
-						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ status: from }) }).then(function () { applyStatusLocally(id, from); }).catch(function () { toast(SAVE_FAILED); });
+						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ status: from }) }).then(function () { applyStatusLocally(id, from); }).catch(function (e) { toast(failMsg(e)); });
 					});
 					applyStatusLocally(id, to);
-				}).catch(function () { sel.disabled = false; toast(SAVE_FAILED); });
+				}).catch(function (e) { sel.disabled = false; toast(failMsg(e)); });
 		});
 
 		// Reply boxes grow with their content (up to a cap) instead of staying a sliver.
@@ -3844,7 +3962,7 @@ function wprp_print_frontend_assets() {
 			var replyPayload = { body: rtext };
 				if (isReviewer) { replyPayload.reviewer = reviewerName; }
 				api('/notes/' + rform.getAttribute('data-id') + '/replies', { method: 'POST', body: JSON.stringify(replyPayload) })
-				.then(function (data) { patchNoteInPlace(data); }).catch(function () { send.disabled = false; toast(SAVE_FAILED); });
+				.then(function (data) { patchNoteInPlace(data); if (isReviewer) { toast(R_REPLY_SAVED); } }).catch(function (e) { send.disabled = false; toast(failMsg(e)); });
 		});
 
 		form.addEventListener('submit', function (e) {
@@ -3865,7 +3983,7 @@ function wprp_print_frontend_assets() {
 					if (pendingAnchor) { payload.anchor = JSON.stringify(pendingAnchor); } else if (anchorRemove) { payload.anchor_remove = 1; }
 				api('/notes/' + editingId, { method: 'POST', body: JSON.stringify(payload) })
 					.then(function (data) { exitEdit(); submit.disabled = false; patchNoteInPlace(data); })
-					.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
+					.catch(function (e) { submit.disabled = false; toast(failMsg(e)); });
 				return;
 			}
 			var lvl = levelSel ? levelSel.value : 'page';
@@ -3877,8 +3995,8 @@ function wprp_print_frontend_assets() {
 			if (clientVisChk) { createPayload.client_visible = clientVisChk.checked ? 1 : 0; }
 			if (isReviewer) { createPayload.reviewer = reviewerName; }
 			api('/notes', { method: 'POST', body: JSON.stringify(createPayload) })
-				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } if (clientVisChk) { clientVisChk.checked = false; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
-				.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
+				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } if (clientVisChk) { clientVisChk.checked = false; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); if (isReviewer) { toast(R_SAVED); } })
+				.catch(function (e) { submit.disabled = false; toast(failMsg(e)); });
 		});
 
 		// ---- edit mode: prefill the form from an existing note; submit PATCHes it ----
@@ -4043,6 +4161,7 @@ function wprp_print_frontend_assets() {
 			}).catch(function () {
 				if (busy.parentNode) { busy.parentNode.removeChild(busy); }
 				panel.hidden = false;
+				toast(SHOT_FAILED);
 			});
 		}
 
@@ -4717,43 +4836,47 @@ function wprp_render_repo_page() {
 	$show_on   = wprp_show_on();
 	$pin_color = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) );
 	$save_url = admin_url( 'admin-post.php?action=wprp_save_visibility' );
-	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:640px">';
-	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Display settings', 'wp-red-pen' ) . '</summary>';
-	echo '<form method="post" action="' . esc_url( $save_url ) . '" style="margin-top:.6rem">';
-	wp_nonce_field( 'wprp_save_visibility' ); // nonce in the POST body (the form posts; the handler reads $_POST['_wpnonce'])
-	echo '<p style="margin:.2rem 0 .6rem;color:#646970">' . esc_html__( 'Choose which front-end views show the floating button for users in Dev Mode.', 'wp-red-pen' ) . '</p>';
-	foreach ( wprp_view_scopes() as $key => $label ) {
-		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="scopes[]" value="' . esc_attr( $key ) . '"' . checked( in_array( $key, $show_on, true ), true, false ) . '> ' . wp_kses_post( $label ) . '</label>';
+	// Site-wide settings (including the Hub connection) belong to administrators only.
+	$can_manage = current_user_can( 'manage_options' );
+	if ( $can_manage ) {
+		echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:640px">';
+		echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Display settings', 'wp-red-pen' ) . '</summary>';
+		echo '<form method="post" action="' . esc_url( $save_url ) . '" style="margin-top:.6rem">';
+		wp_nonce_field( 'wprp_save_visibility' ); // nonce in the POST body (the form posts; the handler reads $_POST['_wpnonce'])
+		echo '<p style="margin:.2rem 0 .6rem;color:#646970">' . esc_html__( 'Choose which front-end views show the floating button for users in Dev Mode.', 'wp-red-pen' ) . '</p>';
+		foreach ( wprp_view_scopes() as $key => $label ) {
+			echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="scopes[]" value="' . esc_attr( $key ) . '"' . checked( in_array( $key, $show_on, true ), true, false ) . '> ' . wp_kses_post( $label ) . '</label>';
+		}
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		echo '<p style="margin:.2rem 0 .4rem;color:#646970">' . esc_html__( 'Colour of the numbered element pins on the front end. The app red is used by default; pick a custom colour if it does not stand out on a particular site.', 'wp-red-pen' ) . '</p>';
+		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="pin_custom" value="1"' . checked( '' !== $pin_color, true, false ) . '> ' . esc_html__( 'Use a custom pin colour:', 'wp-red-pen' ) . ' <input type="color" name="pin_color" value="' . esc_attr( '' !== $pin_color ? $pin_color : '#D32F2F' ) . '" style="vertical-align:middle"></label>';
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="dark_mode" value="1"' . checked( (bool) get_option( WPRP_DARK_OPT ), true, false ) . '> ' . esc_html__( 'Dark mode (front-end notes panel)', 'wp-red-pen' ) . '</label>';
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Custom note types', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'one per line as "Label" or "Label|#hexcolor". They appear in every note-type dropdown and show their colour as the note flag.', 'wp-red-pen' ) . '</p>';
+		echo '<textarea name="custom_types" rows="3" style="width:100%;max-width:440px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem" placeholder="Design nit|#9C27B0&#10;Content|#2E7D32">' . esc_textarea( (string) get_option( WPRP_CUSTOM_TYPES_OPT, '' ) ) . '</textarea>';
+
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Connect to Red Pen Hub', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'push this site\'s notes to your local Red Pen Hub so they show on the combined board. Copy the Hub URL + token from the Hub\'s "Connect a Site" panel. Notes sync automatically whenever they change, and saving here runs a test push and reports the result.', 'wp-red-pen' ) . '</p>';
+		echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Hub URL', 'wp-red-pen' ) . '<br><input type="text" name="hub_url" value="' . esc_attr( (string) get_option( WPRP_HUB_URL_OPT, '' ) ) . '" placeholder="http://localhost:3900" style="width:100%;max-width:360px"></label>';
+		echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Connect token', 'wp-red-pen' ) . '<br><input type="text" name="hub_token" value="' . esc_attr( (string) get_option( WPRP_HUB_TOKEN_OPT, '' ) ) . '" placeholder="' . esc_attr__( 'paste token', 'wp-red-pen' ) . '" style="width:100%;max-width:360px;font-family:ui-monospace,Menlo,Consolas,monospace"></label>';
+
+		// Agent feedback: pick which AI agents/platforms notes can be targeted at.
+		// NOTE: a distinct var from $enabled_agents (the slug=>label map used by the audience filter) - this is the raw enabled-slug list for the checkboxes.
+		$enabled_agent_slugs = get_option( WPRP_AGENTS_OPT, array() );
+		$enabled_agent_slugs = is_array( $enabled_agent_slugs ) ? $enabled_agent_slugs : array();
+		$custom_agent        = (string) get_option( WPRP_AGENT_CUSTOM_OPT, '' );
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		$agent_help = __( 'Delegate feedback to an AI coding agent such as Claude or Codex. Tick the agents you use and Save, then choose an agent from any note Assigned menu (new or existing notes). The note moves to the For agents queue for that agent to work on via the REST API or wp-cli. Everything stays local - no AI keys, nothing leaves your site.', 'wp-red-pen' );
+		echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Agent feedback', 'wp-red-pen' ) . '</strong> <span class="dashicons dashicons-editor-help" style="cursor:help;color:#787c82;vertical-align:text-bottom" tabindex="0" role="img" aria-label="' . esc_attr( $agent_help ) . '" title="' . esc_attr( $agent_help ) . '"></span> &mdash; ' . esc_html__( 'enable the AI agents/platforms you use.', 'wp-red-pen' ) . '</p>';
+		foreach ( wprp_agent_platforms() as $slug => $label ) {
+			echo '<label style="display:inline-block;margin:.1rem 1rem .1rem 0"><input type="checkbox" name="agents[]" value="' . esc_attr( $slug ) . '"' . checked( in_array( $slug, $enabled_agent_slugs, true ), true, false ) . '> ' . esc_html( $label ) . '</label>';
+		}
+		echo '<p style="margin:.4rem 0 .2rem"><label>' . esc_html__( 'Custom agent name (optional):', 'wp-red-pen' ) . ' <input type="text" name="agent_custom" value="' . esc_attr( $custom_agent ) . '" maxlength="40" style="width:14rem"></label></p>';
+
+		echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
+		echo '</form></details>';
 	}
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970">' . esc_html__( 'Colour of the numbered element pins on the front end. The app red is used by default; pick a custom colour if it does not stand out on a particular site.', 'wp-red-pen' ) . '</p>';
-	echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="pin_custom" value="1"' . checked( '' !== $pin_color, true, false ) . '> ' . esc_html__( 'Use a custom pin colour:', 'wp-red-pen' ) . ' <input type="color" name="pin_color" value="' . esc_attr( '' !== $pin_color ? $pin_color : '#D32F2F' ) . '" style="vertical-align:middle"></label>';
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="dark_mode" value="1"' . checked( (bool) get_option( WPRP_DARK_OPT ), true, false ) . '> ' . esc_html__( 'Dark mode (front-end notes panel)', 'wp-red-pen' ) . '</label>';
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Custom note types', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'one per line as "Label" or "Label|#hexcolor". They appear in every note-type dropdown and show their colour as the note flag.', 'wp-red-pen' ) . '</p>';
-	echo '<textarea name="custom_types" rows="3" style="width:100%;max-width:440px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem" placeholder="Design nit|#9C27B0&#10;Content|#2E7D32">' . esc_textarea( (string) get_option( WPRP_CUSTOM_TYPES_OPT, '' ) ) . '</textarea>';
-
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Connect to Red Pen Hub', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'push this site\'s notes to your local Red Pen Hub so they show on the combined board. Copy the Hub URL + token from the Hub\'s "Connect a Site" panel. Notes sync automatically whenever they change, and saving here runs a test push and reports the result.', 'wp-red-pen' ) . '</p>';
-	echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Hub URL', 'wp-red-pen' ) . '<br><input type="text" name="hub_url" value="' . esc_attr( (string) get_option( WPRP_HUB_URL_OPT, '' ) ) . '" placeholder="http://localhost:3900" style="width:100%;max-width:360px"></label>';
-	echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Connect token', 'wp-red-pen' ) . '<br><input type="text" name="hub_token" value="' . esc_attr( (string) get_option( WPRP_HUB_TOKEN_OPT, '' ) ) . '" placeholder="' . esc_attr__( 'paste token', 'wp-red-pen' ) . '" style="width:100%;max-width:360px;font-family:ui-monospace,Menlo,Consolas,monospace"></label>';
-
-	// Agent feedback: pick which AI agents/platforms notes can be targeted at.
-	// NOTE: a distinct var from $enabled_agents (the slug=>label map used by the audience filter) - this is the raw enabled-slug list for the checkboxes.
-	$enabled_agent_slugs = get_option( WPRP_AGENTS_OPT, array() );
-	$enabled_agent_slugs = is_array( $enabled_agent_slugs ) ? $enabled_agent_slugs : array();
-	$custom_agent        = (string) get_option( WPRP_AGENT_CUSTOM_OPT, '' );
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	$agent_help = __( 'Delegate feedback to an AI coding agent such as Claude or Codex. Tick the agents you use and Save, then choose an agent from any note Assigned menu (new or existing notes). The note moves to the For agents queue for that agent to work on via the REST API or wp-cli. Everything stays local - no AI keys, nothing leaves your site.', 'wp-red-pen' );
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Agent feedback', 'wp-red-pen' ) . '</strong> <span class="dashicons dashicons-editor-help" style="cursor:help;color:#787c82;vertical-align:text-bottom" tabindex="0" role="img" aria-label="' . esc_attr( $agent_help ) . '" title="' . esc_attr( $agent_help ) . '"></span> &mdash; ' . esc_html__( 'enable the AI agents/platforms you use.', 'wp-red-pen' ) . '</p>';
-	foreach ( wprp_agent_platforms() as $slug => $label ) {
-		echo '<label style="display:inline-block;margin:.1rem 1rem .1rem 0"><input type="checkbox" name="agents[]" value="' . esc_attr( $slug ) . '"' . checked( in_array( $slug, $enabled_agent_slugs, true ), true, false ) . '> ' . esc_html( $label ) . '</label>';
-	}
-	echo '<p style="margin:.4rem 0 .2rem"><label>' . esc_html__( 'Custom agent name (optional):', 'wp-red-pen' ) . ' <input type="text" name="agent_custom" value="' . esc_attr( $custom_agent ) . '" maxlength="40" style="width:14rem"></label></p>';
-
-	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
-	echo '</form></details>';
 
 	// Client report: a printable, client-facing summary of the notes (the deliverable a
 	// freelancer sends). Both the report and its branding (logo, colour, title) are free -
@@ -4777,16 +4900,18 @@ function wprp_render_repo_page() {
 	echo '</p>';
 
 	// Branding - your logo, an accent colour, and a custom title on the report. Free for all.
-	echo '<hr style="margin:.6rem 0;border:none;border-top:1px solid #eee">';
-	echo '<form method="post" action="' . esc_url( $brand_url ) . '">';
-	wp_nonce_field( 'wprp_save_brand' );
-	echo '<p style="margin:.2rem 0 .4rem"><strong>' . esc_html__( 'Branding', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'your logo, an accent colour, and a custom title on the report.', 'wp-red-pen' ) . '</p>';
-	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Report title', 'wp-red-pen' ) . '<br><input type="text" name="brand_title" value="' . esc_attr( $brand['title'] ) . '" placeholder="' . esc_attr__( 'Acme Co - Website Review', 'wp-red-pen' ) . '" style="width:100%;max-width:360px"></label>';
-	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Logo URL', 'wp-red-pen' ) . '<br><input type="text" name="brand_logo" value="' . esc_attr( $brand['logo'] ) . '" placeholder="https://example.com/logo.png" style="width:100%;max-width:360px"></label>';
-	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Accent colour', 'wp-red-pen' ) . ' <input type="color" name="brand_color" value="' . esc_attr( $brand['color'] ) . '" style="vertical-align:middle"></label>';
-	echo '<label style="display:block;margin:.3rem 0"><input type="checkbox" name="brand_hide_credit" value="1"' . checked( $brand['hide_credit'], true, false ) . '> ' . esc_html__( 'Hide the "Generated with Red Pen" credit on the report', 'wp-red-pen' ) . '</label>';
-	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save report settings', 'wp-red-pen' ) . '</button></p>';
-	echo '</form>';
+	if ( $can_manage ) {
+		echo '<hr style="margin:.6rem 0;border:none;border-top:1px solid #eee">';
+		echo '<form method="post" action="' . esc_url( $brand_url ) . '">';
+		wp_nonce_field( 'wprp_save_brand' );
+		echo '<p style="margin:.2rem 0 .4rem"><strong>' . esc_html__( 'Branding', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'your logo, an accent colour, and a custom title on the report.', 'wp-red-pen' ) . '</p>';
+		echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Report title', 'wp-red-pen' ) . '<br><input type="text" name="brand_title" value="' . esc_attr( $brand['title'] ) . '" placeholder="' . esc_attr__( 'Acme Co - Website Review', 'wp-red-pen' ) . '" style="width:100%;max-width:360px"></label>';
+		echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Logo URL', 'wp-red-pen' ) . '<br><input type="text" name="brand_logo" value="' . esc_attr( $brand['logo'] ) . '" placeholder="https://example.com/logo.png" style="width:100%;max-width:360px"></label>';
+		echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Accent colour', 'wp-red-pen' ) . ' <input type="color" name="brand_color" value="' . esc_attr( $brand['color'] ) . '" style="vertical-align:middle"></label>';
+		echo '<label style="display:block;margin:.3rem 0"><input type="checkbox" name="brand_hide_credit" value="1"' . checked( $brand['hide_credit'], true, false ) . '> ' . esc_html__( 'Hide the "Generated with Red Pen" credit on the report', 'wp-red-pen' ) . '</label>';
+		echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save report settings', 'wp-red-pen' ) . '</button></p>';
+		echo '</form>';
+	}
 	echo '</details>';
 
 	// Client review links: generate an unguessable link that lets a non-logged-in client
@@ -5063,7 +5188,7 @@ function wprp_render_repo_page() {
 		if ( $target ) {
 			$where = '<a href="' . esc_url( get_edit_post_link( $target ) ) . '">' . esc_html( '' !== $ctx_label ? $ctx_label : get_the_title( $target ) ) . '</a> <a href="' . esc_url( get_permalink( $target ) ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '">&#8599;</a>';
 		} else {
-			$ctx_url = (string) get_post_meta( $n->ID, WPRP_META_URL, true );
+			$ctx_url = wprp_note_page_url( (string) get_post_meta( $n->ID, WPRP_META_URL, true ) );
 			$where   = esc_html( '' !== $ctx_label ? $ctx_label : __( '(no page)', 'wp-red-pen' ) );
 			if ( $ctx_url ) {
 				$where .= ' <a href="' . esc_url( $ctx_url ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '" target="_blank" rel="noopener">&#8599;</a>';
@@ -5281,6 +5406,7 @@ add_action(
 	'admin_post_wprp_save_visibility',
 	function () {
 		if ( ! wprp_user_can()
+			|| ! current_user_can( 'manage_options' )
 			|| ! isset( $_POST['_wpnonce'] )
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_save_visibility' ) ) {
 			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
@@ -5492,7 +5618,7 @@ add_action(
 					wprp_note_is_client_visible( $n->ID ) ? 'Yes' : 'No',
 					wprp_csv_cell( wp_strip_all_tags( $n->post_content ) ),
 					wprp_csv_cell( '' !== $ctx_label ? $ctx_label : ( $target ? get_the_title( $target ) : '' ) ),
-					wprp_csv_cell( $target ? get_permalink( $target ) : (string) get_post_meta( $n->ID, WPRP_META_URL, true ) ),
+					wprp_csv_cell( $target ? get_permalink( $target ) : wprp_note_page_url( (string) get_post_meta( $n->ID, WPRP_META_URL, true ) ) ),
 					wprp_csv_cell( $au ? $au->display_name : '' ),
 					wprp_csv_cell( $author ? $author->display_name : '' ),
 					wprp_csv_cell( (string) get_post_meta( $n->ID, WPRP_META_CTX, true ) ),
@@ -5513,6 +5639,7 @@ add_action(
 	'admin_post_wprp_save_brand',
 	function () {
 		if ( ! wprp_user_can()
+			|| ! current_user_can( 'manage_options' )
 			|| ! isset( $_POST['_wpnonce'] )
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_save_brand' ) ) {
 			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );

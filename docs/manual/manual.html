@@ -67,7 +67,7 @@
 <p>Every note is <b>Open</b>, <b>In Progress</b>, or <b>Resolved</b> - the panel's three tabs. Each note carries a priority, an optional severity, and its own reply thread, so the back-and-forth about a note stays on the note.</p>
 
 <h2>The repository</h2>
-<p><b>Tools &gt; Red Pen</b> lists every note across the site: filter by status, assignee, or source (client reviews vs dev notes), change priority or assignment inline, resolve or delete, use bulk actions, or export the lot to CSV (which carries a Client visible column). The three panels above the list hold Display settings, the Client report, and Client review links.</p>
+<p><b>Tools &gt; Red Pen</b> lists every note across the site: filter by status, assignee, or source (client reviews vs dev notes), change priority or assignment inline, resolve or delete, use bulk actions, or export the lot to CSV (which carries a Client visible column). The three panels above the list hold Display settings, the Client report, and Client review links. Display settings and the report's branding are shown to administrators only, because they change things for the whole site.</p>
 <figure>
   <img src="img/wp-repo.jpg" alt="">
   <figcaption>The notes repository under Tools, with filters, bulk actions and CSV export.</figcaption>
@@ -117,7 +117,7 @@
   <tr><td>No Red Pen entry in the admin bar</td><td>Your user can't edit posts (Red Pen shows for editors and up), or the plugin isn't active on this site.</td></tr>
   <tr><td>Overlay missing on a page</td><td>Dev Mode is off (check the admin-bar toggle), or that view is excluded under Display settings.</td></tr>
   <tr><td>A pin doesn't show</td><td>The element it was pinned to no longer exists on the page - the note itself is still in the panel and repository.</td></tr>
-  <tr><td>Client says the review link doesn't work</td><td>The link was revoked or expired, or it was mistyped - the full token is part of the URL. Generate a fresh one.</td></tr>
+  <tr><td>Client says the review link doesn't work</td><td>The link was revoked or expired, or it was mistyped - the full token is part of the URL. A link that has stopped working now tells the client so on the page. Generate a fresh one.</td></tr>
   <tr><td>Client's panel is empty, or a note you expected them to see is missing</td><td>The note is internal. Since 0.26.0 a note reaches a review link only when <b>Visible to client reviewers</b> is ticked, and every note written before the upgrade starts internal. Tick the box on the notes you want shared.</td></tr>
   <tr><td>Client can't see the note they filed</td><td>Their own reports are visible to them at any status. If one is missing, it was filed through a different review link - a note belongs to the link that wrote it.</td></tr>
 </table>
