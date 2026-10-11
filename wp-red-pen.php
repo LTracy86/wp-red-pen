@@ -2988,6 +2988,7 @@ add_action(
 			array(
 				'root'     => esc_url_raw( rest_url( WPRP_REST_NS ) ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'ajax'     => esc_url_raw( admin_url( 'admin-ajax.php' ) ), // renews the nonce for a tab left open past its lifetime
 				'url'      => esc_url_raw( wprp_note_page_url( home_url( add_query_arg( array() ) ) ) ),
 				'page'     => $ctx['page'],     // { key, label, target }
 				'template' => $ctx['template'], // { key, label }
@@ -3387,8 +3388,18 @@ function wprp_print_frontend_assets() {
 		var ADD_LABEL = submitBtn ? submitBtn.textContent : 'Add note';
 		var SAVE_LABEL = '<?php echo esc_js( __( 'Save changes', 'wp-red-pen' ) ); ?>';
 
-		function api(path, opts) {
+		// The wp_rest nonce lasts about a day, so a tab left open longer would fail every save.
+		// WordPress hands a still-logged-in user a fresh one; take it and let the caller retry once.
+		function renewNonce() {
+			if (isReviewer || !cfg.ajax) { return Promise.resolve(false); }
+			return fetch(cfg.ajax + '?action=rest-nonce', { credentials: 'same-origin', cache: 'no-store' })
+				.then(function (r) { return r.ok ? r.text() : ''; })
+				.then(function (t) { t = String(t || '').trim(); if (/^[a-f0-9]{10}$/.test(t)) { cfg.nonce = t; return true; } return false; })
+				.catch(function () { return false; });
+		}
+		function api(path, opts, retried) {
 			opts = opts || {};
+			var origPath = path;
 			// Reviewers authenticate with the bearer token header (they have no wp_rest nonce);
 			// logged-in devs send the nonce. The two paths are mutually exclusive.
 			var auth = cfg.reviewToken ? { 'X-WPRP-Review-Token': cfg.reviewToken } : { 'X-WP-Nonce': cfg.nonce };
@@ -3407,6 +3418,12 @@ function wprp_print_frontend_assets() {
 					err.status = r.status;
 					err.code = (j && j.code) ? String(j.code) : '';
 					err.serverMsg = (j && j.message) ? String(j.message) : '';
+					if (!retried && err.code === 'rest_cookie_invalid_nonce') {
+						return renewNonce().then(function (ok) {
+							if (!ok) { throw err; }
+							return api(origPath, { method: opts.method, body: opts.body }, true);
+						});
+					}
 					throw err;
 				});
 			});
@@ -3432,12 +3449,14 @@ function wprp_print_frontend_assets() {
 			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save. Check your internet connection and try again. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
 			var LINK_STOPPED = '<?php echo esc_js( __( 'This review link has stopped working, so this was not saved. Ask the person who sent you the link for a new one. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
 			var LINK_STOPPED_LOAD = '<?php echo esc_js( __( 'This review link has stopped working. Ask the person who sent you the link for a new one.', 'wp-red-pen' ) ); ?>';
+			var LOGGED_OUT = '<?php echo esc_js( __( 'You have been logged out of WordPress. Log in again in another tab, then try again here. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
 			var LOAD_FAILED = '<?php echo esc_js( __( 'Could not load the notes. Check your internet connection and reload the page.', 'wp-red-pen' ) ); ?>';
 			// The plain reason a request failed: the review link stopped working, a rule the server
 			// applied (too many notes at once, a note that is no longer open), or the connection.
 			function failMsg(err) {
 				err = err || {};
 				if (isReviewer && (err.status === 401 || err.code === 'rest_forbidden')) { return LINK_STOPPED; }
+				if (!isReviewer && (err.status === 401 || err.code === 'rest_cookie_invalid_nonce')) { return LOGGED_OUT; }
 				if (err.code && err.code.indexOf('wprp_') === 0 && err.serverMsg) { return err.serverMsg; }
 				return SAVE_FAILED;
 			}
