@@ -3102,6 +3102,26 @@ add_action(
 	}
 );
 
+/**
+ * A review link that no longer works used to open the site with no panel and no word of
+ * why, so a client could not tell a dead link from a broken site. Say so in plain words.
+ * Only on the link itself (the query argument), never for ordinary visitors.
+ */
+add_action(
+	'wp_footer',
+	function () {
+		if ( ! isset( $_GET[ WPRP_REVIEW_COOKIE ] ) || wprp_user_can() || wprp_can_review() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- presence check only
+			return;
+		}
+		?>
+		<div id="wprp-linknote" role="status" style="position:fixed!important;left:16px!important;right:16px!important;bottom:calc(16px + env(safe-area-inset-bottom,0px))!important;z-index:99991!important;max-width:520px!important;margin:0 auto!important;padding:14px 16px!important;background:#fff!important;color:#1E2225!important;border:1px solid #d6dade!important;border-left:4px solid #D32F2F!important;border-radius:8px!important;box-shadow:0 6px 24px rgba(30,34,37,.25)!important;font:16px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif!important;text-align:left!important">
+			<p style="margin:0 0 10px!important;padding:0!important;font:inherit!important;color:inherit!important"><?php esc_html_e( 'This review link has stopped working. It may have expired or been switched off. Ask the person who sent it to you for a new link.', 'wp-red-pen' ); ?></p>
+			<button type="button" onclick="this.parentNode.parentNode.removeChild(this.parentNode)" style="margin:0!important;padding:6px 14px!important;background:#D32F2F!important;color:#fff!important;border:none!important;border-radius:6px!important;font:inherit!important;font-weight:600!important;cursor:pointer!important"><?php esc_html_e( 'Close', 'wp-red-pen' ); ?></button>
+		</div>
+		<?php
+	}
+);
+
 /** Inline CSS + JS for the floating widget (single-file family pattern). */
 function wprp_print_frontend_assets() {
 	// Custom pin colour ('' = use the theme red default). Emitted as a rule on #wprp-pinlayer
