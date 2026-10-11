@@ -13,6 +13,48 @@ rather than guessed at. Release dates come from the tag or commit that shipped
 each version; 0.12.0 and 0.12.1 predate the surviving history in this
 repository, so they carry no date.
 
+## [0.29.0] - 2026-10-11
+
+### Fixed
+
+- **Messages from the panel can be read again.** The pop-up that reports saves, errors and
+  undo, and the hint shown while pinning, are placed outside the panel and took their
+  colours from it, so they drew white text on no background. Every "could not save"
+  message was effectively invisible. They now carry their own colours.
+- **A failed save says why.** Every failed request used to say "check your connection",
+  including a review link that had stopped working and the limit on how many notes can be
+  added in a few minutes. The panel now shows the real reason in plain words and reminds
+  the person that what they typed is still in the box.
+- **A tab left open overnight keeps saving.** WordPress request tokens expire after about a
+  day, so a developer who left a page open had every save refused. The panel now fetches a
+  fresh token and tries once more, and says plainly when the person has been logged out.
+- **A review link that has stopped working says so.** An expired or switched-off link used
+  to open the site with no panel and no explanation, which looks like a broken site. The
+  page now tells the client the link has stopped working and to ask for a new one.
+- **A screenshot that cannot be taken says so.** The capture used to close without a word.
+- **Client notes show the client's name in the developer's panel** instead of "Unknown".
+- **Replies from the site's own people show as "Website team" to a client**, instead of
+  "Reviewer", which read as if another client had answered. A developer's own name is
+  still never shown to a review link.
+
+### Added
+
+- **A client is told when their note is saved**, and that the website team can see it.
+  The note appearing in the list was too quiet for someone who has never used the panel.
+
+### Changed
+
+- **Display settings and report branding are for administrators only.** They change things
+  for the whole site, including the Hub connection, so editors and authors no longer see or
+  save them. Everything else in the repository is unchanged.
+- Tighter checks on the actions a review link can take, and the page address saved on a
+  note is tidied before it is stored.
+
+### Development
+
+- `tools/sandbox-wp.sh` stands up a throwaway WordPress (PHP's built-in server and SQLite)
+  with Red Pen active, in one command. `tools/` and `tests/` stay out of the plugin zip.
+
 ## [0.28.0] - 2026-09-25
 
 ### Added
