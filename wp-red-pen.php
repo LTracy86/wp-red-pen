@@ -1436,13 +1436,31 @@ function wprp_reply_counts( $parent_ids ) {
 	return $out;
 }
 
+/**
+ * Who wrote a note or reply, for the dev surfaces. A client reviewer has no account, so
+ * their typed name (or "Client" when they gave none) stands in for the user name.
+ *
+ * @param WP_Post $post A note or reply post.
+ * @return string
+ */
+function wprp_author_label( $post ) {
+	$author = get_userdata( (int) $post->post_author );
+	if ( $author ) {
+		return $author->display_name;
+	}
+	if ( '1' === (string) get_post_meta( $post->ID, WPRP_META_VIA_REVIEW, true ) ) {
+		$name = (string) get_post_meta( $post->ID, WPRP_META_REVIEWER, true );
+		return '' !== $name ? $name : __( 'Client', 'wp-red-pen' );
+	}
+	return __( 'Unknown', 'wp-red-pen' );
+}
+
 /** Shape a reply post into the plain array the JS consumes. */
 function wprp_reply_to_array( $reply ) {
-	$author = get_userdata( $reply->post_author );
 	return array(
 		'id'     => (int) $reply->ID,
 		'body'   => wpautop( wprp_kses_note( $reply->post_content ) ),
-		'author' => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
+		'author' => wprp_author_label( $reply ),
 		'date'   => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $reply ),
 	);
 }
@@ -2188,7 +2206,6 @@ function wprp_priming_data( $keys ) {
 function wprp_note_to_array( $note, $replies = null ) {
 	$type     = (string) get_post_meta( $note->ID, WPRP_META_TYPE, true );
 	$types    = wprp_note_types();
-	$author   = get_userdata( $note->post_author );
 	$priority = (string) get_post_meta( $note->ID, WPRP_META_PRIORITY, true );
 	$prios    = wprp_priorities();
 	$priority = isset( $prios[ $priority ] ) ? $priority : 'normal';
@@ -2212,7 +2229,7 @@ function wprp_note_to_array( $note, $replies = null ) {
 		'statusKey'  => wprp_status_key( $note->post_status ),
 		'statusLabel' => wprp_statuses()[ wprp_status_key( $note->post_status ) ],
 		'resolved'   => WPRP_STATUS_DONE === $note->post_status,
-		'author'     => $author ? $author->display_name : __( 'Unknown', 'wp-red-pen' ),
+		'author'     => wprp_author_label( $note ),
 		'date'       => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
 		'createdAt'  => get_the_time( 'c', $note ), // ISO 8601, for cross-tool consumers (the Hub); 'date' stays localized for our own UI
 		// When the status last moved, in any direction. The Hub's conflict resolver compares
