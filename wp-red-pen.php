@@ -3400,8 +3400,15 @@ function wprp_print_frontend_assets() {
 			// while a CDN that already holds a public copy of GET /notes would keep serving it.
 			if (!opts.method || opts.method === 'GET') { path += (path.indexOf('?') > -1 ? '&' : '?') + '_=' + Date.now(); }
 			return fetch(cfg.root + path, opts).then(function (r) {
-				if (!r.ok) { throw new Error('HTTP ' + r.status); }
-				return r.json();
+				if (r.ok) { return r.json(); }
+				// Keep the server's reason, so a refused save is not reported as a bad connection.
+				return r.json().catch(function () { return {}; }).then(function (j) {
+					var err = new Error('HTTP ' + r.status);
+					err.status = r.status;
+					err.code = (j && j.code) ? String(j.code) : '';
+					err.serverMsg = (j && j.message) ? String(j.message) : '';
+					throw err;
+				});
 			});
 		}
 		function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
@@ -3419,9 +3426,21 @@ function wprp_print_frontend_assets() {
 					}
 				toastEl.style.display = 'block';
 				if (toastTimer) { clearTimeout(toastTimer); }
-				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, actionLabel ? 6000 : 4000);
+				// Longer messages stay up long enough to read.
+				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, Math.max(actionLabel ? 6000 : 4000, String(msg).length * 70));
 			}
-			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save - check your connection and try again.', 'wp-red-pen' ) ); ?>';
+			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save. Check your internet connection and try again. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
+			var LINK_STOPPED = '<?php echo esc_js( __( 'This review link has stopped working, so this was not saved. Ask the person who sent you the link for a new one. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
+			var LINK_STOPPED_LOAD = '<?php echo esc_js( __( 'This review link has stopped working. Ask the person who sent you the link for a new one.', 'wp-red-pen' ) ); ?>';
+			var LOAD_FAILED = '<?php echo esc_js( __( 'Could not load the notes. Check your internet connection and reload the page.', 'wp-red-pen' ) ); ?>';
+			// The plain reason a request failed: the review link stopped working, a rule the server
+			// applied (too many notes at once, a note that is no longer open), or the connection.
+			function failMsg(err) {
+				err = err || {};
+				if (isReviewer && (err.status === 401 || err.code === 'rest_forbidden')) { return LINK_STOPPED; }
+				if (err.code && err.code.indexOf('wprp_') === 0 && err.serverMsg) { return err.serverMsg; }
+				return SAVE_FAILED;
+			}
 				// a11y strings + reduced-motion check (built once).
 				var FAB_LABEL = '<?php echo esc_js( __( 'Red Pen notes', 'wp-red-pen' ) ); ?>';
 				var FAB_LABEL_N = '<?php echo esc_js( __( 'Red Pen notes, %d open', 'wp-red-pen' ) ); ?>';
@@ -3584,8 +3603,8 @@ function wprp_print_frontend_assets() {
 				render();
 				buildPins(notes);
 				return notes;
-			}).catch(function () {
-				list.innerHTML = '<p class="wprp-muted"><?php echo esc_js( __( 'Could not load notes.', 'wp-red-pen' ) ); ?></p>';
+			}).catch(function (e) {
+				list.innerHTML = '<p class="wprp-muted">' + esc(failMsg(e) === LINK_STOPPED ? LINK_STOPPED_LOAD : LOAD_FAILED) + '</p>';
 					list.setAttribute('aria-busy', 'false');
 			});
 		}
@@ -3781,7 +3800,7 @@ function wprp_print_frontend_assets() {
 				rb.disabled = true;
 				api('/notes/' + nid, { method: 'POST', body: JSON.stringify({ body: txt }) })
 					.then(function (data) { patchNoteInPlace(data); })
-					.catch(function () { rb.disabled = false; toast(SAVE_FAILED); });
+					.catch(function (e) { rb.disabled = false; toast(failMsg(e)); });
 			} else if (!rb.classList.contains('wprp-armed')) {
 				// First click arms the button; a second click within 4 seconds deletes.
 				rb.classList.add('wprp-armed'); rb.textContent = R_DEL_CONFIRM;
@@ -3794,7 +3813,7 @@ function wprp_print_frontend_assets() {
 						if (wrap.parentNode) { wrap.parentNode.removeChild(wrap); }
 						showEmptyIfNeeded(); refreshCounts(); buildPins(lastNotes); toast(R_DELETED);
 					})
-					.catch(function () { rb.disabled = false; toast(SAVE_FAILED); });
+					.catch(function (e) { rb.disabled = false; toast(failMsg(e)); });
 			}
 		});
 
@@ -3821,10 +3840,10 @@ function wprp_print_frontend_assets() {
 			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: resolved }) })
 				.then(function () {
 					toast(resolved ? RESOLVED_MSG : REOPENED_MSG, UNDO_LABEL, function () {
-						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: !resolved }) }).then(function () { applyStatusLocally(id, !resolved); }).catch(function () { toast(SAVE_FAILED); });
+						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ resolved: !resolved }) }).then(function () { applyStatusLocally(id, !resolved); }).catch(function (e) { toast(failMsg(e)); });
 					});
 					applyStatusLocally(id, resolved);
-				}).catch(function () { btn.disabled = false; toast(SAVE_FAILED); });
+				}).catch(function (e) { btn.disabled = false; toast(failMsg(e)); });
 		});
 
 		// Status dropdown on each note: change moves it between Open / In Progress / Resolved (with Undo).
@@ -3839,10 +3858,10 @@ function wprp_print_frontend_assets() {
 			api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ status: to }) })
 				.then(function () {
 					toast(MARKED_MSG.replace('%s', STATUS_LABELS[to] || to), UNDO_LABEL, function () {
-						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ status: from }) }).then(function () { applyStatusLocally(id, from); }).catch(function () { toast(SAVE_FAILED); });
+						api('/notes/' + id + '/status', { method: 'POST', body: JSON.stringify({ status: from }) }).then(function () { applyStatusLocally(id, from); }).catch(function (e) { toast(failMsg(e)); });
 					});
 					applyStatusLocally(id, to);
-				}).catch(function () { sel.disabled = false; toast(SAVE_FAILED); });
+				}).catch(function (e) { sel.disabled = false; toast(failMsg(e)); });
 		});
 
 		// Reply boxes grow with their content (up to a cap) instead of staying a sliver.
@@ -3864,7 +3883,7 @@ function wprp_print_frontend_assets() {
 			var replyPayload = { body: rtext };
 				if (isReviewer) { replyPayload.reviewer = reviewerName; }
 				api('/notes/' + rform.getAttribute('data-id') + '/replies', { method: 'POST', body: JSON.stringify(replyPayload) })
-				.then(function (data) { patchNoteInPlace(data); }).catch(function () { send.disabled = false; toast(SAVE_FAILED); });
+				.then(function (data) { patchNoteInPlace(data); }).catch(function (e) { send.disabled = false; toast(failMsg(e)); });
 		});
 
 		form.addEventListener('submit', function (e) {
@@ -3885,7 +3904,7 @@ function wprp_print_frontend_assets() {
 					if (pendingAnchor) { payload.anchor = JSON.stringify(pendingAnchor); } else if (anchorRemove) { payload.anchor_remove = 1; }
 				api('/notes/' + editingId, { method: 'POST', body: JSON.stringify(payload) })
 					.then(function (data) { exitEdit(); submit.disabled = false; patchNoteInPlace(data); })
-					.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
+					.catch(function (e) { submit.disabled = false; toast(failMsg(e)); });
 				return;
 			}
 			var lvl = levelSel ? levelSel.value : 'page';
@@ -3898,7 +3917,7 @@ function wprp_print_frontend_assets() {
 			if (isReviewer) { createPayload.reviewer = reviewerName; }
 			api('/notes', { method: 'POST', body: JSON.stringify(createPayload) })
 				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } if (clientVisChk) { clientVisChk.checked = false; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
-				.catch(function () { submit.disabled = false; toast(SAVE_FAILED); });
+				.catch(function (e) { submit.disabled = false; toast(failMsg(e)); });
 		});
 
 		// ---- edit mode: prefill the form from an existing note; submit PATCHes it ----
