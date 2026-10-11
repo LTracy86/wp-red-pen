@@ -2323,11 +2323,26 @@ function wprp_note_to_array_reviewer( $note, $replies = null ) {
 		'raw'           => wprp_reviewer_can_change_note( $note ) ? (string) $note->post_content : '',
 		'resolvedAt'    => ( WPRP_STATUS_DONE === $note->post_status ) ? wprp_format_resolved_date( (string) get_post_meta( $note->ID, WPRP_META_RESOLVED_AT, true ) ) : '',
 		// A reviewer-attributed display name only - never a logged-in dev's identity.
-		'author'        => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
+		'author'        => wprp_author_label_reviewer( $note, $reviewer ),
 		'date'          => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
 		'url'           => $target ? get_permalink( $target ) : wprp_note_page_url( (string) get_post_meta( $note->ID, WPRP_META_URL, true ) ),
 		'replies'       => array_map( 'wprp_reply_to_array_reviewer', $rep_list ),
 	);
+}
+
+/**
+ * Who wrote a note or reply, as a reviewer may see it. Anything the site's own people wrote
+ * carries one neutral label, never their user name; a reviewer's words keep the typed name.
+ *
+ * @param WP_Post $post     A note or reply post.
+ * @param string  $reviewer The typed reviewer name stored on it, if any.
+ * @return string
+ */
+function wprp_author_label_reviewer( $post, $reviewer ) {
+	if ( '1' !== (string) get_post_meta( $post->ID, WPRP_META_VIA_REVIEW, true ) ) {
+		return __( 'Website team', 'wp-red-pen' );
+	}
+	return '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' );
 }
 
 /** Strip a reply for reviewer eyes: body + reviewer-attributed name + date only (no dev author identity). */
@@ -2336,7 +2351,7 @@ function wprp_reply_to_array_reviewer( $reply ) {
 	return array(
 		'id'     => (int) $reply->ID,
 		'body'   => wpautop( wprp_kses_note( $reply->post_content ) ),
-		'author' => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
+		'author' => wprp_author_label_reviewer( $reply, $reviewer ),
 		'date'   => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $reply ),
 	);
 }
