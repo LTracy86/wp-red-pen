@@ -4737,43 +4737,47 @@ function wprp_render_repo_page() {
 	$show_on   = wprp_show_on();
 	$pin_color = sanitize_hex_color( (string) get_option( WPRP_PINCOLOR_OPT, '' ) );
 	$save_url = admin_url( 'admin-post.php?action=wprp_save_visibility' );
-	echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:640px">';
-	echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Display settings', 'wp-red-pen' ) . '</summary>';
-	echo '<form method="post" action="' . esc_url( $save_url ) . '" style="margin-top:.6rem">';
-	wp_nonce_field( 'wprp_save_visibility' ); // nonce in the POST body (the form posts; the handler reads $_POST['_wpnonce'])
-	echo '<p style="margin:.2rem 0 .6rem;color:#646970">' . esc_html__( 'Choose which front-end views show the floating button for users in Dev Mode.', 'wp-red-pen' ) . '</p>';
-	foreach ( wprp_view_scopes() as $key => $label ) {
-		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="scopes[]" value="' . esc_attr( $key ) . '"' . checked( in_array( $key, $show_on, true ), true, false ) . '> ' . wp_kses_post( $label ) . '</label>';
+	// Site-wide settings (including the Hub connection) belong to administrators only.
+	$can_manage = current_user_can( 'manage_options' );
+	if ( $can_manage ) {
+		echo '<details style="margin:.5rem 0 1rem;border:1px solid #dcdcde;border-radius:5px;padding:.4rem .8rem;background:#fff;max-width:640px">';
+		echo '<summary style="cursor:pointer;font-weight:600"><span class="dashicons dashicons-visibility" style="vertical-align:text-top"></span> ' . esc_html__( 'Display settings', 'wp-red-pen' ) . '</summary>';
+		echo '<form method="post" action="' . esc_url( $save_url ) . '" style="margin-top:.6rem">';
+		wp_nonce_field( 'wprp_save_visibility' ); // nonce in the POST body (the form posts; the handler reads $_POST['_wpnonce'])
+		echo '<p style="margin:.2rem 0 .6rem;color:#646970">' . esc_html__( 'Choose which front-end views show the floating button for users in Dev Mode.', 'wp-red-pen' ) . '</p>';
+		foreach ( wprp_view_scopes() as $key => $label ) {
+			echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="scopes[]" value="' . esc_attr( $key ) . '"' . checked( in_array( $key, $show_on, true ), true, false ) . '> ' . wp_kses_post( $label ) . '</label>';
+		}
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		echo '<p style="margin:.2rem 0 .4rem;color:#646970">' . esc_html__( 'Colour of the numbered element pins on the front end. The app red is used by default; pick a custom colour if it does not stand out on a particular site.', 'wp-red-pen' ) . '</p>';
+		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="pin_custom" value="1"' . checked( '' !== $pin_color, true, false ) . '> ' . esc_html__( 'Use a custom pin colour:', 'wp-red-pen' ) . ' <input type="color" name="pin_color" value="' . esc_attr( '' !== $pin_color ? $pin_color : '#D32F2F' ) . '" style="vertical-align:middle"></label>';
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="dark_mode" value="1"' . checked( (bool) get_option( WPRP_DARK_OPT ), true, false ) . '> ' . esc_html__( 'Dark mode (front-end notes panel)', 'wp-red-pen' ) . '</label>';
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Custom note types', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'one per line as "Label" or "Label|#hexcolor". They appear in every note-type dropdown and show their colour as the note flag.', 'wp-red-pen' ) . '</p>';
+		echo '<textarea name="custom_types" rows="3" style="width:100%;max-width:440px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem" placeholder="Design nit|#9C27B0&#10;Content|#2E7D32">' . esc_textarea( (string) get_option( WPRP_CUSTOM_TYPES_OPT, '' ) ) . '</textarea>';
+
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Connect to Red Pen Hub', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'push this site\'s notes to your local Red Pen Hub so they show on the combined board. Copy the Hub URL + token from the Hub\'s "Connect a Site" panel. Notes sync automatically whenever they change, and saving here runs a test push and reports the result.', 'wp-red-pen' ) . '</p>';
+		echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Hub URL', 'wp-red-pen' ) . '<br><input type="text" name="hub_url" value="' . esc_attr( (string) get_option( WPRP_HUB_URL_OPT, '' ) ) . '" placeholder="http://localhost:3900" style="width:100%;max-width:360px"></label>';
+		echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Connect token', 'wp-red-pen' ) . '<br><input type="text" name="hub_token" value="' . esc_attr( (string) get_option( WPRP_HUB_TOKEN_OPT, '' ) ) . '" placeholder="' . esc_attr__( 'paste token', 'wp-red-pen' ) . '" style="width:100%;max-width:360px;font-family:ui-monospace,Menlo,Consolas,monospace"></label>';
+
+		// Agent feedback: pick which AI agents/platforms notes can be targeted at.
+		// NOTE: a distinct var from $enabled_agents (the slug=>label map used by the audience filter) - this is the raw enabled-slug list for the checkboxes.
+		$enabled_agent_slugs = get_option( WPRP_AGENTS_OPT, array() );
+		$enabled_agent_slugs = is_array( $enabled_agent_slugs ) ? $enabled_agent_slugs : array();
+		$custom_agent        = (string) get_option( WPRP_AGENT_CUSTOM_OPT, '' );
+		echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
+		$agent_help = __( 'Delegate feedback to an AI coding agent such as Claude or Codex. Tick the agents you use and Save, then choose an agent from any note Assigned menu (new or existing notes). The note moves to the For agents queue for that agent to work on via the REST API or wp-cli. Everything stays local - no AI keys, nothing leaves your site.', 'wp-red-pen' );
+		echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Agent feedback', 'wp-red-pen' ) . '</strong> <span class="dashicons dashicons-editor-help" style="cursor:help;color:#787c82;vertical-align:text-bottom" tabindex="0" role="img" aria-label="' . esc_attr( $agent_help ) . '" title="' . esc_attr( $agent_help ) . '"></span> &mdash; ' . esc_html__( 'enable the AI agents/platforms you use.', 'wp-red-pen' ) . '</p>';
+		foreach ( wprp_agent_platforms() as $slug => $label ) {
+			echo '<label style="display:inline-block;margin:.1rem 1rem .1rem 0"><input type="checkbox" name="agents[]" value="' . esc_attr( $slug ) . '"' . checked( in_array( $slug, $enabled_agent_slugs, true ), true, false ) . '> ' . esc_html( $label ) . '</label>';
+		}
+		echo '<p style="margin:.4rem 0 .2rem"><label>' . esc_html__( 'Custom agent name (optional):', 'wp-red-pen' ) . ' <input type="text" name="agent_custom" value="' . esc_attr( $custom_agent ) . '" maxlength="40" style="width:14rem"></label></p>';
+
+		echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
+		echo '</form></details>';
 	}
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970">' . esc_html__( 'Colour of the numbered element pins on the front end. The app red is used by default; pick a custom colour if it does not stand out on a particular site.', 'wp-red-pen' ) . '</p>';
-	echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="pin_custom" value="1"' . checked( '' !== $pin_color, true, false ) . '> ' . esc_html__( 'Use a custom pin colour:', 'wp-red-pen' ) . ' <input type="color" name="pin_color" value="' . esc_attr( '' !== $pin_color ? $pin_color : '#D32F2F' ) . '" style="vertical-align:middle"></label>';
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<label style="display:block;margin:.2rem 0"><input type="checkbox" name="dark_mode" value="1"' . checked( (bool) get_option( WPRP_DARK_OPT ), true, false ) . '> ' . esc_html__( 'Dark mode (front-end notes panel)', 'wp-red-pen' ) . '</label>';
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Custom note types', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'one per line as "Label" or "Label|#hexcolor". They appear in every note-type dropdown and show their colour as the note flag.', 'wp-red-pen' ) . '</p>';
-	echo '<textarea name="custom_types" rows="3" style="width:100%;max-width:440px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem" placeholder="Design nit|#9C27B0&#10;Content|#2E7D32">' . esc_textarea( (string) get_option( WPRP_CUSTOM_TYPES_OPT, '' ) ) . '</textarea>';
-
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Connect to Red Pen Hub', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'push this site\'s notes to your local Red Pen Hub so they show on the combined board. Copy the Hub URL + token from the Hub\'s "Connect a Site" panel. Notes sync automatically whenever they change, and saving here runs a test push and reports the result.', 'wp-red-pen' ) . '</p>';
-	echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Hub URL', 'wp-red-pen' ) . '<br><input type="text" name="hub_url" value="' . esc_attr( (string) get_option( WPRP_HUB_URL_OPT, '' ) ) . '" placeholder="http://localhost:3900" style="width:100%;max-width:360px"></label>';
-	echo '<label style="display:block;margin:.2rem 0">' . esc_html__( 'Connect token', 'wp-red-pen' ) . '<br><input type="text" name="hub_token" value="' . esc_attr( (string) get_option( WPRP_HUB_TOKEN_OPT, '' ) ) . '" placeholder="' . esc_attr__( 'paste token', 'wp-red-pen' ) . '" style="width:100%;max-width:360px;font-family:ui-monospace,Menlo,Consolas,monospace"></label>';
-
-	// Agent feedback: pick which AI agents/platforms notes can be targeted at.
-	// NOTE: a distinct var from $enabled_agents (the slug=>label map used by the audience filter) - this is the raw enabled-slug list for the checkboxes.
-	$enabled_agent_slugs = get_option( WPRP_AGENTS_OPT, array() );
-	$enabled_agent_slugs = is_array( $enabled_agent_slugs ) ? $enabled_agent_slugs : array();
-	$custom_agent        = (string) get_option( WPRP_AGENT_CUSTOM_OPT, '' );
-	echo '<hr style="margin:.8rem 0;border:none;border-top:1px solid #eee">';
-	$agent_help = __( 'Delegate feedback to an AI coding agent such as Claude or Codex. Tick the agents you use and Save, then choose an agent from any note Assigned menu (new or existing notes). The note moves to the For agents queue for that agent to work on via the REST API or wp-cli. Everything stays local - no AI keys, nothing leaves your site.', 'wp-red-pen' );
-	echo '<p style="margin:.2rem 0 .4rem;color:#646970"><strong>' . esc_html__( 'Agent feedback', 'wp-red-pen' ) . '</strong> <span class="dashicons dashicons-editor-help" style="cursor:help;color:#787c82;vertical-align:text-bottom" tabindex="0" role="img" aria-label="' . esc_attr( $agent_help ) . '" title="' . esc_attr( $agent_help ) . '"></span> &mdash; ' . esc_html__( 'enable the AI agents/platforms you use.', 'wp-red-pen' ) . '</p>';
-	foreach ( wprp_agent_platforms() as $slug => $label ) {
-		echo '<label style="display:inline-block;margin:.1rem 1rem .1rem 0"><input type="checkbox" name="agents[]" value="' . esc_attr( $slug ) . '"' . checked( in_array( $slug, $enabled_agent_slugs, true ), true, false ) . '> ' . esc_html( $label ) . '</label>';
-	}
-	echo '<p style="margin:.4rem 0 .2rem"><label>' . esc_html__( 'Custom agent name (optional):', 'wp-red-pen' ) . ' <input type="text" name="agent_custom" value="' . esc_attr( $custom_agent ) . '" maxlength="40" style="width:14rem"></label></p>';
-
-	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save', 'wp-red-pen' ) . '</button></p>';
-	echo '</form></details>';
 
 	// Client report: a printable, client-facing summary of the notes (the deliverable a
 	// freelancer sends). Both the report and its branding (logo, colour, title) are free -
@@ -4797,16 +4801,18 @@ function wprp_render_repo_page() {
 	echo '</p>';
 
 	// Branding - your logo, an accent colour, and a custom title on the report. Free for all.
-	echo '<hr style="margin:.6rem 0;border:none;border-top:1px solid #eee">';
-	echo '<form method="post" action="' . esc_url( $brand_url ) . '">';
-	wp_nonce_field( 'wprp_save_brand' );
-	echo '<p style="margin:.2rem 0 .4rem"><strong>' . esc_html__( 'Branding', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'your logo, an accent colour, and a custom title on the report.', 'wp-red-pen' ) . '</p>';
-	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Report title', 'wp-red-pen' ) . '<br><input type="text" name="brand_title" value="' . esc_attr( $brand['title'] ) . '" placeholder="' . esc_attr__( 'Acme Co - Website Review', 'wp-red-pen' ) . '" style="width:100%;max-width:360px"></label>';
-	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Logo URL', 'wp-red-pen' ) . '<br><input type="text" name="brand_logo" value="' . esc_attr( $brand['logo'] ) . '" placeholder="https://example.com/logo.png" style="width:100%;max-width:360px"></label>';
-	echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Accent colour', 'wp-red-pen' ) . ' <input type="color" name="brand_color" value="' . esc_attr( $brand['color'] ) . '" style="vertical-align:middle"></label>';
-	echo '<label style="display:block;margin:.3rem 0"><input type="checkbox" name="brand_hide_credit" value="1"' . checked( $brand['hide_credit'], true, false ) . '> ' . esc_html__( 'Hide the "Generated with Red Pen" credit on the report', 'wp-red-pen' ) . '</label>';
-	echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save report settings', 'wp-red-pen' ) . '</button></p>';
-	echo '</form>';
+	if ( $can_manage ) {
+		echo '<hr style="margin:.6rem 0;border:none;border-top:1px solid #eee">';
+		echo '<form method="post" action="' . esc_url( $brand_url ) . '">';
+		wp_nonce_field( 'wprp_save_brand' );
+		echo '<p style="margin:.2rem 0 .4rem"><strong>' . esc_html__( 'Branding', 'wp-red-pen' ) . '</strong> &mdash; ' . esc_html__( 'your logo, an accent colour, and a custom title on the report.', 'wp-red-pen' ) . '</p>';
+		echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Report title', 'wp-red-pen' ) . '<br><input type="text" name="brand_title" value="' . esc_attr( $brand['title'] ) . '" placeholder="' . esc_attr__( 'Acme Co - Website Review', 'wp-red-pen' ) . '" style="width:100%;max-width:360px"></label>';
+		echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Logo URL', 'wp-red-pen' ) . '<br><input type="text" name="brand_logo" value="' . esc_attr( $brand['logo'] ) . '" placeholder="https://example.com/logo.png" style="width:100%;max-width:360px"></label>';
+		echo '<label style="display:block;margin:.3rem 0">' . esc_html__( 'Accent colour', 'wp-red-pen' ) . ' <input type="color" name="brand_color" value="' . esc_attr( $brand['color'] ) . '" style="vertical-align:middle"></label>';
+		echo '<label style="display:block;margin:.3rem 0"><input type="checkbox" name="brand_hide_credit" value="1"' . checked( $brand['hide_credit'], true, false ) . '> ' . esc_html__( 'Hide the "Generated with Red Pen" credit on the report', 'wp-red-pen' ) . '</label>';
+		echo '<p><button type="submit" class="button button-primary">' . esc_html__( 'Save report settings', 'wp-red-pen' ) . '</button></p>';
+		echo '</form>';
+	}
 	echo '</details>';
 
 	// Client review links: generate an unguessable link that lets a non-logged-in client
@@ -5301,6 +5307,7 @@ add_action(
 	'admin_post_wprp_save_visibility',
 	function () {
 		if ( ! wprp_user_can()
+			|| ! current_user_can( 'manage_options' )
 			|| ! isset( $_POST['_wpnonce'] )
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_save_visibility' ) ) {
 			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
@@ -5533,6 +5540,7 @@ add_action(
 	'admin_post_wprp_save_brand',
 	function () {
 		if ( ! wprp_user_can()
+			|| ! current_user_can( 'manage_options' )
 			|| ! isset( $_POST['_wpnonce'] )
 			|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'wprp_save_brand' ) ) {
 			wp_die( esc_html__( 'Invalid request.', 'wp-red-pen' ) );
