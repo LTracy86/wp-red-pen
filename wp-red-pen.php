@@ -3502,6 +3502,9 @@ function wprp_print_frontend_assets() {
 				// Longer messages stay up long enough to read.
 				toastTimer = setTimeout(function () { if (toastEl) { toastEl.style.display = 'none'; } }, Math.max(actionLabel ? 6000 : 4000, String(msg).length * 70));
 			}
+			// A client needs to hear that their words arrived and who can read them.
+			var R_SAVED = '<?php echo esc_js( __( 'Saved. The website team can see your note now.', 'wp-red-pen' ) ); ?>';
+			var R_REPLY_SAVED = '<?php echo esc_js( __( 'Saved. The website team can see your reply now.', 'wp-red-pen' ) ); ?>';
 			var SAVE_FAILED = '<?php echo esc_js( __( 'Could not save. Check your internet connection and try again. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
 			var LINK_STOPPED = '<?php echo esc_js( __( 'This review link has stopped working, so this was not saved. Ask the person who sent you the link for a new one. Your words are still in the box.', 'wp-red-pen' ) ); ?>';
 			var LINK_STOPPED_LOAD = '<?php echo esc_js( __( 'This review link has stopped working. Ask the person who sent you the link for a new one.', 'wp-red-pen' ) ); ?>';
@@ -3959,7 +3962,7 @@ function wprp_print_frontend_assets() {
 			var replyPayload = { body: rtext };
 				if (isReviewer) { replyPayload.reviewer = reviewerName; }
 				api('/notes/' + rform.getAttribute('data-id') + '/replies', { method: 'POST', body: JSON.stringify(replyPayload) })
-				.then(function (data) { patchNoteInPlace(data); }).catch(function (e) { send.disabled = false; toast(failMsg(e)); });
+				.then(function (data) { patchNoteInPlace(data); if (isReviewer) { toast(R_REPLY_SAVED); } }).catch(function (e) { send.disabled = false; toast(failMsg(e)); });
 		});
 
 		form.addEventListener('submit', function (e) {
@@ -3992,7 +3995,7 @@ function wprp_print_frontend_assets() {
 			if (clientVisChk) { createPayload.client_visible = clientVisChk.checked ? 1 : 0; }
 			if (isReviewer) { createPayload.reviewer = reviewerName; }
 			api('/notes', { method: 'POST', body: JSON.stringify(createPayload) })
-				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } if (clientVisChk) { clientVisChk.checked = false; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); })
+				.then(function (data) { body.value = ''; if (sevSel) { sevSel.value = ''; } if (clientVisChk) { clientVisChk.checked = false; } clearShot(); clearAnchor(); submit.disabled = false; applyNewNote(data); if (isReviewer) { toast(R_SAVED); } })
 				.catch(function (e) { submit.disabled = false; toast(failMsg(e)); });
 		});
 
