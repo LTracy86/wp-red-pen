@@ -2564,8 +2564,16 @@ add_action(
 		// The token is read from the X-WPRP-Review-Token header inside wprp_can_review();
 		// it is NOT a wp_rest nonce, which is why these routes are intentionally nonce-free
 		// for the reviewer path. wprp_create_note / wprp_create_reply force the safe shape.
-		$perm_contribute = function () {
-			return wprp_can_contribute();
+		$perm_contribute = function ( $req ) {
+			if ( wprp_user_can() ) {
+				return true;
+			}
+			if ( ! wprp_can_review() ) {
+				return false;
+			}
+			// Reviewer writes are accepted only as real POST or DELETE requests.
+			$http = isset( $_SERVER['REQUEST_METHOD'] ) ? strtoupper( sanitize_key( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) ) : 'GET';
+			return in_array( $req->get_method(), array( 'GET', 'HEAD' ), true ) || ! in_array( $http, array( 'GET', 'HEAD' ), true );
 		};
 
 		register_rest_route(
