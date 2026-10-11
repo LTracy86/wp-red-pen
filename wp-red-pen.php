@@ -3152,6 +3152,10 @@ function wprp_print_frontend_assets() {
 		#wprp-root .dashicons{font-family:dashicons!important;font-weight:400!important;font-style:normal!important;line-height:1!important}
 		/* env(safe-area-inset-*) resolves to 0 wherever there is no inset, so these are unconditional:
 		   without them the FAB sits under the iOS Safari bottom bar / home indicator and cannot be tapped. */
+		/* The palette, on every mount. The toast, overlays, pin layer and locate ring are appended to
+		   <body>, outside #wprp-root, so a property set only on the root never reaches them and every
+		   var(--wprp-*) they use resolves to nothing (the toast was white text on no background). */
+		:is(#wprp-markup,#wprp-capture,#wprp-pinmode,#wprp-pinlayer,#wprp-busy,#wprp-toast,#wprp-locate-hl){--wprp-red:#D32F2F!important;--wprp-red-dark:#B71C1C!important;--wprp-accent:#FF5252!important;--wprp-ink:#1E2225!important;--wprp-gray:#3A3A3C!important}
 		#wprp-root{--wprp-red:#D32F2F!important;--wprp-red-dark:#B71C1C!important;--wprp-accent:#FF5252!important;--wprp-ink:#1E2225!important;--wprp-gray:#3A3A3C!important;position:fixed!important;right:calc(20px + env(safe-area-inset-right,0px))!important;bottom:calc(20px + env(safe-area-inset-bottom,0px))!important;z-index:99990!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif!important}
 			/* The HTML [hidden] attribute is the weakest possible style, so an id/class rule that
 			   sets display silently defeats it and the toggle does nothing. The doubled root ID
