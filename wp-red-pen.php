@@ -1171,6 +1171,18 @@ function wprp_review_rate_exceeded() {
 	return false;
 }
 
+/**
+ * A note's page address without the reviewer link's own query argument. The address a note
+ * records is for finding the page again; the link argument is not part of the page.
+ *
+ * @param string $url Page URL.
+ * @return string
+ */
+function wprp_note_page_url( $url ) {
+	$url = (string) $url;
+	return '' === $url ? '' : (string) remove_query_arg( WPRP_REVIEW_COOKIE, $url );
+}
+
 function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot = '', $ctx = '', $priority = 'normal', $assignee = 0, $anchor = '', $context = array(), $agent = '', $codescope = '', $reviewer_name = '', $severity = '', $client_visible = false ) {
 	if ( ! wprp_can_contribute() ) {
 		return new WP_Error( 'wprp_forbidden', __( 'You cannot add notes.', 'wp-red-pen' ), array( 'status' => 403 ) );
@@ -1223,7 +1235,7 @@ function wprp_create_note( $target_id, $body, $type = 'note', $url = '', $shot =
 	}
 	update_post_meta( $id, WPRP_META_TARGET, (int) $target_id );
 	update_post_meta( $id, WPRP_META_TYPE, $type );
-	update_post_meta( $id, WPRP_META_URL, esc_url_raw( $url ) );
+	update_post_meta( $id, WPRP_META_URL, esc_url_raw( wprp_note_page_url( $url ) ) );
 	wprp_save_context( $id, $context, (int) $target_id );
 
 	$ctx = sanitize_text_field( (string) $ctx );
@@ -2011,7 +2023,7 @@ function wprp_build_agent_brief( $slug, $exclude = 0 ) {
 			'priority'   => $priority,
 			'body'       => wp_strip_all_tags( $n->post_content ),
 			'codeScope'  => (string) get_post_meta( $n->ID, WPRP_META_CODESCOPE, true ),
-			'url'        => (string) get_post_meta( $n->ID, WPRP_META_URL, true ),
+			'url'        => wprp_note_page_url( (string) get_post_meta( $n->ID, WPRP_META_URL, true ) ),
 			'where'      => (string) get_post_meta( $n->ID, WPRP_META_CTXLABEL, true ),
 			'anchor'     => (string) get_post_meta( $n->ID, WPRP_META_ANCHOR, true ),
 			'screenshot' => (string) get_post_meta( $n->ID, WPRP_META_SHOT, true ),
@@ -2296,7 +2308,7 @@ function wprp_note_to_array_reviewer( $note, $replies = null ) {
 		// A reviewer-attributed display name only - never a logged-in dev's identity.
 		'author'        => '' !== $reviewer ? $reviewer : __( 'Reviewer', 'wp-red-pen' ),
 		'date'          => get_the_time( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $note ),
-		'url'           => $target ? get_permalink( $target ) : (string) get_post_meta( $note->ID, WPRP_META_URL, true ),
+		'url'           => $target ? get_permalink( $target ) : wprp_note_page_url( (string) get_post_meta( $note->ID, WPRP_META_URL, true ) ),
 		'replies'       => array_map( 'wprp_reply_to_array_reviewer', $rep_list ),
 	);
 }
@@ -2964,7 +2976,7 @@ add_action(
 					'nonce'       => '',
 					'reviewer'    => true,
 					'reviewToken' => wprp_current_review_raw(),
-					'url'         => esc_url_raw( home_url( add_query_arg( array() ) ) ),
+					'url'         => esc_url_raw( wprp_note_page_url( home_url( add_query_arg( array() ) ) ) ),
 					'page'        => $ctx['page'],     // { key, label, target }
 					'template'    => $ctx['template'], // { key, label }
 					// No 'global' for reviewers: they never see or file site-wide notes.
@@ -2976,7 +2988,7 @@ add_action(
 			array(
 				'root'     => esc_url_raw( rest_url( WPRP_REST_NS ) ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'url'      => esc_url_raw( home_url( add_query_arg( array() ) ) ),
+				'url'      => esc_url_raw( wprp_note_page_url( home_url( add_query_arg( array() ) ) ) ),
 				'page'     => $ctx['page'],     // { key, label, target }
 				'template' => $ctx['template'], // { key, label }
 				'global'   => $ctx['global'],   // { key, label } - site-wide, every view
@@ -5071,7 +5083,7 @@ function wprp_render_repo_page() {
 		if ( $target ) {
 			$where = '<a href="' . esc_url( get_edit_post_link( $target ) ) . '">' . esc_html( '' !== $ctx_label ? $ctx_label : get_the_title( $target ) ) . '</a> <a href="' . esc_url( get_permalink( $target ) ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '">&#8599;</a>';
 		} else {
-			$ctx_url = (string) get_post_meta( $n->ID, WPRP_META_URL, true );
+			$ctx_url = wprp_note_page_url( (string) get_post_meta( $n->ID, WPRP_META_URL, true ) );
 			$where   = esc_html( '' !== $ctx_label ? $ctx_label : __( '(no page)', 'wp-red-pen' ) );
 			if ( $ctx_url ) {
 				$where .= ' <a href="' . esc_url( $ctx_url ) . '" title="' . esc_attr__( 'View', 'wp-red-pen' ) . '" target="_blank" rel="noopener">&#8599;</a>';
@@ -5500,7 +5512,7 @@ add_action(
 					wprp_note_is_client_visible( $n->ID ) ? 'Yes' : 'No',
 					wprp_csv_cell( wp_strip_all_tags( $n->post_content ) ),
 					wprp_csv_cell( '' !== $ctx_label ? $ctx_label : ( $target ? get_the_title( $target ) : '' ) ),
-					wprp_csv_cell( $target ? get_permalink( $target ) : (string) get_post_meta( $n->ID, WPRP_META_URL, true ) ),
+					wprp_csv_cell( $target ? get_permalink( $target ) : wprp_note_page_url( (string) get_post_meta( $n->ID, WPRP_META_URL, true ) ) ),
 					wprp_csv_cell( $au ? $au->display_name : '' ),
 					wprp_csv_cell( $author ? $author->display_name : '' ),
 					wprp_csv_cell( (string) get_post_meta( $n->ID, WPRP_META_CTX, true ) ),
