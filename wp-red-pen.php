@@ -3541,6 +3541,7 @@ function wprp_print_frontend_assets() {
 				var UNDO_LABEL = '<?php echo esc_js( __( 'Undo', 'wp-red-pen' ) ); ?>';
 				/* translators: %s: agent name */
 				var MARKED_AGENT_MSG = '<?php echo esc_js( __( 'Sent to %s (in the agent queue).', 'wp-red-pen' ) ); ?>';
+				var SHOT_FAILED = '<?php echo esc_js( __( 'Could not take the screenshot. Try a smaller area, or describe what you see in the note instead.', 'wp-red-pen' ) ); ?>';
 				var SHOT_UNAVAILABLE = '<?php echo esc_js( __( 'Screenshot tool failed to load - reload the page and try again.', 'wp-red-pen' ) ); ?>';
 				function reduceMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
 				function updateFabLabel(open) { fab.setAttribute('aria-label', open > 0 ? FAB_LABEL_N.replace('%d', open) : FAB_LABEL); }
@@ -4153,6 +4154,7 @@ function wprp_print_frontend_assets() {
 			}).catch(function () {
 				if (busy.parentNode) { busy.parentNode.removeChild(busy); }
 				panel.hidden = false;
+				toast(SHOT_FAILED);
 			});
 		}
 
